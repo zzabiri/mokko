@@ -84,7 +84,7 @@
     .nav-logo img {
       height: 34px;
       width: auto;
-      filter: brightness(0) invert(1);
+      filter: none;
       opacity: 0.88;
     }
 
@@ -201,19 +201,11 @@
       margin-bottom: 28px;
     }
     .hero-logo {
-      width: 120px;
+      width: 200px;
       height: auto;
-      margin-bottom: 32px;
-      filter: brightness(0) invert(1);
-      opacity: 0.9;
-    }
-    .hero-title {
-      font-family: var(--font-serif);
-      font-size: 3.2rem;
-      font-weight: 300;
-      letter-spacing: 0.06em;
-      line-height: 1.0;
       margin-bottom: 40px;
+      filter: none;
+      opacity: 0.92;
     }
     .hero-cta {
       display: flex;
@@ -448,6 +440,120 @@
       filter: grayscale(1) invert(0.88) contrast(0.85);
     }
 
+    /* ── LUNCH MENU ── */
+    .menu-tab-lunch {
+      background: rgba(201,169,110,0.12) !important;
+      color: var(--accent) !important;
+      border-color: rgba(201,169,110,0.4) !important;
+    }
+    .menu-tab-lunch.active {
+      background: var(--accent) !important;
+      color: #0e0e0e !important;
+    }
+    .lunch-badge {
+      display: inline-block;
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      color: var(--accent);
+      border: 1px solid rgba(201,169,110,0.4);
+      border-radius: 20px;
+      padding: 4px 12px;
+      margin-bottom: 16px;
+    }
+    .lunch-price-header {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      font-size: 1rem;
+      font-weight: 500;
+      margin-bottom: 6px;
+    }
+    .lunch-price-tag {
+      font-size: 1.5rem;
+      color: var(--accent);
+      font-weight: 500;
+    }
+    .lunch-desc {
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+    .lunch-extras {
+      display: flex;
+      gap: 16px;
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    /* ── GOOGLE REVIEW BUTTON ── */
+    .google-review-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 16px;
+      padding: 12px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.88rem;
+      color: var(--text);
+      transition: var(--ease);
+      -webkit-tap-highlight-color: transparent;
+    }
+    .google-review-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .google-stars { color: #f5c518; letter-spacing: 1px; }
+    .google-arrow { margin-left: auto; color: var(--muted); font-size: 0.8rem; }
+
+    /* ── REVIEWS ── */
+    .reviews-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-top: 32px;
+    }
+    .review-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+    }
+    .review-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .review-avatar {
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      background: var(--accent);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: #0e0e0e;
+      flex-shrink: 0;
+    }
+    .review-meta { flex: 1; }
+    .review-name { font-size: 0.88rem; font-weight: 500; }
+    .review-stars { color: #f5c518; font-size: 0.8rem; letter-spacing: 1px; }
+    .review-text {
+      font-size: 0.88rem;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+    .reviews-cta {
+      margin-top: 20px;
+      text-align: center;
+    }
+    @media (min-width: 768px) {
+      .reviews-grid { flex-direction: row; }
+      .review-card { flex: 1; }
+    }
+
     /* ── FOOTER ── */
     footer {
       padding: 44px 0 calc(44px + env(safe-area-inset-bottom));
@@ -456,7 +562,7 @@
     }
     .footer-logo img {
       height: 52px; width: auto;
-      filter: brightness(0) invert(1);
+      filter: none;
       opacity: 0.5;
       margin: 0 auto 18px;
     }
@@ -530,8 +636,7 @@
 
       /* Hero */
       #hero { min-height: 60vh; padding: 100px 24px 60px; }
-      .hero-logo { width: 140px; }
-      .hero-title { font-size: 4.5rem; }
+      .hero-logo { width: 240px; }
       .hero-cta { flex-direction: row; justify-content: center; max-width: none; }
       .btn { width: auto; padding: 0 36px; }
       .btn:hover { opacity: 0.85; }
@@ -607,8 +712,7 @@
 <!-- ── HERO ── -->
 <section id="hero">
   <p class="hero-eyebrow">居酒屋 · Izakaya · Schwalbach am Taunus</p>
-  <img src="logo.png" alt="Mokko Logo" class="hero-logo" />
-  <h1 class="hero-title">Mokko</h1>
+  <img src="logo.png" alt="Mokko Izakaya" class="hero-logo" />
   <div class="hero-cta">
     <a href="#reservation" class="btn btn-primary" data-i18n="btn_reserve"></a>
     <a href="#menu"        class="btn btn-outline"  data-i18n="btn_menu"></a>
@@ -646,6 +750,7 @@
       <button class="menu-tab" data-tab="grill"    data-i18n="cat_grill"></button>
       <button class="menu-tab" data-tab="soup"     data-i18n="cat_soup"></button>
       <button class="menu-tab" data-tab="extras"   data-i18n="cat_extras"></button>
+      <button class="menu-tab menu-tab-lunch" data-tab="lunch" data-i18n="cat_lunch"></button>
     </div>
 
     <!-- 전채 -->
@@ -734,7 +839,76 @@
       </div>
     </div>
 
+    <!-- 점심 -->
+    <div class="menu-panel" id="panel-lunch">
+      <div class="menu-category fade">
+        <div class="lunch-badge" data-ko="화–금 11:30 – 13:30" data-de="Di–Fr 11:30 – 13:30" data-en="Tue–Fri 11:30 – 13:30"></div>
+        <div class="lunch-price-header">
+          <span data-ko="점심 세트 메뉴" data-de="Mittagsmenü" data-en="Lunch Set Menu"></span>
+          <span class="lunch-price-tag">€15.50</span>
+        </div>
+        <div class="lunch-desc" data-ko="4가지 메인 중 1가지 선택 · 밥 + 국 + 반찬 포함" data-de="1 Hauptgericht nach Wahl · mit Reis, Tagessuppe & Beilagen" data-en="Choose 1 main dish · served with rice, soup & sides"></div>
+
+        <div class="menu-item"><div class="menu-item-info"><div class="menu-item-name" data-ko="① 제육볶음 (화·목) / 돼지불고기 (수·금)" data-de="① Gebratenes Schweinefleisch scharf (Di·Do) / Bulgogi (Mi·Fr)" data-en="① Spicy Pork (Tue·Thu) / Pork Bulgogi (Wed·Fri)"></div><div class="menu-item-desc" data-ko="고추장 양념 볶음 / 간장 양념 불고기" data-de="Mit Gochujang-Sauce / Mit Sojamarinade" data-en="Gochujang marinated / Soy marinade bulgogi"></div></div></div>
+        <div class="menu-item"><div class="menu-item-info"><div class="menu-item-name" data-ko="② 순살 생선조림 🌶" data-de="② Geschmortes Fischfilet (scharf) 🌶" data-en="② Braised Fish Fillet (spicy) 🌶"></div><div class="menu-item-desc" data-ko="매콤하게 조린 순살 생선" data-de="Scharf geschmortes Fischfilet" data-en="Spicy braised boneless fish fillet"></div></div></div>
+        <div class="menu-item"><div class="menu-item-info"><div class="menu-item-name" data-ko="③ 양념 가라아게 + 에비후라이 2개" data-de="③ Karaage mit Sweet-Chili-Sauce + Ebi-Fry (2 Stk.)" data-en="③ Seasoned Karaage + Ebi-Fry (2 pcs)"></div><div class="menu-item-desc" data-ko="한국식 스위트칠리 소스 가라아게 + 새우튀김" data-de="Karaage mit koreanischer Sweet-Chili-Sauce + Garnelenkrokette" data-en="Karaage with Korean sweet chili sauce + shrimp croquette"></div></div></div>
+        <div class="menu-item"><div class="menu-item-info"><div class="menu-item-name" data-ko="④ 고등어구이" data-de="④ Gegrillte Makrele" data-en="④ Grilled Mackerel"></div><div class="menu-item-desc" data-ko="숯불에 구운 고등어" data-de="Gegrillte Makrele" data-en="Charcoal-grilled mackerel"></div></div></div>
+
+        <div class="lunch-extras">
+          <span data-ko="추가 메인 +€8" data-de="Extra Hauptgericht +€8" data-en="Extra main dish +€8"></span>
+          <span data-ko="추가 밥 +€2" data-de="Extra Reis +€2" data-en="Extra rice +€2"></span>
+        </div>
+      </div>
+    </div>
+
     <div class="menu-note fade" data-ko="※ 메뉴 및 가격은 변동될 수 있습니다. 알레르기 정보는 직원에게 문의해 주세요." data-de="※ Menü und Preise können sich ändern. Allergene auf Anfrage." data-en="※ Menu and prices subject to change. Ask staff about allergens."></div>
+  </div>
+</section>
+
+<!-- ── REVIEWS ── -->
+<section id="reviews">
+  <div class="container">
+    <p class="section-label">Google Reviews</p>
+    <h2 class="section-title fade" data-ko="고객 리뷰" data-de="Kundenstimmen" data-en="What Guests Say"></h2>
+    <div class="reviews-grid">
+
+      <div class="review-card fade">
+        <div class="review-header">
+          <div class="review-avatar">V</div>
+          <div class="review-meta">
+            <div class="review-name">Victoria Klose</div>
+            <div class="review-stars">★★★★★</div>
+          </div>
+        </div>
+        <p class="review-text" data-ko="정말 친절한 팀과 빠른 서비스! 음식이 맛있고 아늑한 분위기가 친구나 가족과의 멋진 저녁에 딱 맞아요. 인테리어도 세심하게 디자인되어 식사 경험을 더욱 특별하게 만들어줘요. 꼭 다시 올 거예요! 😊" data-de="Tolles Restaurant mit super freundlichem Team und schnellem Service! Das Essen ist sehr lecker und die gemütliche Atmosphäre sowie das stilvolle Interieur sind ideal für einen tollen Abend mit Freunden oder Familie. Ich komme auf jeden Fall wieder und empfehle es weiter! 😊" data-en="Amazing restaurant with a super friendly team and fast service! The food is delicious and the cozy atmosphere and stylish interior are perfect for a great evening with friends or family. Will definitely come back and highly recommend! 😊"></p>
+      </div>
+
+      <div class="review-card fade">
+        <div class="review-header">
+          <div class="review-avatar">N</div>
+          <div class="review-meta">
+            <div class="review-name">Nicolas Reigber</div>
+            <div class="review-stars">★★★★★</div>
+          </div>
+        </div>
+        <p class="review-text" data-ko="정말 멋진 곳이에요. 타파스 바에 더 가깝다고 할까요? 소주, 사케를 마시며 여러 명이 나눠 먹는 안주와 메인 요리를 즐길 수 있어요. 예약은 필수입니다. 다른 한국 음식점들과 달리 직원들이 독일어를 아주 잘해요." data-de="Ein wirklich toller Ort – eher wie eine Tapas-Bar. Man kann Soju und Sake trinken und kleine Gerichte oder Hauptspeisen teilen. Reservierung ist Pflicht. Im Gegensatz zu anderen koreanischen Restaurants sprechen die Mitarbeiter sehr gut Deutsch." data-en="A truly wonderful place – more like a tapas bar. You can enjoy soju and sake while sharing small bites or main dishes. Reservation is a must. Unlike other Korean restaurants, the staff speaks excellent German."></p>
+      </div>
+
+      <div class="review-card fade">
+        <div class="review-header">
+          <div class="review-avatar">★</div>
+          <div class="review-meta">
+            <div class="review-name">난너를믿었던만큼</div>
+            <div class="review-stars">★★★★★</div>
+          </div>
+        </div>
+        <p class="review-text" data-ko="친절하시고 음식 즉방 나오는(?) 식당입니다. 주말 방문시엔 별도로 예약은 안 해도 될 것 같습니다. 음식도 맛있어서 충분히 다시 올 만한 곳이에요. :)" data-de="Freundliches Personal und das Essen kommt blitzschnell! Am Wochenende scheint auch ohne Reservierung ein Besuch möglich zu sein. Das Essen ist lecker – definitiv einen Wiederbesuch wert. :)" data-en="Friendly staff and the food comes out super fast! Weekends seem manageable even without a reservation. The food is delicious – definitely worth coming back to. :)"></p>
+      </div>
+
+    </div>
+    <div class="reviews-cta fade">
+      <a href="https://www.google.com/maps/place/Mokko+Izakaya/@50.154397,8.5271751,17z" target="_blank" rel="noopener" class="btn btn-outline" style="display:inline-flex;width:auto;padding:0 24px;" data-ko="Google에서 더 보기 →" data-de="Mehr auf Google →" data-en="More on Google →"></a>
+    </div>
   </div>
 </section>
 
@@ -755,7 +929,11 @@
         </div></div>
         <div class="info-row"><span class="label" data-i18n="res_price_label"></span><div>€10 – €30 p.P.</div></div>
         <div class="info-row"><span class="label" data-i18n="res_seating_label"></span><div data-ko="매장 내 식사 · 테이크아웃 가능" data-de="Im Restaurant & zum Mitnehmen" data-en="Dine-in & Takeout"></div></div>
-        <div class="info-row"><span class="label">Google</span><div>⭐ 4.9 · 195 <span data-ko="리뷰" data-de="Bewertungen" data-en="reviews"></span></div></div>
+        <a href="https://www.google.com/maps/place/Mokko+Izakaya/@50.154397,8.5271751,17z" target="_blank" rel="noopener" class="google-review-btn">
+          <span class="google-stars">⭐ 4.9</span>
+          <span data-ko="Google 리뷰 보기" data-de="Google Bewertungen ansehen" data-en="View Google Reviews"></span>
+          <span class="google-arrow">↗</span>
+        </a>
         <a href="https://open.kakao.com/o/XXXXXXXX" target="_blank" rel="noopener" class="kakao-box">
           <div class="kakao-icon">💬</div>
           <div class="kakao-text">
@@ -797,9 +975,9 @@
 <script>
 // ── TRANSLATIONS ──
 const T = {
-  ko: { nav_insta:'인스타그램', nav_menu:'메뉴', nav_reservation:'예약', nav_location:'오시는 길', insta_label:'Instagram', insta_title:'최근 소식', btn_reserve:'예약하기', btn_menu:'메뉴 보기', menu_label:'Menu', menu_title:'메뉴', cat_starters:'전채', cat_fried:'튀김', cat_specials:'셰프 추천', cat_sashimi:'사시미', cat_grill:'그릴', cat_soup:'국물·전골', cat_extras:'추가', res_label:'Reservation & Location', res_title:'예약 & 오시는 길', res_subtitle:'예약 안내', res_hours_label:'영업시간', res_price_label:'가격대', res_seating_label:'좌석', loc_subtitle:'오시는 길', loc_addr_label:'주소', loc_tel_label:'전화', loc_rating_label:'평점' },
-  de: { nav_insta:'Instagram', nav_menu:'Speisekarte', nav_reservation:'Reservierung', nav_location:'Anfahrt', insta_label:'Instagram', insta_title:'Neuigkeiten', btn_reserve:'Reservieren', btn_menu:'Speisekarte', menu_label:'Speisekarte', menu_title:'Speisekarte', cat_starters:'Vorspeisen', cat_fried:'Frittiertes', cat_specials:'Spezialitäten', cat_sashimi:'Sashimi', cat_grill:'Grill', cat_soup:'Suppen & Eintöpfe', cat_extras:'Extras', res_label:'Reservierung & Standort', res_title:'Reservierung & Anfahrt', res_subtitle:'Reservierungsinfo', res_hours_label:'Öffnungszeiten', res_price_label:'Preisklasse', res_seating_label:'Sitzplätze', loc_subtitle:'Anfahrt', loc_addr_label:'Adresse', loc_tel_label:'Telefon', loc_rating_label:'Bewertung' },
-  en: { nav_insta:'Instagram', nav_menu:'Menu', nav_reservation:'Reservation', nav_location:'Location', insta_label:'Instagram', insta_title:'Latest Updates', btn_reserve:'Reserve a Table', btn_menu:'View Menu', menu_label:'Menu', menu_title:'Menu', cat_starters:'Starters', cat_fried:'Fried', cat_specials:"Chef's Specials", cat_sashimi:'Sashimi', cat_grill:'Grill', cat_soup:'Soups & Hotpot', cat_extras:'Extras', res_label:'Reservation & Location', res_title:'Reservation & Location', res_subtitle:'Reservation Info', res_hours_label:'Hours', res_price_label:'Price range', res_seating_label:'Seating', loc_subtitle:'Location', loc_addr_label:'Address', loc_tel_label:'Phone', loc_rating_label:'Rating' }
+  ko: { nav_insta:'인스타그램', nav_menu:'메뉴', nav_reservation:'예약', nav_location:'오시는 길', insta_label:'Instagram', insta_title:'최근 소식', btn_reserve:'예약하기', btn_menu:'메뉴 보기', menu_label:'Menu', menu_title:'메뉴', cat_starters:'전채', cat_fried:'튀김', cat_specials:'셰프 추천', cat_sashimi:'사시미', cat_grill:'그릴', cat_soup:'국물·전골', cat_extras:'추가', cat_lunch:'🌞 점심', res_label:'Reservation & Location', res_title:'예약 & 오시는 길', res_subtitle:'예약 안내', res_hours_label:'영업시간', res_price_label:'가격대', res_seating_label:'좌석', loc_subtitle:'오시는 길', loc_addr_label:'주소', loc_tel_label:'전화', loc_rating_label:'평점' },
+  de: { nav_insta:'Instagram', nav_menu:'Speisekarte', nav_reservation:'Reservierung', nav_location:'Anfahrt', insta_label:'Instagram', insta_title:'Neuigkeiten', btn_reserve:'Reservieren', btn_menu:'Speisekarte', menu_label:'Speisekarte', menu_title:'Speisekarte', cat_starters:'Vorspeisen', cat_fried:'Frittiertes', cat_specials:'Spezialitäten', cat_sashimi:'Sashimi', cat_grill:'Grill', cat_soup:'Suppen & Eintöpfe', cat_extras:'Extras', cat_lunch:'🌞 Mittagsmenü', res_label:'Reservierung & Standort', res_title:'Reservierung & Anfahrt', res_subtitle:'Reservierungsinfo', res_hours_label:'Öffnungszeiten', res_price_label:'Preisklasse', res_seating_label:'Sitzplätze', loc_subtitle:'Anfahrt', loc_addr_label:'Adresse', loc_tel_label:'Telefon', loc_rating_label:'Bewertung' },
+  en: { nav_insta:'Instagram', nav_menu:'Menu', nav_reservation:'Reservation', nav_location:'Location', insta_label:'Instagram', insta_title:'Latest Updates', btn_reserve:'Reserve a Table', btn_menu:'View Menu', menu_label:'Menu', menu_title:'Menu', cat_starters:'Starters', cat_fried:'Fried', cat_specials:"Chef's Specials", cat_sashimi:'Sashimi', cat_grill:'Grill', cat_soup:'Soups & Hotpot', cat_extras:'Extras', cat_lunch:'🌞 Lunch', res_label:'Reservation & Location', res_title:'Reservation & Location', res_subtitle:'Reservation Info', res_hours_label:'Hours', res_price_label:'Price range', res_seating_label:'Seating', loc_subtitle:'Location', loc_addr_label:'Address', loc_tel_label:'Phone', loc_rating_label:'Rating' }
 };
 
 // ── LANGUAGE ──
