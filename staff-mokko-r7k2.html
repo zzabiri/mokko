@@ -199,15 +199,13 @@
     .empty-slot { font-size: 0.76rem; color: var(--muted); font-style: italic; }
 
     /* ── 일별 뷰 좌우 분할 레이아웃 ── */
-    .day-layout { display: flex; gap: 16px; align-items: stretch; }
-    .day-schedule-col { width: 30%; flex-shrink: 0; display: flex; flex-direction: column; }
-    .day-schedule-col .day-schedule { flex: 1; overflow-y: auto; }
-    .day-fp-col { flex: 1; min-width: 0; }
+    .day-layout { display: grid; grid-template-columns: 30% 1fr; gap: 16px; }
+    .day-schedule-col { display: flex; flex-direction: column; min-height: 0; }
+    .day-schedule-col .day-schedule { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; }
     .day-fp-col .fp-wrap { margin-top: 0; }
     @media (max-width: 767px) {
-      .day-layout { flex-direction: column; }
-      .day-schedule-col { width: 100%; }
-      .day-schedule-col .day-schedule { flex: none; max-height: 400px; }
+      .day-layout { grid-template-columns: 1fr; }
+      .day-schedule-col .day-schedule { min-height: 0; max-height: 400px; }
     }
 
     /* ── 목록 뷰 ── */
