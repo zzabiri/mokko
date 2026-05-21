@@ -198,6 +198,18 @@
     .day-res-card .rc-ph   { font-size: 0.78rem; color: var(--muted); }
     .empty-slot { font-size: 0.76rem; color: var(--muted); font-style: italic; }
 
+    /* ── 일별 뷰 좌우 분할 레이아웃 ── */
+    .day-layout { display: flex; gap: 16px; align-items: flex-start; }
+    .day-schedule-col { width: 30%; flex-shrink: 0; }
+    .day-schedule-col .day-schedule { max-height: 600px; overflow-y: auto; }
+    .day-fp-col { flex: 1; min-width: 0; }
+    .day-fp-col .fp-wrap { margin-top: 0; }
+    @media (max-width: 767px) {
+      .day-layout { flex-direction: column; }
+      .day-schedule-col { width: 100%; }
+      .day-schedule-col .day-schedule { max-height: none; }
+    }
+
     /* ── 목록 뷰 ── */
     .list-filters { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
     .list-filter-btn {
@@ -295,63 +307,7 @@
     .fp-leg-dot { width: 9px; height: 9px; border-radius: 2px; flex-shrink: 0; }
     .fp-body { display: none; padding: 12px; background: #111827; }
     .fp-body.open { display: block; }
-
-    .fp-main-grid {
-      display: grid;
-      grid-template-columns: 1.9fr 1.5fr 1.3fr;
-      gap: 8px;
-      min-height: 440px;
-    }
-    .fp-col-left  { display: flex; flex-direction: column; gap: 8px; min-height: 440px; }
-    .fp-col-mid   { display: flex; flex-direction: column; gap: 8px; min-height: 440px; }
-    .fp-col-right { display: flex; flex-direction: column; gap: 8px; min-height: 440px; }
-
-    .fp-zone {
-      border: 1.5px dashed rgba(201,169,110,0.3);
-      border-radius: 6px; padding: 10px 8px 8px; position: relative;
-    }
-    .fp-zone-label {
-      position: absolute; top: -8px; left: 8px;
-      background: #111827; padding: 0 5px;
-      font-size: 0.58rem; color: var(--accent);
-      letter-spacing: 0.1em; font-weight: 600; text-transform: uppercase;
-    }
-    .fp-zone-tables { display: flex; flex-direction: column; gap: 6px; margin-top: 2px; }
-
-    .fp-table {
-      border-radius: 5px; padding: 7px 6px;
-      text-align: center; cursor: pointer;
-      transition: opacity 0.15s, transform 0.12s, box-shadow 0.12s;
-      position: relative; min-width: 56px;
-    }
-    .fp-table:hover { opacity: 0.85; transform: scale(1.04); box-shadow: 0 4px 14px rgba(0,0,0,0.5); }
-    .fp-table.cap4     { background: #c9593a; color: #fff; }
-    .fp-table.cap2     { background: #2a7a6a; color: #fff; }
-    .fp-table.assigned { background: var(--accent); color: #0e0e0e; }
-    .fp-table.drag-over { box-shadow: 0 0 0 2px var(--accent) !important; transform: scale(1.06) !important; }
-    .fp-table[draggable="true"] { cursor: grab; }
-    .fp-table[draggable="true"]:active { cursor: grabbing; }
-    .fp-table-cap { font-size: 0.8rem; font-weight: 700; line-height: 1; }
-    .fp-table-id  { font-size: 0.52rem; letter-spacing: 0.08em; opacity: 0.7; margin-top: 2px; }
-    .fp-table-res { font-size: 0.58rem; margin-top: 3px; font-weight: 500; line-height: 1.35; min-height: 0; word-break: keep-all; }
-
-    .fp-room {
-      border-radius: 6px; background: rgba(255,255,255,0.04);
-      border: 1px solid var(--border);
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      padding: 10px 6px;
-    }
-    .fp-flex1   { flex: 1; min-height: 0; }
-    .fp-kitchen { flex: 2 1 160px; }           /* 주방: 충분히 크게 */
-    .fp-restroom { flex: 0 0 130px; }          /* 화장실: 고정 높이 */
-    .fp-counter  { flex: 0 0 62px; }           /* 카운터: 고정 높이 */
-    .fp-room-name { font-size: 0.74rem; color: var(--muted); letter-spacing: 0.1em; }
-    .fp-room-en   { font-size: 0.58rem; color: rgba(120,112,104,0.55); letter-spacing: 0.12em; margin-top: 2px; }
-    .fp-entrance  { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; padding: 6px; flex: 0 0 auto; }
-    .fp-bc-row    { display: flex; gap: 6px; flex: 1 1 160px; }
-    .fp-bc-row > .fp-zone { flex: 1; }
-    .fp-bc-sep    { width: 5px; background: #0a0f1c; border-radius: 2px; flex-shrink: 0; }
+    #fpSvg g[onclick]:hover rect { opacity: 0.75; transition: opacity 0.15s; }
 
     /* 배정 모달 */
     .assign-modal-bg { display: none; position: fixed; inset: 0; z-index: 300; background: rgba(0,0,0,0.78); backdrop-filter: blur(4px); align-items: center; justify-content: center; padding: 20px; }
@@ -477,7 +433,11 @@
       <button class="btn-today" onclick="dayOffset=0;renderDay()">오늘</button>
       <button class="btn-nav" onclick="dayOffset++;renderDay()">›</button>
     </div>
-    <div class="day-schedule" id="daySchedule"></div>
+    <div class="day-layout">
+      <div class="day-schedule-col">
+        <div class="day-schedule" id="daySchedule"></div>
+      </div>
+      <div class="day-fp-col">
 
     <!-- ── 좌석 배치도 ── -->
     <div class="fp-wrap" id="fpWrap">
@@ -493,89 +453,76 @@
         </div>
       </div>
       <div class="fp-body open" id="fpBody">
-        <div class="fp-main-grid">
+        <svg id="fpSvg" viewBox="0 0 560 510" xmlns="http://www.w3.org/2000/svg"
+             style="width:100%;height:auto;display:block;border-radius:6px">
+          <defs>
+            <pattern id="fpg" width="18" height="18" patternUnits="userSpaceOnUse">
+              <path d="M18 0L0 0 0 18" fill="none" stroke="#18183a" stroke-width="0.5"/>
+            </pattern>
+            <filter id="fpsh">
+              <feDropShadow dx="0" dy="2" stdDeviation="2.5" flood-color="#000" flood-opacity="0.5"/>
+            </filter>
+          </defs>
 
-          <!-- LEFT: X zone · D zone · 주방 -->
-          <div class="fp-col-left">
-            <div class="fp-zone">
-              <div class="fp-zone-label">H1.X zone</div>
-              <div class="fp-zone-tables">
-                <div class="fp-table cap4" id="fp-X-1" onclick="openAssignModal('X-1')">
-                  <div class="fp-table-cap">4인</div>
-                  <div class="fp-table-id">TABLE X-1</div>
-                  <div class="fp-table-res" id="fpr-X-1"></div>
-                </div>
-              </div>
-            </div>
-            <div class="fp-zone">
-              <div class="fp-zone-label">H1.D zone</div>
-              <div class="fp-zone-tables" style="flex-direction:row;gap:8px">
-                <div class="fp-table cap4" id="fp-D-1" onclick="openAssignModal('D-1')" style="flex:1">
-                  <div class="fp-table-cap">4인</div>
-                  <div class="fp-table-id">TABLE D-1</div>
-                  <div class="fp-table-res" id="fpr-D-1"></div>
-                </div>
-                <div class="fp-table cap4" id="fp-D-2" onclick="openAssignModal('D-2')" style="flex:1">
-                  <div class="fp-table-cap">4인</div>
-                  <div class="fp-table-id">TABLE D-2</div>
-                  <div class="fp-table-res" id="fpr-D-2"></div>
-                </div>
-              </div>
-            </div>
-            <div class="fp-room fp-kitchen">
-              <div class="fp-room-name">주 방</div>
-              <div class="fp-room-en">KITCHEN</div>
-            </div>
-          </div>
+          <!-- Floor background -->
+          <rect width="560" height="510" fill="url(#fpg)" rx="8"/>
+          <!-- Outer wall -->
+          <rect x="1" y="1" width="558" height="508" rx="8" fill="none" stroke="#30305a" stroke-width="2.5"/>
 
-          <!-- MIDDLE: 화장실 · 카운터 · 출입구 · B+C zones -->
-          <div class="fp-col-mid">
-            <div class="fp-room fp-restroom">
-              <div class="fp-room-name">화 장 실</div>
-              <div class="fp-room-en">RESTROOM</div>
-            </div>
-            <div class="fp-room fp-counter">
-              <div class="fp-room-name">카 운 터</div>
-              <div class="fp-room-en">COUNTER</div>
-            </div>
-            <div class="fp-entrance">
-              <div style="font-size:0.66rem;color:var(--muted);text-align:center;letter-spacing:0.04em">출입구 및 통로</div>
-              <div style="font-size:1.3rem;color:var(--muted)">↓</div>
-            </div>
-            <div class="fp-bc-row">
-              <div class="fp-zone fp-flex1"
-                   ondragover="fpZoneDragOver(event,'C')"
-                   ondrop="fpZoneDrop(event,'C')"
-                   ondragleave="fpZoneDragLeave(event)">
-                <div class="fp-zone-label">H1.C zone</div>
-                <div class="fp-zone-tables" id="fp-zone-tables-C"></div>
-              </div>
-              <div class="fp-bc-sep"></div>
-              <div class="fp-zone fp-flex1"
-                   ondragover="fpZoneDragOver(event,'B')"
-                   ondrop="fpZoneDrop(event,'B')"
-                   ondragleave="fpZoneDragLeave(event)">
-                <div class="fp-zone-label">H1.B zone</div>
-                <div class="fp-zone-tables" id="fp-zone-tables-B"></div>
-              </div>
-            </div>
-          </div>
+          <!-- 화장실 -->
+          <rect x="220" y="8" width="208" height="130" rx="5" fill="#0b0b1f" stroke="#2a2a4a" stroke-width="1.5"/>
+          <text x="324" y="68" text-anchor="middle" fill="#484870" font-size="14" font-weight="600" letter-spacing="3">화장실</text>
+          <text x="324" y="85" text-anchor="middle" fill="#383858" font-size="10" letter-spacing="2">RESTROOM</text>
 
-          <!-- RIGHT: A zone (full height) -->
-          <div class="fp-col-right">
-            <div class="fp-zone" style="flex:1"
-                 ondragover="fpZoneDragOver(event,'A')"
-                 ondrop="fpZoneDrop(event,'A')"
-                 ondragleave="fpZoneDragLeave(event)">
-              <div class="fp-zone-label">H1.A zone</div>
-              <div class="fp-zone-tables" id="fp-zone-tables-A"></div>
-            </div>
-          </div>
+          <!-- 카운터 -->
+          <rect x="220" y="146" width="208" height="66" rx="5" fill="#0d0d22" stroke="#2a2a4a" stroke-width="1.5"/>
+          <text x="324" y="178" text-anchor="middle" fill="#484870" font-size="13" font-weight="600" letter-spacing="3">카운터</text>
+          <text x="324" y="195" text-anchor="middle" fill="#383858" font-size="9.5" letter-spacing="2">COUNTER</text>
 
-        </div>
+          <!-- 출입구 및 통로 -->
+          <rect x="8" y="220" width="544" height="38" fill="#111128"/>
+          <line x1="8" y1="220" x2="552" y2="220" stroke="#2e2e52" stroke-width="1.2"/>
+          <line x1="8" y1="258" x2="552" y2="258" stroke="#2e2e52" stroke-width="1.2"/>
+          <line x1="280" y1="228" x2="280" y2="250" stroke="#c9a96e" stroke-width="1.2" stroke-opacity="0.5"/>
+          <polygon points="280,253 276,246 284,246" fill="#c9a96e" fill-opacity="0.5"/>
+          <text x="324" y="243" text-anchor="middle" fill="#666" font-size="9.5" letter-spacing="1">출입구 및 통로</text>
+
+          <!-- 주방 -->
+          <rect x="8" y="262" width="300" height="240" rx="5" fill="#0b0b1f" stroke="#2a2a4a" stroke-width="1.5"/>
+          <text x="158" y="386" text-anchor="middle" fill="#484870" font-size="15" font-weight="600" letter-spacing="4">주방</text>
+          <text x="158" y="404" text-anchor="middle" fill="#383858" font-size="10" letter-spacing="2">KITCHEN</text>
+
+          <!-- Divider wall between H1.C and H1.B -->
+          <rect x="430" y="272" width="8" height="228" rx="3" fill="#252545" stroke="#383860" stroke-width="1"/>
+
+          <!-- H1.X zone border -->
+          <rect x="8" y="8" width="204" height="130" rx="7" fill="none" stroke="#e07a4a" stroke-width="1.3" stroke-opacity="0.5"/>
+          <text x="40" y="22" fill="#c9a96e" font-size="9.5" font-weight="700" letter-spacing="1">H1.X zone</text>
+
+          <!-- H1.D zone border -->
+          <rect x="8" y="146" width="204" height="66" rx="7" fill="none" stroke="#e07a4a" stroke-width="1.3" stroke-opacity="0.5"/>
+          <text x="30" y="160" fill="#c9a96e" font-size="9.5" font-weight="700" letter-spacing="1">H1.D zone</text>
+
+          <!-- H1.A zone border -->
+          <rect x="436" y="8" width="116" height="204" rx="7" fill="none" stroke="#e07a4a" stroke-width="1.3" stroke-opacity="0.5"/>
+          <text x="462" y="22" fill="#c9a96e" font-size="9.5" font-weight="700" letter-spacing="1">H1.A zone</text>
+
+          <!-- H1.C zone border -->
+          <rect x="314" y="262" width="114" height="238" rx="7" fill="none" stroke="#2e8a78" stroke-width="1.3" stroke-opacity="0.55"/>
+          <text x="356" y="276" text-anchor="middle" fill="#c9a96e" font-size="9.5" font-weight="700" letter-spacing="1">H1.C zone</text>
+
+          <!-- H1.B zone border -->
+          <rect x="440" y="262" width="112" height="238" rx="7" fill="none" stroke="#2e8a78" stroke-width="1.3" stroke-opacity="0.55"/>
+          <text x="480" y="276" text-anchor="middle" fill="#c9a96e" font-size="9.5" font-weight="700" letter-spacing="1">H1.B zone</text>
+
+          <!-- Dynamic tables (populated by fpRenderAll) -->
+          <g id="fp-tables"></g>
+        </svg>
       </div>
-    </div>
-  </div>
+    </div><!-- /fp-wrap -->
+      </div><!-- /day-fp-col -->
+    </div><!-- /day-layout -->
+  </div><!-- /day-view -->
 
   <!-- 배정 모달 -->
   <div class="assign-modal-bg" id="assignModalBg" onclick="if(event.target===this)closeAssignModal()">
@@ -996,7 +943,7 @@ async function saveCapacity() {
 function escH(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
 // ────────────────────────────────────────────────────────────
-// ── 좌석 배치도 ──
+// ── 좌석 배치도 (SVG) ──
 // ────────────────────────────────────────────────────────────
 
 const FLOOR_TABLES = {
@@ -1007,24 +954,32 @@ const FLOOR_TABLES = {
   'B-1':{ cap:2 }, 'B-2':{ cap:4 }, 'B-3':{ cap:4 },
 };
 
-const FP_DRAGGABLE_ZONES = ['A','B','C'];
-const FP_DEFAULT_ORDERS  = { A:['A-1','A-2','A-3'], B:['B-1','B-2','B-3'], C:['C-1','C-2','C-3'] };
+// 정확한 SVG 좌표 (mokko_floor_plan_v4 기준)
+const FP_TABLE_DEFS = [
+  {id:'X-1', cap:4, x:69,  y:46,  w:82, h:54},
+  {id:'D-1', cap:4, x:20,  y:152, w:82, h:54},
+  {id:'D-2', cap:4, x:112, y:152, w:82, h:54},
+  {id:'A-1', cap:4, x:453, y:26,  w:82, h:54},
+  {id:'A-2', cap:2, x:453, y:96,  w:82, h:40},
+  {id:'A-3', cap:2, x:453, y:152, w:82, h:40},
+  {id:'C-1', cap:2, x:330, y:282, w:82, h:40},
+  {id:'C-2', cap:4, x:330, y:336, w:82, h:54},
+  {id:'C-3', cap:4, x:330, y:406, w:82, h:54},
+  {id:'B-1', cap:2, x:455, y:282, w:82, h:40},
+  {id:'B-2', cap:4, x:455, y:336, w:82, h:54},
+  {id:'B-3', cap:4, x:455, y:406, w:82, h:54},
+];
 
-function fpLoadOrders(){ try{ return JSON.parse(localStorage.getItem('fpZoneOrders'))||{}; }catch{ return {}; } }
-function fpSaveOrders(){ localStorage.setItem('fpZoneOrders', JSON.stringify(fpZoneOrders)); }
-let fpZoneOrders = Object.assign({}, FP_DEFAULT_ORDERS, fpLoadOrders());
-
-let fpTableAssignments = {};  // { tableId: { resId, time, name, people } }
+let fpTableAssignments = {};
 let fpCurrentDate      = null;
 let fpUnsubscribe      = null;
-let todayAssignments   = {};  // 오늘 날짜 배정 (통계용 별도 관리)
-let fpDragSrc          = null;
+let todayAssignments   = {};
 let fpAssignModalTable = null;
 
 // Firebase 리스너 — 날짜가 바뀔 때마다 재구독
 function fpListenDate(ds) {
-  if (fpCurrentDate === ds) return;  // 같은 날짜면 스킵
-  const oldDate = fpCurrentDate;     // 이전 날짜 저장 (버그 방지)
+  if (fpCurrentDate === ds) return;
+  const oldDate = fpCurrentDate;
   fpCurrentDate = ds;
   if (fpUnsubscribe && oldDate) { db.ref('tableAssignments/'+oldDate).off('value', fpUnsubscribe); fpUnsubscribe=null; }
   const ref = db.ref('tableAssignments/'+ds);
@@ -1042,86 +997,39 @@ function toggleFloorPlan() {
   icon.style.transform = open ? '' : 'rotate(180deg)';
 }
 
-// 전체 렌더 — 드래그 가능 존(A,B,C)은 재빌드, 고정 테이블(X,D)은 제자리 업데이트
+// SVG 테이블 전체 렌더
 function fpRenderAll() {
-  FP_DRAGGABLE_ZONES.forEach(zone => {
-    const container = document.getElementById('fp-zone-tables-'+zone);
-    if (!container) return;
-    container.innerHTML = '';
-    fpZoneOrders[zone].forEach(tid => container.appendChild(fpBuildTable(tid, true)));
-  });
-  ['X-1','D-1','D-2'].forEach(fpUpdateStaticTable);
-}
-
-// 테이블 DOM 요소 생성 (드래그 가능 여부 포함)
-function fpBuildTable(tid, draggable) {
-  const info = FLOOR_TABLES[tid];
-  const asgn = fpTableAssignments[tid];
-  const cls  = asgn ? 'assigned' : (info.cap === 4 ? 'cap4' : 'cap2');
-  const div  = document.createElement('div');
-  div.className = 'fp-table ' + cls;
-  div.id = 'fp-' + tid;
-  div.innerHTML =
-    `<div class="fp-table-cap">${info.cap}인</div>` +
-    `<div class="fp-table-id">TABLE ${tid}</div>` +
-    `<div class="fp-table-res" id="fpr-${tid}">${asgn ? asgn.time+' · '+escH(asgn.name)+' · '+asgn.people+'명' : ''}</div>`;
-  div.addEventListener('click', () => openAssignModal(tid));
-  if (draggable) {
-    div.setAttribute('draggable', 'true');
-    div.addEventListener('dragstart', e => {
-      fpDragSrc = tid;
-      e.dataTransfer.effectAllowed = 'move';
-      setTimeout(() => div.style.opacity = '0.5', 0);
-    });
-    div.addEventListener('dragend', () => {
-      div.style.opacity = '';
-      document.querySelectorAll('.fp-table').forEach(t => t.classList.remove('drag-over'));
-    });
-    div.addEventListener('dragenter', e => { e.preventDefault(); div.classList.add('drag-over'); });
-    div.addEventListener('dragleave', () => div.classList.remove('drag-over'));
-  }
-  return div;
-}
-
-// 고정 테이블(X-1, D-1, D-2) 상태 업데이트
-function fpUpdateStaticTable(tid) {
-  const el = document.getElementById('fp-'+tid);
-  if (!el) return;
-  const asgn = fpTableAssignments[tid];
-  const info = FLOOR_TABLES[tid];
-  el.className = 'fp-table ' + (asgn ? 'assigned' : (info.cap===4 ? 'cap4' : 'cap2'));
-  const resEl = document.getElementById('fpr-'+tid);
-  if (resEl) resEl.textContent = asgn ? asgn.time+' · '+asgn.name+' · '+asgn.people+'명' : '';
-}
-
-// 드래그 존 이벤트
-function fpZoneDragOver(e, zone) {
-  e.preventDefault();
-  e.dataTransfer.dropEffect = 'move';
-}
-function fpZoneDragLeave(e) {
-  if (!e.currentTarget.contains(e.relatedTarget))
-    e.currentTarget.querySelectorAll('.fp-table').forEach(t => t.classList.remove('drag-over'));
-}
-function fpZoneDrop(e, zone) {
-  e.preventDefault();
-  if (!fpDragSrc) return;
-  const srcZone = fpDragSrc.split('-')[0]; // 'A', 'B', 'C'
-  if (srcZone !== zone) return;            // 존 간 이동 불가
-
-  const targetEl = e.target.closest('.fp-table');
-  if (!targetEl || targetEl.id === 'fp-'+fpDragSrc) return;
-  const targetId = targetEl.id.replace('fp-','');
-
-  const order = fpZoneOrders[zone];
-  const fi = order.indexOf(fpDragSrc), ti = order.indexOf(targetId);
-  if (fi===-1 || ti===-1) return;
-  order.splice(fi, 1);
-  order.splice(ti, 0, fpDragSrc);
-  fpZoneOrders[zone] = order;
-  fpSaveOrders();
-  fpDragSrc = null;
-  fpRenderAll();
+  const g = document.getElementById('fp-tables');
+  if (!g) return;
+  g.innerHTML = FP_TABLE_DEFS.map(t => {
+    const asgn = fpTableAssignments[t.id];
+    const fill = asgn ? '#c9a96e' : (t.cap === 4 ? '#e07a4a' : '#2e8a78');
+    const cx   = t.x + t.w / 2;
+    const cy   = t.y + t.h / 2;
+    let inner;
+    if (asgn) {
+      const nameShort = asgn.name && asgn.name.length > 5 ? asgn.name.slice(0,5)+'…' : (asgn.name||'');
+      if (t.cap === 4) {
+        inner =
+          `<text x="${cx}" y="${cy-10}" text-anchor="middle" fill="#0e0e0e" font-size="11" font-weight="700">${escH(asgn.time)}</text>` +
+          `<text x="${cx}" y="${cy+4}"  text-anchor="middle" fill="#1a0800" font-size="9.5" font-weight="600">${escH(nameShort)}</text>` +
+          `<text x="${cx}" y="${cy+17}" text-anchor="middle" fill="#2a1400" font-size="8">${asgn.people}명 · TABLE ${t.id}</text>`;
+      } else {
+        inner =
+          `<text x="${cx}" y="${cy-6}" text-anchor="middle" fill="#0e0e0e" font-size="10" font-weight="700">${escH(asgn.time)}</text>` +
+          `<text x="${cx}" y="${cy+7}" text-anchor="middle" fill="#1a0800" font-size="8.5">${escH(nameShort)} · ${asgn.people}명</text>`;
+      }
+    } else {
+      const labelY = cy - 3;
+      const idY    = t.cap === 4 ? cy + 13 : cy + 11;
+      inner =
+        `<text x="${cx}" y="${labelY}" text-anchor="middle" fill="#fff" font-size="14" font-weight="700">${t.cap}인</text>` +
+        `<text x="${cx}" y="${idY}"    text-anchor="middle" fill="rgba(255,255,255,0.5)" font-size="9">TABLE ${t.id}</text>`;
+    }
+    return `<g onclick="openAssignModal('${t.id}')" style="cursor:pointer">` +
+           `<rect x="${t.x}" y="${t.y}" width="${t.w}" height="${t.h}" rx="6" fill="${fill}" filter="url(#fpsh)"/>` +
+           inner + `</g>`;
+  }).join('');
 }
 
 // ── 배정 모달 ──
@@ -1137,10 +1045,8 @@ function openAssignModal(tid) {
       ? fpCurrentDate.replace(/(\d{4})-(\d{2})-(\d{2})/, '$1년 $2월 $3일')
       : '';
 
-  // 해제 버튼
   document.getElementById('btnAssignUnset').classList.toggle('show', !!asgn);
 
-  // 해당 날짜 예약 목록
   const dayRes = getResList()
     .filter(r => r.date === fpCurrentDate)
     .sort((a,b) => a.time.localeCompare(b.time));
