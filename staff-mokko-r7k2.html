@@ -108,8 +108,7 @@
     .page-wrap { max-width: 1200px; margin: 0 auto; padding: 24px 20px 60px; }
 
     /* ── 통계 카드 ── */
-    .stats-row { display: grid; grid-template-columns: repeat(2,1fr); gap: 12px; margin-bottom: 24px; }
-    @media(min-width:600px) { .stats-row { grid-template-columns: repeat(4,1fr); } }
+    .stats-row { display: grid; grid-template-columns: repeat(2,1fr); gap: 12px; margin-bottom: 24px; max-width: 560px; }
     .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
     .stat-label { font-size: 0.68rem; letter-spacing: 0.1em; color: var(--muted); text-transform: uppercase; margin-bottom: 6px; }
     .stat-value { font-size: 1.6rem; font-weight: 500; color: var(--text); line-height: 1; }
@@ -180,9 +179,6 @@
     .res-chip .chip-name { font-weight: 500; color: var(--text); }
     .res-chip .chip-ppl  { color: var(--accent); font-weight: 500; }
     .res-chip .chip-ph   { color: var(--muted); font-size: 0.65rem; }
-    .cap-bar { height: 3px; background: var(--border); border-radius: 2px; margin-top: 4px; overflow: hidden; }
-    .cap-fill { height: 100%; border-radius: 2px; background: var(--green); transition: width 0.3s ease; }
-    .cap-fill.warn { background: #e0a85a; } .cap-fill.full { background: var(--red); }
     .slot-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; font-size: 0.65rem; color: var(--muted); }
     .slot-pax.ok   { color: var(--green); } .slot-pax.warn { color: #e0a85a; } .slot-pax.full { color: var(--red); }
 
@@ -302,13 +298,13 @@
 
     .fp-main-grid {
       display: grid;
-      grid-template-columns: 2fr 1.8fr 0.9fr;
+      grid-template-columns: 1.9fr 1.5fr 1.3fr;
       gap: 8px;
-      min-height: 360px;
+      min-height: 440px;
     }
-    .fp-col-left  { display: flex; flex-direction: column; gap: 8px; }
-    .fp-col-mid   { display: flex; flex-direction: column; gap: 8px; }
-    .fp-col-right { display: flex; flex-direction: column; gap: 8px; }
+    .fp-col-left  { display: flex; flex-direction: column; gap: 8px; min-height: 440px; }
+    .fp-col-mid   { display: flex; flex-direction: column; gap: 8px; min-height: 440px; }
+    .fp-col-right { display: flex; flex-direction: column; gap: 8px; min-height: 440px; }
 
     .fp-zone {
       border: 1.5px dashed rgba(201,169,110,0.3);
@@ -346,13 +342,16 @@
       align-items: center; justify-content: center;
       padding: 10px 6px;
     }
-    .fp-flex1 { flex: 1; }
+    .fp-flex1   { flex: 1; min-height: 0; }
+    .fp-kitchen { flex: 2 1 160px; }           /* 주방: 충분히 크게 */
+    .fp-restroom { flex: 0 0 130px; }          /* 화장실: 고정 높이 */
+    .fp-counter  { flex: 0 0 62px; }           /* 카운터: 고정 높이 */
     .fp-room-name { font-size: 0.74rem; color: var(--muted); letter-spacing: 0.1em; }
     .fp-room-en   { font-size: 0.58rem; color: rgba(120,112,104,0.55); letter-spacing: 0.12em; margin-top: 2px; }
-    .fp-entrance  { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; padding: 6px; }
-    .fp-bc-row    { display: flex; gap: 6px; flex: 1; }
+    .fp-entrance  { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; padding: 6px; flex: 0 0 auto; }
+    .fp-bc-row    { display: flex; gap: 6px; flex: 1 1 160px; }
     .fp-bc-row > .fp-zone { flex: 1; }
-    .fp-bc-sep    { width: 4px; background: #0a0f1c; border-radius: 2px; flex-shrink: 0; }
+    .fp-bc-sep    { width: 5px; background: #0a0f1c; border-radius: 2px; flex-shrink: 0; }
 
     /* 배정 모달 */
     .assign-modal-bg { display: none; position: fixed; inset: 0; z-index: 300; background: rgba(0,0,0,0.78); backdrop-filter: blur(4px); align-items: center; justify-content: center; padding: 20px; }
@@ -523,7 +522,7 @@
                 </div>
               </div>
             </div>
-            <div class="fp-room fp-flex1">
+            <div class="fp-room fp-kitchen">
               <div class="fp-room-name">주 방</div>
               <div class="fp-room-en">KITCHEN</div>
             </div>
@@ -531,11 +530,11 @@
 
           <!-- MIDDLE: 화장실 · 카운터 · 출입구 · B+C zones -->
           <div class="fp-col-mid">
-            <div class="fp-room" style="min-height:70px">
+            <div class="fp-room fp-restroom">
               <div class="fp-room-name">화 장 실</div>
               <div class="fp-room-en">RESTROOM</div>
             </div>
-            <div class="fp-room" style="min-height:54px">
+            <div class="fp-room fp-counter">
               <div class="fp-room-name">카 운 터</div>
               <div class="fp-room-en">COUNTER</div>
             </div>
@@ -562,9 +561,9 @@
             </div>
           </div>
 
-          <!-- RIGHT: A zone -->
+          <!-- RIGHT: A zone (full height) -->
           <div class="fp-col-right">
-            <div class="fp-zone fp-flex1"
+            <div class="fp-zone" style="flex:1"
                  ondragover="fpZoneDragOver(event,'A')"
                  ondrop="fpZoneDrop(event,'A')"
                  ondragleave="fpZoneDragLeave(event)">
@@ -730,10 +729,16 @@ function initApp() {
     }
   });
 
+  // 오늘 테이블 배정 리스닝 (통계용)
+  const todayDs = toDateStr(new Date());
+  db.ref('tableAssignments/'+todayDs).on('value', snap => {
+    todayAssignments = snap.val() || {};
+    renderStats();
+  });
+
   // 날짜 기본값
-  const today = toDateStr(new Date());
-  document.getElementById('af-date').value = today;
-  updateAfTime(today);
+  document.getElementById('af-date').value = todayDs;
+  updateAfTime(todayDs);
 }
 
 // ── 헬퍼 ──
@@ -763,32 +768,30 @@ function bookedCount(date, time) {
 function renderStats() {
   const res = getResList();
   const today = todayStr();
-  const todayRes    = res.filter(r=>r.date===today);
-  const upcomingRes = res.filter(r=>r.date>=today);
+  const todayRes = res.filter(r=>r.date===today);
   const todayPax = todayRes.reduce((s,r)=>s+r.people,0);
-  const upPax    = upcomingRes.reduce((s,r)=>s+r.people,0);
-  const remToday = Math.max(0, capacity.available - todayPax);
+
+  // 전체 테이블 기준 잔여 계산
+  const allTids      = Object.keys(FLOOR_TABLES);
+  const totalTables  = allTids.length;                                          // 11
+  const totalSeats   = allTids.reduce((s,t)=>s+FLOOR_TABLES[t].cap, 0);        // 40
+  const assignedTids = Object.keys(todayAssignments);
+  const assignedCnt  = assignedTids.length;
+  const assignedSeats= assignedTids.reduce((s,t)=>s+(FLOOR_TABLES[t]?.cap||0),0);
+  const remTables    = totalTables - assignedCnt;
+  const remSeats     = totalSeats  - assignedSeats;
+  const tblColor     = remTables<=2?'var(--red)':remTables<=5?'#e0a85a':'var(--green)';
 
   document.getElementById('statsRow').innerHTML = `
-    <div class="stat-card">
-      <div class="stat-label">총 예약 건수</div>
-      <div class="stat-value">${res.length}<span class="stat-unit">건</span></div>
-      <div class="stat-sub">전체 누적</div>
-    </div>
     <div class="stat-card">
       <div class="stat-label">오늘 예약</div>
       <div class="stat-value">${todayRes.length}<span class="stat-unit">건</span></div>
       <div class="stat-sub">${todayPax}명 예약됨</div>
     </div>
     <div class="stat-card">
-      <div class="stat-label">예정 예약</div>
-      <div class="stat-value">${upcomingRes.length}<span class="stat-unit">건</span></div>
-      <div class="stat-sub">오늘 이후 ${upPax}명</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">오늘 잔여 가용</div>
-      <div class="stat-value" style="color:${remToday<=0?'var(--red)':remToday<=8?'#e0a85a':'var(--green)'}">${remToday}<span class="stat-unit">명</span></div>
-      <div class="stat-sub">가용 ${capacity.available}명 기준</div>
+      <div class="stat-label">잔여 테이블</div>
+      <div class="stat-value" style="color:${tblColor}">${remTables}<span class="stat-unit"> / ${totalTables}</span></div>
+      <div class="stat-sub">${remSeats}석 남음 (전체 ${totalSeats}석 기준)</div>
     </div>`;
 }
 
@@ -799,8 +802,6 @@ function renderWeek() {
   const today = todayStr();
   document.getElementById('weekTitle').textContent =
     `${ws.getFullYear()}년 ${ws.getMonth()+1}월 ${ws.getDate()}일 — ${we.getMonth()+1}월 ${we.getDate()}일`;
-  const cap = capacity.available;
-
   let html = '<thead><tr><th style="width:52px"></th>';
   for (let i=0;i<6;i++) {
     const d=addDays(ws,i), ds=toDateStr(d), dow=d.getDay();
@@ -821,12 +822,10 @@ function renderWeek() {
       if(!slots||!slots.includes(time)){html+=`<td class="closed-cell"></td>`;continue;}
       const recs=getResList().filter(r=>r.date===ds&&r.time===time);
       const total=recs.reduce((s,r)=>s+r.people,0);
-      const pct=Math.min(100,Math.round(total/cap*100));
-      const fillCls=pct>=100?'full':pct>=70?'warn':'';
-      const paxCls=pct>=100?'full':pct>=70?'warn':'ok';
+      const paxCls=total>=36?'full':total>=20?'warn':'ok';
       let chips='';
       recs.forEach(r=>{chips+=`<div class="res-chip" onclick="openModal('${r.id}')"><span class="chip-name">${escH(r.name)}</span><span class="chip-ppl"> · ${r.people}명</span><div class="chip-ph">${escH(r.phone)}</div></div>`;});
-      html+=`<td><div class="slot-header"><span class="slot-pax ${paxCls}">${total}/${cap}명</span></div>${chips}<div class="cap-bar"><div class="cap-fill ${fillCls}" style="width:${pct}%"></div></div></td>`;
+      html+=`<td><div class="slot-header"><span class="slot-pax ${paxCls}">${total>0?total+'명':''}</span></div>${chips}</td>`;
     }
     html+='</tr>';
   });
@@ -839,7 +838,6 @@ function renderDay() {
   const base=new Date(); base.setDate(base.getDate()+dayOffset);
   const ds=toDateStr(base), dow=base.getDay(), slots=TIME_SLOTS[dow]||[];
   fpListenDate(ds); // 배치도 날짜 동기화
-  const cap=capacity.available;
   document.getElementById('dayTitle').textContent=
     `${base.getFullYear()}년 ${base.getMonth()+1}월 ${base.getDate()}일 (${DAY_NAMES[dow]})`;
   const container=document.getElementById('daySchedule');
@@ -848,19 +846,15 @@ function renderDay() {
   slots.forEach(time=>{
     const recs=getResList().filter(r=>r.date===ds&&r.time===time);
     const total=recs.reduce((s,r)=>s+r.people,0);
-    const remain=cap-total;
-    const pct=Math.min(100,Math.round(total/cap*100));
-    const fillCls=pct>=100?'full':pct>=70?'warn':'';
-    const sc=remain<=0?'var(--red)':remain<=8?'#e0a85a':'var(--green)';
+    const sc=total>=36?'var(--red)':total>=20?'#e0a85a':'var(--green)';
     let cards=recs.length===0?`<div class="empty-slot">예약 없음</div>`:recs.map(r=>`
       <div class="day-res-card" onclick="openModal('${r.id}')">
         <div class="rc-top"><span class="rc-name">${escH(r.name)}</span><span class="rc-ppl">${r.people}명</span></div>
         <div class="rc-ph">${escH(r.phone)}</div>
       </div>`).join('');
     html+=`<div class="day-slot"><div class="day-time">${time}</div><div class="day-res-area">
-      <div class="day-cap-info" style="color:${sc}">${total}명 예약 · <span style="color:var(--muted)">잔여 ${remain}명</span>
-        <div class="cap-bar" style="margin-top:4px"><div class="cap-fill ${fillCls}" style="width:${pct}%"></div></div>
-      </div><div class="day-res-list">${cards}</div></div></div>`;
+      ${total>0?`<div class="day-cap-info" style="color:${sc}">${total}명 예약</div>`:''}
+      <div class="day-res-list">${cards}</div></div></div>`;
   });
   container.innerHTML=html;
 }
@@ -1023,14 +1017,16 @@ let fpZoneOrders = Object.assign({}, FP_DEFAULT_ORDERS, fpLoadOrders());
 let fpTableAssignments = {};  // { tableId: { resId, time, name, people } }
 let fpCurrentDate      = null;
 let fpUnsubscribe      = null;
+let todayAssignments   = {};  // 오늘 날짜 배정 (통계용 별도 관리)
 let fpDragSrc          = null;
 let fpAssignModalTable = null;
 
 // Firebase 리스너 — 날짜가 바뀔 때마다 재구독
 function fpListenDate(ds) {
   if (fpCurrentDate === ds) return;  // 같은 날짜면 스킵
+  const oldDate = fpCurrentDate;     // 이전 날짜 저장 (버그 방지)
   fpCurrentDate = ds;
-  if (fpUnsubscribe) { db.ref('tableAssignments/'+fpCurrentDate).off('value', fpUnsubscribe); fpUnsubscribe=null; }
+  if (fpUnsubscribe && oldDate) { db.ref('tableAssignments/'+oldDate).off('value', fpUnsubscribe); fpUnsubscribe=null; }
   const ref = db.ref('tableAssignments/'+ds);
   fpUnsubscribe = ref.on('value', snap => {
     fpTableAssignments = snap.val() || {};
