@@ -199,15 +199,15 @@
     .empty-slot { font-size: 0.76rem; color: var(--muted); font-style: italic; }
 
     /* ── 일별 뷰 좌우 분할 레이아웃 ── */
-    .day-layout { display: flex; gap: 16px; align-items: flex-start; }
-    .day-schedule-col { width: 30%; flex-shrink: 0; }
-    .day-schedule-col .day-schedule { max-height: 600px; overflow-y: auto; }
+    .day-layout { display: flex; gap: 16px; align-items: stretch; }
+    .day-schedule-col { width: 30%; flex-shrink: 0; display: flex; flex-direction: column; }
+    .day-schedule-col .day-schedule { flex: 1; overflow-y: auto; }
     .day-fp-col { flex: 1; min-width: 0; }
     .day-fp-col .fp-wrap { margin-top: 0; }
     @media (max-width: 767px) {
       .day-layout { flex-direction: column; }
       .day-schedule-col { width: 100%; }
-      .day-schedule-col .day-schedule { max-height: none; }
+      .day-schedule-col .day-schedule { flex: none; max-height: 400px; }
     }
 
     /* ── 목록 뷰 ── */
@@ -445,7 +445,7 @@
         <span class="fp-header-title">🏠 H1 홀 좌석 배치도</span>
         <div style="display:flex;align-items:center;gap:10px">
           <button id="fpSwapBtn" onclick="event.stopPropagation();toggleSwapMode()"
-                  style="height:26px;padding:0 10px;font-size:0.68rem;letter-spacing:0.04em;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;transition:var(--ease)">↔ 순서</button>
+                  style="height:26px;padding:0 10px;font-size:0.68rem;letter-spacing:0.04em;border-radius:4px;border:1px solid var(--muted);background:transparent;color:var(--text);cursor:pointer;transition:var(--ease)">↔ 순서</button>
           <div class="fp-legend">
             <div class="fp-leg"><div class="fp-leg-dot" style="background:#c9593a"></div>4인석</div>
             <div class="fp-leg"><div class="fp-leg-dot" style="background:#2a7a6a"></div>2인석</div>
