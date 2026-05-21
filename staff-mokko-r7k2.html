@@ -443,7 +443,9 @@
     <div class="fp-wrap" id="fpWrap">
       <div class="fp-header" onclick="toggleFloorPlan()">
         <span class="fp-header-title">🏠 H1 홀 좌석 배치도</span>
-        <div style="display:flex;align-items:center;gap:16px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <button id="fpSwapBtn" onclick="event.stopPropagation();toggleSwapMode()"
+                  style="height:26px;padding:0 10px;font-size:0.68rem;letter-spacing:0.04em;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;transition:var(--ease)">↔ 순서</button>
           <div class="fp-legend">
             <div class="fp-leg"><div class="fp-leg-dot" style="background:#c9593a"></div>4인석</div>
             <div class="fp-leg"><div class="fp-leg-dot" style="background:#2a7a6a"></div>2인석</div>
@@ -653,6 +655,7 @@ let weekOffset = 0, dayOffset = 0, listFilter = 'upcoming', currentTab = 'day';
 
 // ── 앱 초기화 (PIN 통과 후) ──
 function initApp() {
+  fpInitDefs(); // 저장된 테이블 좌표 로드
   // 예약 실시간 리스닝
   db.ref('reservations').on('value', snap => {
     reservations = snap.val() || {};
@@ -954,7 +957,7 @@ const FLOOR_TABLES = {
   'B-1':{ cap:2 }, 'B-2':{ cap:4 }, 'B-3':{ cap:4 },
 };
 
-// 정확한 SVG 좌표 (mokko_floor_plan_v4 기준)
+// 기본 SVG 좌표 (mokko_floor_plan_v4 기준)
 const FP_TABLE_DEFS = [
   {id:'X-1', cap:4, x:69,  y:46,  w:82, h:54},
   {id:'D-1', cap:4, x:20,  y:152, w:82, h:54},
@@ -970,11 +973,31 @@ const FP_TABLE_DEFS = [
   {id:'B-3', cap:4, x:455, y:406, w:82, h:54},
 ];
 
+const FP_SWAP_ZONES = new Set(['A','B','C','D']); // X존 제외, 순서 변경 가능
+
 let fpTableAssignments = {};
 let fpCurrentDate      = null;
 let fpUnsubscribe      = null;
 let todayAssignments   = {};
 let fpAssignModalTable = null;
+let fpSwapMode         = false;  // 순서 변경 모드
+let fpSwapSrc          = null;   // 첫 번째로 선택한 테이블
+let fpRuntimeDefs      = null;   // 실제 사용 좌표 (교환 반영, localStorage 저장)
+
+// ── 런타임 좌표 초기화 / 저장 ──
+function fpInitDefs() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('fpRuntimeDefs'));
+    if (saved && saved.length === FP_TABLE_DEFS.length) {
+      const savedIds = saved.map(t => t.id).sort().join();
+      const defIds   = FP_TABLE_DEFS.map(t => t.id).sort().join();
+      if (savedIds === defIds) { fpRuntimeDefs = saved; return; }
+    }
+  } catch {}
+  fpRuntimeDefs = FP_TABLE_DEFS.map(t => ({...t}));
+}
+function fpSaveDefs() { localStorage.setItem('fpRuntimeDefs', JSON.stringify(fpRuntimeDefs)); }
+function fpGetZone(tid) { return tid.split('-')[0]; }
 
 // Firebase 리스너 — 날짜가 바뀔 때마다 재구독
 function fpListenDate(ds) {
@@ -997,15 +1020,60 @@ function toggleFloorPlan() {
   icon.style.transform = open ? '' : 'rotate(180deg)';
 }
 
+// 순서 변경 모드 토글
+function toggleSwapMode() {
+  fpSwapMode = !fpSwapMode;
+  fpSwapSrc  = null;
+  const btn = document.getElementById('fpSwapBtn');
+  if (btn) {
+    btn.textContent       = fpSwapMode ? '✓ 완료' : '↔ 순서';
+    btn.style.color       = fpSwapMode ? 'var(--accent)' : '';
+    btn.style.borderColor = fpSwapMode ? 'var(--accent)' : '';
+  }
+  fpRenderAll();
+}
+
+// 테이블 클릭 — 일반 모드: 배정 모달 / 순서 변경 모드: 탭 2번으로 교환
+function fpHandleTableClick(tid) {
+  if (!fpSwapMode) { openAssignModal(tid); return; }
+
+  const zone = fpGetZone(tid);
+  if (!FP_SWAP_ZONES.has(zone)) return; // X존 변경 불가
+
+  if (!fpSwapSrc) {                          // 첫 번째 선택
+    fpSwapSrc = tid; fpRenderAll(); return;
+  }
+  if (fpSwapSrc === tid) {                   // 같은 테이블 재탭 → 취소
+    fpSwapSrc = null; fpRenderAll(); return;
+  }
+  if (fpGetZone(fpSwapSrc) !== zone) {       // 다른 존 → 새로 선택
+    fpSwapSrc = tid; fpRenderAll(); return;
+  }
+
+  // 같은 존 → 위치(x,y,w,h) 교환
+  const i1 = fpRuntimeDefs.findIndex(d => d.id === fpSwapSrc);
+  const i2 = fpRuntimeDefs.findIndex(d => d.id === tid);
+  const {x:x1,y:y1,w:w1,h:h1} = fpRuntimeDefs[i1];
+  const {x:x2,y:y2,w:w2,h:h2} = fpRuntimeDefs[i2];
+  fpRuntimeDefs[i1] = {...fpRuntimeDefs[i1], x:x2, y:y2, w:w2, h:h2};
+  fpRuntimeDefs[i2] = {...fpRuntimeDefs[i2], x:x1, y:y1, w:w1, h:h1};
+  fpSwapSrc = null;
+  fpSaveDefs();
+  fpRenderAll();
+}
+
 // SVG 테이블 전체 렌더
 function fpRenderAll() {
   const g = document.getElementById('fp-tables');
-  if (!g) return;
-  g.innerHTML = FP_TABLE_DEFS.map(t => {
-    const asgn = fpTableAssignments[t.id];
-    const fill = asgn ? '#c9a96e' : (t.cap === 4 ? '#e07a4a' : '#2e8a78');
-    const cx   = t.x + t.w / 2;
-    const cy   = t.y + t.h / 2;
+  if (!g || !fpRuntimeDefs) return;
+  g.innerHTML = fpRuntimeDefs.map(t => {
+    const asgn   = fpTableAssignments[t.id];
+    const isSel  = fpSwapMode && fpSwapSrc === t.id;
+    const fill   = asgn ? '#c9a96e' : (t.cap === 4 ? '#e07a4a' : '#2e8a78');
+    const cx     = t.x + t.w / 2;
+    const cy     = t.y + t.h / 2;
+    const selStr = isSel ? ` stroke="#c9a96e" stroke-width="3" stroke-dasharray="5,3"` : '';
+    const cursor = (fpSwapMode && FP_SWAP_ZONES.has(fpGetZone(t.id))) ? 'crosshair' : 'pointer';
     let inner;
     if (asgn) {
       const nameShort = asgn.name && asgn.name.length > 5 ? asgn.name.slice(0,5)+'…' : (asgn.name||'');
@@ -1026,8 +1094,8 @@ function fpRenderAll() {
         `<text x="${cx}" y="${labelY}" text-anchor="middle" fill="#fff" font-size="14" font-weight="700">${t.cap}인</text>` +
         `<text x="${cx}" y="${idY}"    text-anchor="middle" fill="rgba(255,255,255,0.5)" font-size="9">TABLE ${t.id}</text>`;
     }
-    return `<g onclick="openAssignModal('${t.id}')" style="cursor:pointer">` +
-           `<rect x="${t.x}" y="${t.y}" width="${t.w}" height="${t.h}" rx="6" fill="${fill}" filter="url(#fpsh)"/>` +
+    return `<g onclick="fpHandleTableClick('${t.id}')" style="cursor:${cursor}">` +
+           `<rect x="${t.x}" y="${t.y}" width="${t.w}" height="${t.h}" rx="6" fill="${fill}" filter="url(#fpsh)"${selStr}/>` +
            inner + `</g>`;
   }).join('');
 }
