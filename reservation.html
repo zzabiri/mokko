@@ -8,6 +8,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500&family=Noto+Serif+JP:wght@300;400&display=swap" rel="stylesheet" />
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
 
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -46,394 +49,260 @@
       border-bottom: 1px solid var(--border);
     }
     .nav-inner {
-      max-width: 680px;
-      margin: 0 auto;
-      padding: 0 20px;
-      height: 54px;
-      display: flex;
-      align-items: center;
-      gap: 16px;
+      max-width: 680px; margin: 0 auto;
+      padding: 0 20px; height: 54px;
+      display: flex; align-items: center; gap: 16px;
     }
     .nav-back {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      color: var(--muted);
-      font-size: 0.8rem;
-      letter-spacing: 0.05em;
+      display: flex; align-items: center; gap: 6px;
+      color: var(--muted); font-size: 0.8rem; letter-spacing: 0.05em;
       transition: color var(--ease);
     }
     .nav-back:hover { color: var(--text); }
     .nav-logo {
-      font-family: var(--font-serif);
-      font-size: 0.92rem;
-      letter-spacing: 0.08em;
-      color: var(--accent);
+      font-family: var(--font-serif); font-size: 0.92rem;
+      letter-spacing: 0.08em; color: var(--accent);
     }
-    .nav-lang {
-      margin-left: auto;
-      display: flex;
-      gap: 4px;
-    }
+    .nav-lang { margin-left: auto; display: flex; gap: 4px; }
     .lang-btn {
-      background: none;
-      border: 1px solid var(--border);
-      border-radius: 3px;
-      color: var(--muted);
-      font-family: var(--font-sans);
-      font-size: 0.68rem;
-      letter-spacing: 0.04em;
-      padding: 3px 7px;
-      cursor: pointer;
-      transition: color var(--ease), border-color var(--ease);
+      background: none; border: 1px solid var(--border); border-radius: 3px;
+      color: var(--muted); font-family: var(--font-sans);
+      font-size: 0.68rem; letter-spacing: 0.04em; padding: 3px 7px;
+      cursor: pointer; transition: color var(--ease), border-color var(--ease);
     }
     .lang-btn:hover { color: var(--text); border-color: var(--muted); }
     .lang-btn.active { color: var(--accent); border-color: var(--accent); }
 
     /* ── LAYOUT ── */
-    .page-wrap {
-      max-width: 680px;
-      margin: 0 auto;
-      padding: 80px 20px 60px;
-    }
+    .page-wrap { max-width: 680px; margin: 0 auto; padding: 80px 20px 60px; }
 
     /* ── HEADER ── */
-    .page-header {
-      text-align: center;
-      margin-bottom: 40px;
-    }
+    .page-header { text-align: center; margin-bottom: 28px; }
     .page-eyebrow {
-      font-size: 0.68rem;
-      letter-spacing: 0.3em;
-      text-transform: uppercase;
-      color: var(--accent);
-      margin-bottom: 10px;
+      font-size: 0.68rem; letter-spacing: 0.3em; text-transform: uppercase;
+      color: var(--accent); margin-bottom: 10px;
     }
     .page-title {
-      font-family: var(--font-serif);
-      font-size: 1.8rem;
-      font-weight: 300;
-      letter-spacing: 0.04em;
-      margin-bottom: 10px;
+      font-family: var(--font-serif); font-size: 1.8rem;
+      font-weight: 300; letter-spacing: 0.04em; margin-bottom: 10px;
     }
-    .page-subtitle {
-      font-size: 0.82rem;
-      color: var(--muted);
-      line-height: 1.7;
+    .page-subtitle { font-size: 0.82rem; color: var(--muted); line-height: 1.7; }
+
+    /* ── 섹션 토글 ── */
+    .section-toggle {
+      display: flex; border: 1px solid var(--border);
+      border-radius: 6px; overflow: hidden; margin-bottom: 28px;
     }
+    .toggle-btn {
+      flex: 1; height: 48px; background: none; border: none;
+      color: var(--muted); font-family: var(--font-sans);
+      font-size: 0.84rem; font-weight: 400; letter-spacing: 0.04em;
+      cursor: pointer; transition: background var(--ease), color var(--ease);
+    }
+    .toggle-btn + .toggle-btn { border-left: 1px solid var(--border); }
+    .toggle-btn.active { background: var(--accent); color: #0e0e0e; font-weight: 500; }
 
     /* ── FORM ── */
     .form-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 28px 24px;
-      margin-bottom: 16px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; padding: 28px 24px; margin-bottom: 16px;
     }
     .form-section-title {
-      font-family: var(--font-serif);
-      font-size: 0.82rem;
-      letter-spacing: 0.1em;
-      color: var(--accent);
-      margin-bottom: 20px;
-      padding-bottom: 12px;
-      border-bottom: 1px solid var(--border);
+      font-family: var(--font-serif); font-size: 0.82rem;
+      letter-spacing: 0.1em; color: var(--accent);
+      margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--border);
     }
-
-    .field-group {
-      margin-bottom: 20px;
-    }
+    .field-group { margin-bottom: 20px; }
     .field-group:last-child { margin-bottom: 0; }
-
     label {
-      display: block;
-      font-size: 0.74rem;
-      letter-spacing: 0.06em;
-      color: var(--muted);
-      margin-bottom: 8px;
-      text-transform: uppercase;
+      display: block; font-size: 0.74rem; letter-spacing: 0.06em;
+      color: var(--muted); margin-bottom: 8px; text-transform: uppercase;
     }
     .required-mark { color: var(--accent); margin-left: 2px; }
-
     input, select {
-      width: 100%;
-      height: var(--tap);
-      padding: 0 14px;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      color: var(--text);
-      font-family: var(--font-sans);
-      font-size: 0.92rem;
-      font-weight: 300;
+      width: 100%; height: var(--tap); padding: 0 14px;
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 4px; color: var(--text); font-family: var(--font-sans);
+      font-size: 0.92rem; font-weight: 300;
       transition: border-color var(--ease);
-      -webkit-appearance: none;
-      appearance: none;
+      -webkit-appearance: none; appearance: none;
     }
-    input:focus, select:focus {
-      outline: none;
-      border-color: var(--accent);
-    }
+    input:focus, select:focus { outline: none; border-color: var(--accent); }
     input::placeholder { color: var(--muted); }
     select { cursor: pointer; }
     select option { background: #1a1a1a; }
-
-    /* 셀렉트 화살표 */
-    .select-wrap {
-      position: relative;
-    }
+    .select-wrap { position: relative; }
     .select-wrap::after {
-      content: '▾';
-      position: absolute;
-      right: 14px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: var(--muted);
-      pointer-events: none;
-      font-size: 0.8rem;
+      content: '▾'; position: absolute; right: 14px; top: 50%;
+      transform: translateY(-50%); color: var(--muted);
+      pointer-events: none; font-size: 0.8rem;
     }
+    .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
-    /* 날짜+시간 2열 */
-    .row-2 {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
-
-    /* ── 확인 버튼 ── */
-    .btn-check {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 100%;
-      height: 54px;
-      background: var(--accent);
-      color: #0e0e0e;
-      font-family: var(--font-sans);
-      font-size: 0.86rem;
-      font-weight: 500;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
+    /* ── 버튼 ── */
+    .btn-primary {
+      display: flex; align-items: center; justify-content: center;
+      width: 100%; height: 54px; background: var(--accent);
+      color: #0e0e0e; font-family: var(--font-sans); font-size: 0.86rem;
+      font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase;
+      border: none; border-radius: 4px; cursor: pointer;
       transition: background var(--ease), opacity var(--ease);
       margin-top: 8px;
     }
-    .btn-check:hover { background: #dbb97e; }
-    .btn-check:disabled { opacity: 0.45; cursor: not-allowed; }
+    .btn-primary:hover { background: #dbb97e; }
+    .btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
+    .btn-confirm {
+      display: flex; align-items: center; justify-content: center;
+      width: 100%; height: 54px; background: var(--green); color: #fff;
+      font-family: var(--font-sans); font-size: 0.86rem; font-weight: 500;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      border: none; border-radius: 4px; cursor: pointer;
+      transition: opacity var(--ease);
+    }
+    .btn-confirm:hover { opacity: 0.85; }
+    .btn-reset {
+      width: 100%; height: 44px; background: transparent;
+      border: 1px solid var(--border); border-radius: 4px;
+      color: var(--muted); font-family: var(--font-sans);
+      font-size: 0.78rem; letter-spacing: 0.06em;
+      cursor: pointer; transition: var(--ease); margin-top: 12px;
+    }
+    .btn-reset:hover { border-color: var(--muted); color: var(--text); }
 
     /* ── 결과 패널 ── */
-    #result-panel {
-      display: none;
-      animation: slideIn 0.3s ease;
-    }
+    #result-panel { display: none; animation: slideIn 0.3s ease; }
     @keyframes slideIn {
       from { opacity: 0; transform: translateY(10px); }
       to   { opacity: 1; transform: none; }
     }
-
-    .result-card {
-      border-radius: 8px;
-      padding: 28px 24px;
-      border: 1px solid;
-    }
+    .result-card { border-radius: 8px; padding: 28px 24px; border: 1px solid; }
     .result-card.available {
-      background: rgba(76,175,130,0.07);
-      border-color: rgba(76,175,130,0.35);
+      background: rgba(76,175,130,0.07); border-color: rgba(76,175,130,0.35);
     }
     .result-card.unavailable {
-      background: rgba(224,90,90,0.07);
-      border-color: rgba(224,90,90,0.3);
+      background: rgba(224,90,90,0.07); border-color: rgba(224,90,90,0.3);
     }
-
-    .result-icon {
-      font-size: 2rem;
-      margin-bottom: 12px;
-    }
+    .result-icon { font-size: 2rem; margin-bottom: 12px; }
     .result-title {
-      font-family: var(--font-serif);
-      font-size: 1.2rem;
-      font-weight: 300;
-      margin-bottom: 8px;
+      font-family: var(--font-serif); font-size: 1.2rem;
+      font-weight: 300; margin-bottom: 8px;
     }
     .result-title.ok { color: var(--green); }
     .result-title.ng { color: var(--red); }
     .result-desc {
-      font-size: 0.84rem;
-      color: var(--muted);
-      line-height: 1.75;
-      margin-bottom: 24px;
+      font-size: 0.84rem; color: var(--muted);
+      line-height: 1.75; margin-bottom: 24px;
     }
-
-    /* 예약 요약 */
     .summary-box {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 16px;
-      margin-bottom: 20px;
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 6px; padding: 16px; margin-bottom: 20px;
     }
     .summary-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 7px 0;
-      border-bottom: 1px solid rgba(42,42,42,0.6);
-      font-size: 0.85rem;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 7px 0; border-bottom: 1px solid rgba(42,42,42,0.6); font-size: 0.85rem;
     }
     .summary-row:last-child { border-bottom: none; }
     .summary-row .s-label { color: var(--muted); font-size: 0.74rem; letter-spacing: 0.04em; }
     .summary-row .s-value { font-weight: 400; }
-
-    /* 예약 확정 버튼 */
-    .btn-confirm {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 100%;
-      height: 54px;
-      background: var(--green);
-      color: #fff;
-      font-family: var(--font-sans);
-      font-size: 0.86rem;
-      font-weight: 500;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      transition: opacity var(--ease);
-    }
-    .btn-confirm:hover { opacity: 0.85; }
-
-    /* 문의 버튼들 */
-    .contact-btns {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
+    .contact-btns { display: flex; flex-direction: column; gap: 12px; }
     .btn-kakao {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      padding: 0 18px;
-      height: 60px;
-      background: #FEE500;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      text-decoration: none;
-      transition: opacity var(--ease);
+      display: flex; align-items: center; gap: 14px; padding: 0 18px;
+      height: 60px; background: #FEE500; border: none; border-radius: 4px;
+      cursor: pointer; text-decoration: none; transition: opacity var(--ease);
     }
     .btn-kakao:hover { opacity: 0.88; }
     .kakao-ico {
-      width: 36px; height: 36px;
-      background: rgba(0,0,0,0.12);
-      border-radius: 50%;
+      width: 36px; height: 36px; background: rgba(0,0,0,0.12); border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
-      font-size: 1.1rem;
-      flex-shrink: 0;
+      font-size: 1.1rem; flex-shrink: 0;
     }
     .kakao-label { text-align: left; }
     .kakao-label strong { display: block; font-size: 0.88rem; font-weight: 700; color: #3A1D1D; }
     .kakao-label span { font-size: 0.74rem; color: #5a3a3a; }
-
     .btn-tel {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      padding: 0 18px;
-      height: 60px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      cursor: pointer;
-      text-decoration: none;
+      display: flex; align-items: center; gap: 14px; padding: 0 18px;
+      height: 60px; background: var(--surface); border: 1px solid var(--border);
+      border-radius: 4px; cursor: pointer; text-decoration: none;
       transition: border-color var(--ease);
     }
     .btn-tel:hover { border-color: var(--accent); }
     .tel-ico {
-      width: 36px; height: 36px;
-      background: var(--border);
-      border-radius: 50%;
+      width: 36px; height: 36px; background: var(--border); border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
-      font-size: 1rem;
-      flex-shrink: 0;
+      font-size: 1rem; flex-shrink: 0;
     }
     .tel-label strong { display: block; font-size: 0.88rem; font-weight: 500; color: var(--text); }
     .tel-label span { font-size: 0.74rem; color: var(--muted); }
 
-    .btn-reset {
-      width: 100%;
-      height: 44px;
-      background: transparent;
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      color: var(--muted);
-      font-family: var(--font-sans);
-      font-size: 0.78rem;
-      letter-spacing: 0.06em;
-      cursor: pointer;
-      transition: var(--ease);
-      margin-top: 12px;
-    }
-    .btn-reset:hover { border-color: var(--muted); color: var(--text); }
-
     /* ── 예약 완료 ── */
     #done-panel {
-      display: none;
-      text-align: center;
-      padding: 40px 20px;
+      display: none; text-align: center; padding: 40px 20px;
       animation: slideIn 0.3s ease;
     }
     .done-icon { font-size: 3rem; margin-bottom: 16px; }
     .done-title {
-      font-family: var(--font-serif);
-      font-size: 1.4rem;
-      font-weight: 300;
-      color: var(--green);
-      margin-bottom: 10px;
+      font-family: var(--font-serif); font-size: 1.4rem;
+      font-weight: 300; color: var(--green); margin-bottom: 10px;
     }
     .done-sub {
-      font-size: 0.84rem;
-      color: var(--muted);
-      line-height: 1.8;
-      margin-bottom: 28px;
+      font-size: 0.84rem; color: var(--muted);
+      line-height: 1.8; margin-bottom: 28px;
     }
 
     /* ── NOTE ── */
     .note-box {
-      margin-top: 20px;
-      padding: 16px 18px;
-      background: var(--surface);
-      border-left: 2px solid rgba(201,169,110,0.5);
-      font-size: 0.76rem;
-      color: var(--muted);
-      line-height: 1.8;
-      border-radius: 0 4px 4px 0;
+      margin-top: 20px; padding: 16px 18px; background: var(--surface);
+      border-left: 2px solid rgba(201,169,110,0.5); font-size: 0.76rem;
+      color: var(--muted); line-height: 1.8; border-radius: 0 4px 4px 0;
     }
     .note-box strong { color: var(--text); font-weight: 500; }
 
+    /* ── 조회 결과 카드 ── */
+    .lookup-res-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; padding: 18px 20px; margin-bottom: 12px;
+    }
+    .lookup-res-top {
+      display: flex; justify-content: space-between;
+      align-items: flex-start; margin-bottom: 10px;
+    }
+    .lookup-res-date {
+      font-family: var(--font-serif); font-size: 0.96rem;
+      letter-spacing: 0.02em; color: var(--text);
+    }
+    .lookup-res-time { color: var(--accent); font-weight: 500; font-size: 0.9rem; }
+    .lookup-res-info { font-size: 0.8rem; color: var(--muted); margin-bottom: 14px; }
+    .btn-cancel-res {
+      width: 100%; height: 40px; background: transparent;
+      border: 1px solid rgba(224,90,90,0.4); border-radius: 4px;
+      color: var(--red); font-family: var(--font-sans);
+      font-size: 0.78rem; letter-spacing: 0.06em; cursor: pointer;
+      transition: background var(--ease);
+    }
+    .btn-cancel-res:hover { background: rgba(224,90,90,0.1); }
+    .lookup-empty {
+      text-align: center; padding: 40px 20px;
+      color: var(--muted); font-size: 0.84rem; line-height: 1.8;
+    }
+
+    /* ── 로딩 스피너 ── */
+    .spinner {
+      display: inline-block; width: 16px; height: 16px;
+      border: 2px solid rgba(0,0,0,0.2); border-top-color: #0e0e0e;
+      border-radius: 50%; animation: spin 0.7s linear infinite;
+      margin-right: 8px; vertical-align: middle;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
     /* ── FOOTER ── */
     .page-footer {
-      text-align: center;
-      margin-top: 40px;
-      padding-top: 28px;
-      border-top: 1px solid var(--border);
-      font-size: 0.72rem;
-      color: var(--muted);
+      text-align: center; margin-top: 40px; padding-top: 28px;
+      border-top: 1px solid var(--border); font-size: 0.72rem; color: var(--muted);
     }
 
     /* ── 에러 ── */
-    .field-error {
-      font-size: 0.72rem;
-      color: var(--red);
-      margin-top: 6px;
-    }
-    input.error, select.error {
-      border-color: var(--red);
-    }
+    .field-error { font-size: 0.72rem; color: var(--red); margin-top: 6px; }
+    input.error, select.error { border-color: var(--red); }
 
     @media (min-width: 500px) {
       .page-wrap { padding: 90px 32px 60px; }
@@ -469,101 +338,126 @@
     </p>
   </div>
 
-  <!-- 예약 폼 -->
-  <div id="form-section">
-    <div class="form-card">
-      <p class="form-section-title" data-i18n="form_title"></p>
+  <!-- 섹션 토글 -->
+  <div class="section-toggle">
+    <button class="toggle-btn active" id="tabBook"   onclick="showSection('booking', this)" data-i18n="tab_book"></button>
+    <button class="toggle-btn"        id="tabLookup" onclick="showSection('lookup', this)"  data-i18n="tab_lookup"></button>
+  </div>
 
-      <div class="row-2">
-        <div class="field-group">
-          <label for="fDate"><span data-i18n="label_date"></span> <span class="required-mark">*</span></label>
-          <input type="date" id="fDate" />
-          <div class="field-error" id="err-date"></div>
-        </div>
-        <div class="field-group">
-          <label for="fTime"><span data-i18n="label_time"></span> <span class="required-mark">*</span></label>
-          <div class="select-wrap">
-            <select id="fTime">
-              <option value="" data-i18n="time_placeholder"></option>
-            </select>
+  <!-- ── 예약하기 섹션 ── -->
+  <div id="booking-section">
+
+    <div id="form-section">
+      <div class="form-card">
+        <p class="form-section-title" data-i18n="form_title"></p>
+
+        <div class="row-2">
+          <div class="field-group">
+            <label><span data-i18n="label_date"></span> <span class="required-mark">*</span></label>
+            <input type="date" id="fDate" />
+            <div class="field-error" id="err-date"></div>
           </div>
-          <div class="field-error" id="err-time"></div>
+          <div class="field-group">
+            <label><span data-i18n="label_time"></span> <span class="required-mark">*</span></label>
+            <div class="select-wrap">
+              <select id="fTime"><option value="" data-i18n="time_placeholder"></option></select>
+            </div>
+            <div class="field-error" id="err-time"></div>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label><span data-i18n="label_people"></span> <span class="required-mark">*</span></label>
+          <div class="select-wrap"><select id="fPeople"></select></div>
+          <div class="field-error" id="err-people"></div>
         </div>
       </div>
 
-      <div class="field-group">
-        <label for="fPeople"><span data-i18n="label_people"></span> <span class="required-mark">*</span></label>
-        <div class="select-wrap">
-          <select id="fPeople">
-            <!-- JS로 동적 생성 -->
-          </select>
+      <div class="form-card">
+        <p class="form-section-title" data-i18n="contact_title"></p>
+        <div class="field-group">
+          <label><span data-i18n="label_name"></span> <span class="required-mark">*</span></label>
+          <input type="text" id="fName" />
+          <div class="field-error" id="err-name"></div>
         </div>
-        <div class="field-error" id="err-people"></div>
+        <div class="field-group">
+          <label><span data-i18n="label_phone"></span> <span class="required-mark">*</span></label>
+          <input type="tel" id="fPhone" />
+          <div class="field-error" id="err-phone"></div>
+        </div>
+      </div>
+
+      <button class="btn-primary" id="btnCheck" onclick="checkAvailability()">
+        <span data-i18n="btn_check"></span>
+      </button>
+
+      <div class="note-box">
+        <strong data-i18n="note_title"></strong><br />
+        <span data-i18n="note_text"></span>
       </div>
     </div>
+
+    <div id="result-panel"></div>
+    <div id="done-panel">
+      <div class="done-icon">✅</div>
+      <div class="done-title" data-i18n="done_title"></div>
+      <div class="done-sub" id="done-msg"></div>
+      <button class="btn-reset" onclick="resetAll()" data-i18n="btn_reset"></button>
+    </div>
+
+  </div><!-- /booking-section -->
+
+  <!-- ── 내 예약 확인 섹션 ── -->
+  <div id="lookup-section" style="display:none">
 
     <div class="form-card">
-      <p class="form-section-title" data-i18n="contact_title"></p>
-
+      <p class="form-section-title" data-i18n="lookup_title"></p>
       <div class="field-group">
-        <label for="fName"><span data-i18n="label_name"></span> <span class="required-mark">*</span></label>
-        <input type="text" id="fName" />
-        <div class="field-error" id="err-name"></div>
+        <label><span data-i18n="lookup_phone_label"></span> <span class="required-mark">*</span></label>
+        <input type="tel" id="lPhone" />
+        <div class="field-error" id="err-lphone"></div>
       </div>
-
-      <div class="field-group">
-        <label for="fPhone"><span data-i18n="label_phone"></span> <span class="required-mark">*</span></label>
-        <input type="tel" id="fPhone" />
-        <div class="field-error" id="err-phone"></div>
-      </div>
+      <button class="btn-primary" id="btnLookup" onclick="lookupReservations()">
+        <span data-i18n="lookup_btn"></span>
+      </button>
     </div>
 
-    <button class="btn-check" id="btnCheck" onclick="checkAvailability()">
-      <span data-i18n="btn_check"></span>
-    </button>
+    <div id="lookup-result"></div>
 
-    <div class="note-box">
-      <strong data-i18n="note_title"></strong><br />
-      <span data-i18n="note_text"></span>
-    </div>
-  </div>
+  </div><!-- /lookup-section -->
 
-  <!-- 결과 패널 -->
-  <div id="result-panel"></div>
-
-  <!-- 완료 패널 -->
-  <div id="done-panel">
-    <div class="done-icon">✅</div>
-    <div class="done-title" data-i18n="done_title"></div>
-    <div class="done-sub" id="done-msg"></div>
-    <button class="btn-reset" onclick="resetAll()" data-i18n="btn_reset"></button>
-  </div>
-
-  <!-- 푸터 -->
+  <!-- FOOTER -->
   <div class="page-footer">
     Mokko Izakaya · Marktplatz 44, 65824 Schwalbach am Taunus<br />
     <a href="tel:+4961965240786" style="color:var(--accent)">06196 5240786</a>
   </div>
 
-</div>
+</div><!-- /page-wrap -->
 
 <script>
-// ── 상수 ──
-const MAX_CAPACITY = 32;
-const KAKAO_URL = 'https://open.kakao.com/o/XXXXXXXX';
-const TEL = '06196 5240786';
-const TEL_HREF = 'tel:+4961965240786';
-
-// 요일별 시간 슬롯 (0=일, 1=월, ..., 6=토)
-const TIME_SLOTS = {
-  1: ['18:00','18:30','19:00','19:30','20:00','20:30','21:00','21:30'],  // 월
-  2: ['18:00','18:30','19:00','19:30','20:00','20:30','21:00','21:30'],  // 화
-  3: ['18:00','18:30','19:00','19:30','20:00','20:30','21:00','21:30'],  // 수
-  4: ['18:00','18:30','19:00','19:30','20:00','20:30','21:00','21:30'],  // 목
-  5: ['18:00','18:30','19:00','19:30','20:00','20:30','21:00','21:30'],  // 금
-  6: ['17:00','17:30','18:00','18:30','19:00','19:30','20:00','20:30','21:00','21:30'],  // 토
+// ── Firebase 설정 ──
+const firebaseConfig = {
+  apiKey: "AIzaSyDKRtm23KJVtj8qXSRDJfCP1Lvpk4vBH3U",
+  databaseURL: "https://mokko-reservation-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "mokko-reservation",
 };
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
 
+// ── 상수 ──
+const KAKAO_URL = 'https://open.kakao.com/o/XXXXXXXX';
+const TEL       = '06196 5240786';
+const TEL_HREF  = 'tel:+4961965240786';
+const DEFAULT_CAPACITY = 32;
+
+const TIME_SLOTS = {
+  1: ['18:00','18:30','19:00','19:30','20:00','20:30','21:00','21:30'],
+  2: ['18:00','18:30','19:00','19:30','20:00','20:30','21:00','21:30'],
+  3: ['18:00','18:30','19:00','19:30','20:00','20:30','21:00','21:30'],
+  4: ['18:00','18:30','19:00','19:30','20:00','20:30','21:00','21:30'],
+  5: ['18:00','18:30','19:00','19:30','20:00','20:30','21:00','21:30'],
+  6: ['17:00','17:30','18:00','18:30','19:00','19:30','20:00','20:30','21:00','21:30'],
+};
 const DAY_NAMES = {
   ko: ['일','월','화','수','목','금','토'],
   de: ['So','Mo','Di','Mi','Do','Fr','Sa'],
@@ -573,450 +467,373 @@ const DAY_NAMES = {
 // ── 번역 ──
 const T = {
   ko: {
-    nav_back:             '← 홈',
-    eyebrow:              'DINNER RESERVATION',
-    page_title_h1:        '저녁 예약',
-    subtitle:             '월–금 18:00 – 22:00 · 토 17:00 – 22:00',
-    subtitle2:            '점심은 예약 없이 방문하시면 됩니다',
-    form_title:           '예약 정보',
-    label_date:           '날짜',
-    label_time:           '시간',
-    time_placeholder:     '날짜 선택 후',
-    time_closed:          '영업 없음 (일요일)',
-    time_done:            '오늘은 마감되었습니다',
-    label_people:         '인원',
-    people_placeholder:   '선택',
-    people_suffix_one:    '명',
-    people_suffix_many:   '명',
-    contact_title:        '예약자 정보',
-    label_name:           '이름',
-    name_placeholder:     '홍길동',
-    label_phone:          '연락처',
-    phone_placeholder:    '010-0000-0000',
-    btn_check:            '예약 가능 여부 확인',
-    note_title:           '안내',
-    note_text:            '예약은 방문 당일 18:00 이후 저녁 시간만 가능합니다. 대규모 단체 또는 특별 요청은 카카오톡 또는 전화로 문의해 주세요. 예약 후 연락 없이 20분 이상 지체 시 예약이 취소될 수 있습니다.',
-    err_date:             '날짜를 선택해 주세요',
-    err_sunday:           '일요일은 영업하지 않습니다',
-    err_time:             '시간을 선택해 주세요',
-    err_people:           '인원을 선택해 주세요',
-    err_name:             '이름을 입력해 주세요',
-    err_phone:            '연락처를 입력해 주세요',
-    err_phone_invalid:    '올바른 연락처를 입력해 주세요',
-    avail_title:          '예약 가능합니다',
-    avail_desc_pre:       '아래 정보를 확인하시고 예약을 확정해 주세요.<br />현재 해당 시간대 남은 자리: ',
-    avail_desc_suf:       '명',
-    unavail_title:        '예약이 어렵습니다',
-    unavail_full:         '죄송합니다. {date} {time}는 이미 만석입니다.',
-    unavail_partial:      '죄송합니다. 해당 시간대 남은 자리({remaining}명)보다 인원이 많습니다.',
-    unavail_contact:      '카카오톡 또는 전화로 문의하시면 대기 등록이나 다른 시간을 안내해 드립니다.',
-    s_date:               '날짜',
-    s_time:               '시간',
-    s_people:             '인원',
-    s_name:               '예약자',
-    s_phone:              '연락처',
-    btn_confirm:          '예약 확정하기',
-    btn_back:             '← 다시 입력하기',
-    btn_other:            '← 다른 날짜·시간 확인하기',
-    kakao_title:          '카카오톡 문의',
-    kakao_sub:            '오픈채팅으로 바로 연결',
-    tel_sub:              '전화 문의',
-    btn_reset:            '처음으로 돌아가기',
-    done_title:           '예약이 완료되었습니다',
-    done_msg:             '{name} 님,<br />{date} <strong style="color:var(--accent)">{time}</strong>, <strong>{people}명</strong> 예약이 완료되었습니다.<br /><br />방문 30분 전 연락처(<strong>{phone}</strong>)로 연락이 갈 수 있습니다.<br /><br /><span style="font-size:0.78rem">예약 취소는 카카오톡 또는 전화로 부탁드립니다.</span>',
-    dup_alert:            '이미 해당 시간에 같은 연락처로 예약이 등록되어 있습니다.',
+    nav_back:'← 홈', eyebrow:'DINNER RESERVATION', page_title_h1:'저녁 예약',
+    subtitle:'월–금 18:00 – 22:00 · 토 17:00 – 22:00',
+    subtitle2:'점심은 예약 없이 방문하시면 됩니다',
+    tab_book:'예약하기', tab_lookup:'내 예약 확인',
+    form_title:'예약 정보', label_date:'날짜', label_time:'시간',
+    time_placeholder:'날짜 선택 후', time_closed:'영업 없음 (일요일)', time_done:'오늘은 마감',
+    label_people:'인원', people_placeholder:'선택',
+    people_suffix_one:'명', people_suffix_many:'명',
+    contact_title:'예약자 정보', label_name:'이름', name_placeholder:'홍길동',
+    label_phone:'연락처', phone_placeholder:'010-0000-0000',
+    btn_check:'예약 가능 여부 확인',
+    note_title:'안내',
+    note_text:'예약은 저녁 시간만 가능합니다. 대규모 단체 또는 특별 요청은 카카오톡 또는 전화로 문의해 주세요. 예약 후 연락 없이 20분 이상 지체 시 예약이 취소될 수 있습니다.',
+    err_date:'날짜를 선택해 주세요', err_sunday:'일요일은 영업하지 않습니다',
+    err_time:'시간을 선택해 주세요', err_people:'인원을 선택해 주세요',
+    err_name:'이름을 입력해 주세요', err_phone:'연락처를 입력해 주세요',
+    err_phone_invalid:'올바른 연락처를 입력해 주세요',
+    avail_title:'예약 가능합니다',
+    avail_desc_pre:'아래 정보를 확인하시고 예약을 확정해 주세요.',
+    unavail_title:'예약이 어렵습니다',
+    unavail_full:'{date} {time}는 이미 만석입니다.',
+    unavail_partial:'해당 시간대 남은 자리({remaining}명)보다 인원이 많습니다.',
+    unavail_contact:'카카오톡 또는 전화로 문의하시면 다른 시간을 안내해 드립니다.',
+    s_date:'날짜', s_time:'시간', s_people:'인원', s_name:'예약자', s_phone:'연락처',
+    btn_confirm:'예약 확정하기', btn_back:'← 다시 입력하기', btn_other:'← 다른 날짜·시간 확인하기',
+    kakao_title:'카카오톡 문의', kakao_sub:'오픈채팅으로 바로 연결', tel_sub:'전화 문의',
+    btn_reset:'처음으로 돌아가기', done_title:'예약이 완료되었습니다',
+    done_msg:'{name} 님,<br />{date} <strong style="color:var(--accent)">{time}</strong>, <strong>{people}</strong> 예약이 완료되었습니다.<br /><br />방문 30분 전 연락처(<strong>{phone}</strong>)로 연락이 갈 수 있습니다.<br /><br /><span style="font-size:0.78rem">취소는 카카오톡 또는 전화로 부탁드립니다.</span>',
+    dup_alert:'이미 해당 시간에 같은 연락처로 예약이 등록되어 있습니다.',
+    lookup_title:'예약 조회', lookup_phone_label:'예약 시 입력한 연락처',
+    lookup_btn:'예약 확인하기',
+    err_lphone:'연락처를 입력해 주세요',
+    lookup_empty:'해당 번호로 등록된 예약이 없습니다.',
+    lookup_cancel_confirm:'이 예약을 취소하시겠습니까?',
+    lookup_cancel_btn:'예약 취소',
+    lookup_cancelled:'예약이 취소되었습니다.',
+    lookup_people_unit:'명',
   },
   de: {
-    nav_back:             '← Startseite',
-    eyebrow:              'DINNER RESERVATION',
-    page_title_h1:        'Abendreservierung',
-    subtitle:             'Mo–Fr 18:00 – 22:00 · Sa 17:00 – 22:00',
-    subtitle2:            'Mittagessen ohne Reservierung – einfach vorbeikommen',
-    form_title:           'Reservierungsdetails',
-    label_date:           'Datum',
-    label_time:           'Uhrzeit',
-    time_placeholder:     'Zuerst Datum wählen',
-    time_closed:          'Geschlossen (Sonntag)',
-    time_done:            'Heute bereits geschlossen',
-    label_people:         'Personen',
-    people_placeholder:   'Auswählen',
-    people_suffix_one:    ' Person',
-    people_suffix_many:   ' Personen',
-    contact_title:        'Kontaktdaten',
-    label_name:           'Name',
-    name_placeholder:     'Max Mustermann',
-    label_phone:          'Telefon',
-    phone_placeholder:    '+49 123 456789',
-    btn_check:            'Verfügbarkeit prüfen',
-    note_title:           'Hinweise',
-    note_text:            'Reservierungen sind nur für das Abendessen ab 18:00 Uhr möglich. Für Großgruppen oder besondere Anfragen wenden Sie sich bitte per KakaoTalk oder Telefon an uns. Bei mehr als 20 Minuten Verspätung ohne Nachricht kann Ihre Reservierung storniert werden.',
-    err_date:             'Bitte wählen Sie ein Datum',
-    err_sunday:           'Sonntags ist geschlossen',
-    err_time:             'Bitte wählen Sie eine Uhrzeit',
-    err_people:           'Bitte Personenzahl auswählen',
-    err_name:             'Bitte geben Sie Ihren Namen ein',
-    err_phone:            'Bitte geben Sie Ihre Telefonnummer ein',
-    err_phone_invalid:    'Bitte geben Sie eine gültige Telefonnummer ein',
-    avail_title:          'Verfügbar',
-    avail_desc_pre:       'Bitte überprüfen Sie Ihre Angaben und bestätigen Sie die Reservierung.<br />Noch freie Plätze: ',
-    avail_desc_suf:       '',
-    unavail_title:        'Nicht verfügbar',
-    unavail_full:         'Es tut uns leid. {date} {time} ist bereits ausgebucht.',
-    unavail_partial:      'Es tut uns leid. Es sind nicht genug Plätze frei ({remaining} verfügbar).',
-    unavail_contact:      'Bitte kontaktieren Sie uns per KakaoTalk oder Telefon für eine Warteliste oder alternative Zeiten.',
-    s_date:               'Datum',
-    s_time:               'Uhrzeit',
-    s_people:             'Personen',
-    s_name:               'Name',
-    s_phone:              'Telefon',
-    btn_confirm:          'Reservierung bestätigen',
-    btn_back:             '← Zurück zur Eingabe',
-    btn_other:            '← Anderen Termin suchen',
-    kakao_title:          'KakaoTalk Kontakt',
-    kakao_sub:            'Direkt zum Chatroom',
-    tel_sub:              'Telefonisch anfragen',
-    btn_reset:            'Zurück zum Anfang',
-    done_title:           'Reservierung bestätigt',
-    done_msg:             '{name},<br />Ihre Reservierung für {date} um <strong style="color:var(--accent)">{time}</strong> für <strong>{people} Personen</strong> ist bestätigt.<br /><br />Wir können Sie bis zu 30 Minuten vorher unter <strong>{phone}</strong> erreichen.<br /><br /><span style="font-size:0.78rem">Für Stornierungen wenden Sie sich bitte per KakaoTalk oder Telefon an uns.</span>',
-    dup_alert:            'Eine Reservierung mit dieser Telefonnummer für diese Zeit existiert bereits.',
+    nav_back:'← Startseite', eyebrow:'DINNER RESERVATION', page_title_h1:'Abendreservierung',
+    subtitle:'Mo–Fr 18:00 – 22:00 · Sa 17:00 – 22:00',
+    subtitle2:'Mittagessen ohne Reservierung – einfach vorbeikommen',
+    tab_book:'Reservieren', tab_lookup:'Meine Reservierung',
+    form_title:'Reservierungsdetails', label_date:'Datum', label_time:'Uhrzeit',
+    time_placeholder:'Zuerst Datum wählen', time_closed:'Geschlossen (Sonntag)', time_done:'Heute geschlossen',
+    label_people:'Personen', people_placeholder:'Auswählen',
+    people_suffix_one:' Person', people_suffix_many:' Personen',
+    contact_title:'Kontaktdaten', label_name:'Name', name_placeholder:'Max Mustermann',
+    label_phone:'Telefon', phone_placeholder:'+49 123 456789',
+    btn_check:'Verfügbarkeit prüfen',
+    note_title:'Hinweise',
+    note_text:'Reservierungen sind nur für das Abendessen möglich. Für Großgruppen oder besondere Anfragen per KakaoTalk oder Telefon. Bei mehr als 20 Minuten Verspätung kann Ihre Reservierung storniert werden.',
+    err_date:'Bitte wählen Sie ein Datum', err_sunday:'Sonntags ist geschlossen',
+    err_time:'Bitte wählen Sie eine Uhrzeit', err_people:'Bitte Personenzahl auswählen',
+    err_name:'Bitte geben Sie Ihren Namen ein', err_phone:'Bitte geben Sie Ihre Telefonnummer ein',
+    err_phone_invalid:'Bitte geben Sie eine gültige Telefonnummer ein',
+    avail_title:'Verfügbar',
+    avail_desc_pre:'Bitte überprüfen Sie Ihre Angaben und bestätigen Sie die Reservierung.',
+    unavail_title:'Nicht verfügbar',
+    unavail_full:'{date} {time} ist bereits ausgebucht.',
+    unavail_partial:'Es sind nicht genug Plätze frei ({remaining} verfügbar).',
+    unavail_contact:'Bitte kontaktieren Sie uns per KakaoTalk oder Telefon.',
+    s_date:'Datum', s_time:'Uhrzeit', s_people:'Personen', s_name:'Name', s_phone:'Telefon',
+    btn_confirm:'Reservierung bestätigen', btn_back:'← Zurück', btn_other:'← Anderen Termin',
+    kakao_title:'KakaoTalk', kakao_sub:'Direkt zum Chatroom', tel_sub:'Anrufen',
+    btn_reset:'Zurück zum Anfang', done_title:'Reservierung bestätigt',
+    done_msg:'{name},<br />Ihre Reservierung für {date} um <strong style="color:var(--accent)">{time}</strong> für <strong>{people}</strong> ist bestätigt.<br /><br />Wir können Sie bis zu 30 Min. vorher unter <strong>{phone}</strong> erreichen.<br /><br /><span style="font-size:0.78rem">Stornierung per KakaoTalk oder Telefon.</span>',
+    dup_alert:'Eine Reservierung mit dieser Telefonnummer für diese Zeit existiert bereits.',
+    lookup_title:'Reservierung nachschlagen', lookup_phone_label:'Telefonnummer bei der Reservierung',
+    lookup_btn:'Reservierung suchen',
+    err_lphone:'Bitte geben Sie Ihre Telefonnummer ein',
+    lookup_empty:'Keine Reservierung mit dieser Nummer gefunden.',
+    lookup_cancel_confirm:'Möchten Sie diese Reservierung stornieren?',
+    lookup_cancel_btn:'Stornieren',
+    lookup_cancelled:'Reservierung wurde storniert.',
+    lookup_people_unit:'',
   },
   en: {
-    nav_back:             '← Home',
-    eyebrow:              'DINNER RESERVATION',
-    page_title_h1:        'Dinner Reservation',
-    subtitle:             'Mon–Fri 18:00 – 22:00 · Sat 17:00 – 22:00',
-    subtitle2:            'Lunch is walk-in only — no reservation needed',
-    form_title:           'Reservation Details',
-    label_date:           'Date',
-    label_time:           'Time',
-    time_placeholder:     'Select date first',
-    time_closed:          'Closed (Sunday)',
-    time_done:            'No more slots today',
-    label_people:         'Guests',
-    people_placeholder:   'Select',
-    people_suffix_one:    ' guest',
-    people_suffix_many:   ' guests',
-    contact_title:        'Contact Details',
-    label_name:           'Name',
-    name_placeholder:     'John Doe',
-    label_phone:          'Phone',
-    phone_placeholder:    '+49 123 456789',
-    btn_check:            'Check Availability',
-    note_title:           'Notes',
-    note_text:            'Reservations are for dinner only (from 18:00). For large groups or special requests, please contact us via KakaoTalk or phone. Reservations may be cancelled if you are more than 20 minutes late without notice.',
-    err_date:             'Please select a date',
-    err_sunday:           'We are closed on Sundays',
-    err_time:             'Please select a time',
-    err_people:           'Please select number of guests',
-    err_name:             'Please enter your name',
-    err_phone:            'Please enter your phone number',
-    err_phone_invalid:    'Please enter a valid phone number',
-    avail_title:          'Available',
-    avail_desc_pre:       'Please confirm your reservation details below.<br />Remaining seats at this time: ',
-    avail_desc_suf:       '',
-    unavail_title:        'Not Available',
-    unavail_full:         'Sorry, {date} at {time} is fully booked.',
-    unavail_partial:      'Sorry, there are not enough seats available ({remaining} remaining).',
-    unavail_contact:      'Please contact us via KakaoTalk or phone for a waitlist or alternative times.',
-    s_date:               'Date',
-    s_time:               'Time',
-    s_people:             'Guests',
-    s_name:               'Name',
-    s_phone:              'Phone',
-    btn_confirm:          'Confirm Reservation',
-    btn_back:             '← Edit Details',
-    btn_other:            '← Try Another Time',
-    kakao_title:          'KakaoTalk',
-    kakao_sub:            'Chat with us directly',
-    tel_sub:              'Call us',
-    btn_reset:            'Start Over',
-    done_title:           'Reservation Confirmed',
-    done_msg:             '{name},<br />Your reservation for {date} at <strong style="color:var(--accent)">{time}</strong> for <strong>{people} guests</strong> is confirmed.<br /><br />We may contact you at <strong>{phone}</strong> up to 30 minutes before your visit.<br /><br /><span style="font-size:0.78rem">To cancel, please contact us via KakaoTalk or phone.</span>',
-    dup_alert:            'A reservation with this phone number for this time already exists.',
+    nav_back:'← Home', eyebrow:'DINNER RESERVATION', page_title_h1:'Dinner Reservation',
+    subtitle:'Mon–Fri 18:00 – 22:00 · Sat 17:00 – 22:00',
+    subtitle2:'Lunch is walk-in only — no reservation needed',
+    tab_book:'Book a Table', tab_lookup:'My Reservation',
+    form_title:'Reservation Details', label_date:'Date', label_time:'Time',
+    time_placeholder:'Select date first', time_closed:'Closed (Sunday)', time_done:'No more slots today',
+    label_people:'Guests', people_placeholder:'Select',
+    people_suffix_one:' guest', people_suffix_many:' guests',
+    contact_title:'Contact Details', label_name:'Name', name_placeholder:'John Doe',
+    label_phone:'Phone', phone_placeholder:'+49 123 456789',
+    btn_check:'Check Availability',
+    note_title:'Notes',
+    note_text:'Reservations are for dinner only. For large groups or special requests, contact us via KakaoTalk or phone. Reservations may be cancelled if you are more than 20 minutes late.',
+    err_date:'Please select a date', err_sunday:'We are closed on Sundays',
+    err_time:'Please select a time', err_people:'Please select number of guests',
+    err_name:'Please enter your name', err_phone:'Please enter your phone number',
+    err_phone_invalid:'Please enter a valid phone number',
+    avail_title:'Available',
+    avail_desc_pre:'Please confirm your reservation details below.',
+    unavail_title:'Not Available',
+    unavail_full:'{date} at {time} is fully booked.',
+    unavail_partial:'Not enough seats available ({remaining} remaining).',
+    unavail_contact:'Please contact us via KakaoTalk or phone for alternative times.',
+    s_date:'Date', s_time:'Time', s_people:'Guests', s_name:'Name', s_phone:'Phone',
+    btn_confirm:'Confirm Reservation', btn_back:'← Edit Details', btn_other:'← Try Another Time',
+    kakao_title:'KakaoTalk', kakao_sub:'Chat with us directly', tel_sub:'Call us',
+    btn_reset:'Start Over', done_title:'Reservation Confirmed',
+    done_msg:'{name},<br />Your reservation for {date} at <strong style="color:var(--accent)">{time}</strong> for <strong>{people}</strong> is confirmed.<br /><br />We may contact you at <strong>{phone}</strong> up to 30 min before your visit.<br /><br /><span style="font-size:0.78rem">To cancel, contact us via KakaoTalk or phone.</span>',
+    dup_alert:'A reservation with this phone number for this time already exists.',
+    lookup_title:'Look Up Reservation', lookup_phone_label:'Phone number used when booking',
+    lookup_btn:'Find My Reservation',
+    err_lphone:'Please enter your phone number',
+    lookup_empty:'No reservation found for this number.',
+    lookup_cancel_confirm:'Are you sure you want to cancel this reservation?',
+    lookup_cancel_btn:'Cancel Reservation',
+    lookup_cancelled:'Reservation has been cancelled.',
+    lookup_people_unit:'',
   }
 };
 
-// ── 언어 상태 ──
 let lang = 'ko';
 
+// ── 언어 적용 ──
 function applyLang(l) {
   lang = l;
   document.documentElement.lang = l;
-
-  // data-i18n 텍스트 교체
   document.querySelectorAll('[data-i18n]').forEach(el => {
-    const key = el.dataset.i18n;
-    const val = T[l][key];
-    if (val !== undefined) el.textContent = val;
+    const v = T[l][el.dataset.i18n];
+    if (v !== undefined) el.textContent = v;
   });
-
-  // placeholder 교체
-  const fName  = document.getElementById('fName');
-  const fPhone = document.getElementById('fPhone');
-  if (fName)  fName.placeholder  = T[l].name_placeholder;
-  if (fPhone) fPhone.placeholder = T[l].phone_placeholder;
-
-  // 인원 select 재생성 (언어별 단위)
-  const fPeople = document.getElementById('fPeople');
-  if (fPeople) {
-    const cur = fPeople.value;
-    fPeople.innerHTML = `<option value="">${T[l].people_placeholder}</option>`;
-    for (let i = 1; i <= 20; i++) {
-      const suffix = i === 1 ? T[l].people_suffix_one : T[l].people_suffix_many;
-      const opt = document.createElement('option');
-      opt.value = i;
-      opt.textContent = i + suffix;
-      fPeople.appendChild(opt);
-    }
-    if (cur) fPeople.value = cur;
-  }
-
-  // 시간 placeholder (날짜 미선택 상태일 때)
+  document.getElementById('fName').placeholder  = T[l].name_placeholder;
+  document.getElementById('fPhone').placeholder = T[l].phone_placeholder;
+  document.getElementById('lPhone').placeholder = T[l].phone_placeholder;
+  buildPeopleSelect(document.getElementById('fPeople').value);
   const fTime = document.getElementById('fTime');
-  if (fTime && fTime.options.length === 1 && !fTime.options[0].value) {
+  if (fTime.options.length === 1 && !fTime.options[0].value)
     fTime.options[0].textContent = T[l].time_placeholder;
-  }
-
-  // 언어 버튼 active 표시
   document.querySelectorAll('.lang-btn').forEach(b =>
-    b.classList.toggle('active', b.dataset.lang === l)
-  );
-
-  // page title
+    b.classList.toggle('active', b.dataset.lang === l));
   document.title = {
-    ko: '저녁 예약 · Mokko Izakaya',
-    de: 'Abendreservierung · Mokko Izakaya',
-    en: 'Dinner Reservation · Mokko Izakaya',
+    ko:'저녁 예약 · Mokko Izakaya',
+    de:'Abendreservierung · Mokko Izakaya',
+    en:'Dinner Reservation · Mokko Izakaya',
   }[l];
 }
 
-// 언어 버튼 이벤트
+function buildPeopleSelect(cur) {
+  const sel = document.getElementById('fPeople');
+  sel.innerHTML = `<option value="">${T[lang].people_placeholder}</option>`;
+  for (let i = 1; i <= 20; i++) {
+    const suf = i === 1 ? T[lang].people_suffix_one : T[lang].people_suffix_many;
+    const opt = document.createElement('option');
+    opt.value = i; opt.textContent = i + suf;
+    sel.appendChild(opt);
+  }
+  if (cur) sel.value = cur;
+}
+
 document.querySelectorAll('.lang-btn').forEach(b =>
-  b.addEventListener('click', () => applyLang(b.dataset.lang))
-);
+  b.addEventListener('click', () => applyLang(b.dataset.lang)));
 
-// ── localStorage 헬퍼 ──
-function getReservations() {
-  try { return JSON.parse(localStorage.getItem('mokko_reservations') || '[]'); }
-  catch { return []; }
-}
-function saveReservations(arr) {
-  localStorage.setItem('mokko_reservations', JSON.stringify(arr));
+// ── 섹션 전환 ──
+function showSection(sec, el) {
+  document.getElementById('booking-section').style.display = sec === 'booking' ? 'block' : 'none';
+  document.getElementById('lookup-section').style.display  = sec === 'lookup'  ? 'block' : 'none';
+  document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
 }
 
-// ── 날짜 입력 최소/최대값 설정 ──
+// ── 날짜 초기화 ──
 (function initDate() {
+  const fmt = d => d.toISOString().slice(0,10);
   const today = new Date();
-  const fmt = d => d.toISOString().slice(0, 10);
-  const max = new Date(today); max.setDate(max.getDate() + 60);
-  const fDate = document.getElementById('fDate');
-  fDate.min = fmt(today);
-  fDate.max = fmt(max);
+  const max   = new Date(today); max.setDate(max.getDate() + 60);
+  const fd = document.getElementById('fDate');
+  fd.min = fmt(today); fd.max = fmt(max);
 })();
 
-// ── 날짜 변경 → 시간 슬롯 업데이트 ──
-document.getElementById('fDate').addEventListener('change', function () {
+document.getElementById('fDate').addEventListener('change', function() {
   const val = this.value;
   const fTime = document.getElementById('fTime');
   fTime.innerHTML = '';
-
-  if (!val) {
-    fTime.innerHTML = `<option value="">${T[lang].time_placeholder}</option>`;
-    return;
-  }
-
-  const date = new Date(val + 'T00:00:00');
-  const dow  = date.getDay();
+  if (!val) { fTime.innerHTML = `<option value="">${T[lang].time_placeholder}</option>`; return; }
+  const dow = new Date(val + 'T00:00:00').getDay();
   const slots = TIME_SLOTS[dow];
-
-  if (!slots) {
-    fTime.innerHTML = `<option value="">${T[lang].time_closed}</option>`;
-    return;
-  }
-
-  const now = new Date();
-  const isToday = val === now.toISOString().slice(0, 10);
-  let hasSlot = false;
-
+  if (!slots) { fTime.innerHTML = `<option value="">${T[lang].time_closed}</option>`; return; }
+  const now = new Date(); const isToday = val === now.toISOString().slice(0,10);
+  let has = false;
   slots.forEach(t => {
     if (isToday) {
-      const [h, m] = t.split(':').map(Number);
-      const slotMin = h * 60 + m;
-      const nowMin  = now.getHours() * 60 + now.getMinutes();
-      if (slotMin <= nowMin) return;
+      const [h,m] = t.split(':').map(Number);
+      if (h*60+m <= now.getHours()*60+now.getMinutes()) return;
     }
     const opt = document.createElement('option');
-    opt.value = t;
-    opt.textContent = t;
-    fTime.appendChild(opt);
-    hasSlot = true;
+    opt.value = t; opt.textContent = t; fTime.appendChild(opt); has = true;
   });
-
-  if (!hasSlot) {
-    fTime.innerHTML = `<option value="">${T[lang].time_done}</option>`;
-  }
-
+  if (!has) fTime.innerHTML = `<option value="">${T[lang].time_done}</option>`;
   clearErrors();
 });
+
+// ── Firebase 헬퍼 ──
+async function getCapacity() {
+  try {
+    const snap = await db.ref('settings/capacity').once('value');
+    const c = snap.val();
+    return (c && c.available) ? c.available : DEFAULT_CAPACITY;
+  } catch { return DEFAULT_CAPACITY; }
+}
+
+async function getBookedCount(date, time) {
+  const snap = await db.ref('reservations').orderByChild('date').equalTo(date).once('value');
+  let total = 0;
+  snap.forEach(child => { const r = child.val(); if (r.time === time) total += r.people; });
+  return total;
+}
+
+async function checkDuplicate(phone, date, time) {
+  const snap = await db.ref('reservations').orderByChild('phone').equalTo(phone).once('value');
+  let dup = false;
+  snap.forEach(child => { const r = child.val(); if (r.date === date && r.time === time) dup = true; });
+  return dup;
+}
 
 // ── 유효성 검사 ──
 function validate() {
   let ok = true;
   const t = T[lang];
+  clearErrors();
   const date   = document.getElementById('fDate').value;
   const time   = document.getElementById('fTime').value;
   const people = document.getElementById('fPeople').value;
   const name   = document.getElementById('fName').value.trim();
   const phone  = document.getElementById('fPhone').value.trim();
-
-  clearErrors();
-
-  if (!date) { showErr('err-date', t.err_date); ok = false; }
-  else {
-    const d = new Date(date + 'T00:00:00');
-    if (!TIME_SLOTS[d.getDay()]) { showErr('err-date', t.err_sunday); ok = false; }
-  }
-  if (!time)   { showErr('err-time',   t.err_time);   ok = false; }
-  if (!people) { showErr('err-people', t.err_people); ok = false; }
-  if (!name)   { showErr('err-name',   t.err_name);   ok = false; }
-  if (!phone)  { showErr('err-phone',  t.err_phone);  ok = false; }
-  else if (!/^[\d\s\-\+\(\)]{6,20}$/.test(phone)) {
-    showErr('err-phone', t.err_phone_invalid); ok = false;
-  }
-
+  if (!date) { showErr('err-date', t.err_date); ok=false; }
+  else if (!TIME_SLOTS[new Date(date+'T00:00:00').getDay()]) { showErr('err-date', t.err_sunday); ok=false; }
+  if (!time)   { showErr('err-time',   t.err_time);   ok=false; }
+  if (!people) { showErr('err-people', t.err_people); ok=false; }
+  if (!name)   { showErr('err-name',   t.err_name);   ok=false; }
+  if (!phone)  { showErr('err-phone',  t.err_phone);  ok=false; }
+  else if (!/^[\d\s\-\+\(\)]{6,20}$/.test(phone)) { showErr('err-phone', t.err_phone_invalid); ok=false; }
   return ok;
 }
-function showErr(id, msg) {
-  const el = document.getElementById(id);
-  if (el) el.textContent = msg;
-}
+function showErr(id, msg) { const el=document.getElementById(id); if(el) el.textContent=msg; }
 function clearErrors() {
-  ['err-date','err-time','err-people','err-name','err-phone'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.textContent = '';
+  ['err-date','err-time','err-people','err-name','err-phone'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.textContent='';
   });
 }
 
-// ── 날짜 표시 문자열 ──
-function formatDateStr(dateVal) {
-  const d   = new Date(dateVal + 'T00:00:00');
-  const day = DAY_NAMES[lang][d.getDay()];
-  if (lang === 'ko') return `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일 (${day})`;
-  if (lang === 'de') return `${d.getDate()}.${d.getMonth()+1}.${d.getFullYear()} (${day})`;
-  return `${day}, ${d.toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric'})}`;
+// ── 날짜 표시 ──
+function formatDateStr(dv) {
+  const d = new Date(dv+'T00:00:00'), day = DAY_NAMES[lang][d.getDay()];
+  if (lang==='ko') return `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일 (${day})`;
+  if (lang==='de') return `${d.getDate()}.${d.getMonth()+1}.${d.getFullYear()} (${day})`;
+  return d.toLocaleDateString('en-US',{weekday:'short',month:'long',day:'numeric',year:'numeric'});
+}
+
+// ── 인원 표시 ──
+function peopleSuffix(n) {
+  if (lang==='ko') return n + '명';
+  if (lang==='de') return n + (n===1?' Person':' Personen');
+  return n + (n===1?' guest':' guests');
 }
 
 // ── 예약 가능 여부 확인 ──
-function checkAvailability() {
+async function checkAvailability() {
   if (!validate()) return;
+  const btn = document.getElementById('btnCheck');
+  btn.disabled = true;
+  btn.innerHTML = `<span class="spinner"></span>`;
 
-  const t      = T[lang];
-  const date   = document.getElementById('fDate').value;
-  const time   = document.getElementById('fTime').value;
-  const people = parseInt(document.getElementById('fPeople').value);
-  const name   = document.getElementById('fName').value.trim();
-  const phone  = document.getElementById('fPhone').value.trim();
+  try {
+    const t      = T[lang];
+    const date   = document.getElementById('fDate').value;
+    const time   = document.getElementById('fTime').value;
+    const people = parseInt(document.getElementById('fPeople').value);
+    const name   = document.getElementById('fName').value.trim();
+    const phone  = document.getElementById('fPhone').value.trim();
 
-  const reservations = getReservations();
-  const booked = reservations
-    .filter(r => r.date === date && r.time === time)
-    .reduce((sum, r) => sum + r.people, 0);
+    const [capacity, booked] = await Promise.all([
+      getCapacity(),
+      getBookedCount(date, time),
+    ]);
 
-  const remaining = MAX_CAPACITY - booked;
-  const dateStr   = formatDateStr(date);
+    const remaining = capacity - booked;
+    const dateStr   = formatDateStr(date);
 
-  const resultPanel = document.getElementById('result-panel');
-  resultPanel.style.display = 'block';
-  document.getElementById('form-section').style.display = 'none';
+    document.getElementById('result-panel').style.display = 'block';
+    document.getElementById('form-section').style.display = 'none';
 
-  if (people <= remaining) {
-    resultPanel.innerHTML = `
-      <div class="result-card available">
-        <div class="result-icon">🎉</div>
-        <div class="result-title ok">${t.avail_title}</div>
-        <div class="result-desc">
-          ${t.avail_desc_pre}<strong style="color:var(--green)">${remaining}${t.avail_desc_suf}</strong>
-        </div>
-        <div class="summary-box">
-          <div class="summary-row"><span class="s-label">${t.s_date}</span><span class="s-value">${dateStr}</span></div>
-          <div class="summary-row"><span class="s-label">${t.s_time}</span><span class="s-value">${time}</span></div>
-          <div class="summary-row"><span class="s-label">${t.s_people}</span><span class="s-value">${people}${lang==='ko'?'명':lang==='de'?(people===1?' Person':' Personen'):' guest'+(people===1?'':'s')}</span></div>
-          <div class="summary-row"><span class="s-label">${t.s_name}</span><span class="s-value">${escapeHtml(name)}</span></div>
-          <div class="summary-row"><span class="s-label">${t.s_phone}</span><span class="s-value">${escapeHtml(phone)}</span></div>
-        </div>
-        <button class="btn-confirm" onclick="confirmReservation('${escapeAttr(date)}','${time}',${people},'${escapeAttr(name)}','${escapeAttr(phone)}','${escapeAttr(dateStr)}')">
-          ${t.btn_confirm}
-        </button>
-        <button class="btn-reset" onclick="goBack()">${t.btn_back}</button>
-      </div>`;
-  } else {
-    const msg = remaining <= 0
-      ? t.unavail_full.replace('{date}', dateStr).replace('{time}', time)
-      : t.unavail_partial.replace('{remaining}', remaining);
-
-    resultPanel.innerHTML = `
-      <div class="result-card unavailable">
-        <div class="result-icon">😔</div>
-        <div class="result-title ng">${t.unavail_title}</div>
-        <div class="result-desc">${msg}<br />${t.unavail_contact}</div>
-        <div class="contact-btns">
-          <a href="${KAKAO_URL}" target="_blank" rel="noopener" class="btn-kakao">
-            <div class="kakao-ico">💬</div>
-            <div class="kakao-label">
-              <strong>${t.kakao_title}</strong>
-              <span>${t.kakao_sub}</span>
-            </div>
-          </a>
-          <a href="${TEL_HREF}" class="btn-tel">
-            <div class="tel-ico">📞</div>
-            <div class="tel-label">
-              <strong>${TEL}</strong>
-              <span>${t.tel_sub}</span>
-            </div>
-          </a>
-        </div>
-        <button class="btn-reset" onclick="goBack()">${t.btn_other}</button>
-      </div>`;
+    if (people <= remaining) {
+      document.getElementById('result-panel').innerHTML = `
+        <div class="result-card available">
+          <div class="result-icon">🎉</div>
+          <div class="result-title ok">${t.avail_title}</div>
+          <div class="result-desc">${t.avail_desc_pre}</div>
+          <div class="summary-box">
+            <div class="summary-row"><span class="s-label">${t.s_date}</span><span class="s-value">${dateStr}</span></div>
+            <div class="summary-row"><span class="s-label">${t.s_time}</span><span class="s-value">${time}</span></div>
+            <div class="summary-row"><span class="s-label">${t.s_people}</span><span class="s-value">${peopleSuffix(people)}</span></div>
+            <div class="summary-row"><span class="s-label">${t.s_name}</span><span class="s-value">${escH(name)}</span></div>
+            <div class="summary-row"><span class="s-label">${t.s_phone}</span><span class="s-value">${escH(phone)}</span></div>
+          </div>
+          <button class="btn-confirm" onclick="confirmReservation('${escA(date)}','${time}',${people},'${escA(name)}','${escA(phone)}','${escA(dateStr)}')">
+            ${t.btn_confirm}
+          </button>
+          <button class="btn-reset" onclick="goBack()">${t.btn_back}</button>
+        </div>`;
+    } else {
+      const msg = remaining <= 0
+        ? t.unavail_full.replace('{date}',dateStr).replace('{time}',time)
+        : t.unavail_partial.replace('{remaining}',remaining);
+      document.getElementById('result-panel').innerHTML = `
+        <div class="result-card unavailable">
+          <div class="result-icon">😔</div>
+          <div class="result-title ng">${t.unavail_title}</div>
+          <div class="result-desc">${msg}<br />${t.unavail_contact}</div>
+          <div class="contact-btns">
+            <a href="${KAKAO_URL}" target="_blank" rel="noopener" class="btn-kakao">
+              <div class="kakao-ico">💬</div>
+              <div class="kakao-label"><strong>${t.kakao_title}</strong><span>${t.kakao_sub}</span></div>
+            </a>
+            <a href="${TEL_HREF}" class="btn-tel">
+              <div class="tel-ico">📞</div>
+              <div class="tel-label"><strong>${TEL}</strong><span>${t.tel_sub}</span></div>
+            </a>
+          </div>
+          <button class="btn-reset" onclick="goBack()">${t.btn_other}</button>
+        </div>`;
+    }
+    document.getElementById('result-panel').scrollIntoView({behavior:'smooth',block:'start'});
+  } catch(e) {
+    alert('오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = `<span data-i18n="btn_check">${T[lang].btn_check}</span>`;
   }
-
-  resultPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 // ── 예약 확정 ──
-function confirmReservation(date, time, people, name, phone, dateStr) {
+async function confirmReservation(date, time, people, name, phone, dateStr) {
   const t = T[lang];
-  const reservations = getReservations();
+  try {
+    const dup = await checkDuplicate(phone, date, time);
+    if (dup) { alert(t.dup_alert); return; }
 
-  const dup = reservations.find(r => r.phone === phone && r.date === date && r.time === time);
-  if (dup) { alert(t.dup_alert); return; }
+    await db.ref('reservations').push({
+      date, time, people, name, phone, createdAt: new Date().toISOString()
+    });
 
-  reservations.push({ id: Date.now().toString(), date, time, people, name, phone, createdAt: new Date().toISOString() });
-  saveReservations(reservations);
-
-  document.getElementById('result-panel').style.display = 'none';
-  const donePanel = document.getElementById('done-panel');
-  donePanel.style.display = 'block';
-
-  const peopleSuffix = lang==='ko' ? '명' : lang==='de' ? (people===1?' Person':' Personen') : (people===1?' guest':' guests');
-
-  document.getElementById('done-msg').innerHTML = t.done_msg
-    .replace('{name}',   escapeHtml(name))
-    .replace('{date}',   dateStr)
-    .replace('{time}',   time)
-    .replace('{people}', people + peopleSuffix)
-    .replace('{phone}',  escapeHtml(phone));
-
-  donePanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    document.getElementById('result-panel').style.display = 'none';
+    const dp = document.getElementById('done-panel');
+    dp.style.display = 'block';
+    document.getElementById('done-msg').innerHTML = t.done_msg
+      .replace('{name}', escH(name)).replace('{date}', dateStr)
+      .replace('{time}', time).replace('{people}', peopleSuffix(people))
+      .replace('{phone}', escH(phone));
+    dp.scrollIntoView({behavior:'smooth',block:'start'});
+  } catch(e) {
+    alert('예약 중 오류가 발생했습니다. 전화 또는 카카오톡으로 문의해 주세요.');
+  }
 }
 
-// ── 뒤로 가기 ──
 function goBack() {
   document.getElementById('result-panel').style.display = 'none';
   document.getElementById('form-section').style.display = 'block';
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  window.scrollTo({top:0,behavior:'smooth'});
 }
 
-// ── 처음으로 ──
 function resetAll() {
   document.getElementById('fDate').value = '';
   document.getElementById('fTime').innerHTML = `<option value="">${T[lang].time_placeholder}</option>`;
@@ -1027,18 +844,84 @@ function resetAll() {
   document.getElementById('done-panel').style.display = 'none';
   document.getElementById('form-section').style.display = 'block';
   clearErrors();
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ── 내 예약 조회 ──
+async function lookupReservations() {
+  const phone = document.getElementById('lPhone').value.trim();
+  const errEl = document.getElementById('err-lphone');
+  errEl.textContent = '';
+  if (!phone) { errEl.textContent = T[lang].err_lphone; return; }
+
+  const btn = document.getElementById('btnLookup');
+  btn.disabled = true;
+  btn.innerHTML = `<span class="spinner"></span>`;
+
+  try {
+    const today = new Date().toISOString().slice(0,10);
+    const snap  = await db.ref('reservations').orderByChild('phone').equalTo(phone).once('value');
+    const results = [];
+    snap.forEach(child => {
+      const r = child.val();
+      if (r.date >= today) results.push({id: child.key, ...r});
+    });
+    results.sort((a,b) => (a.date+a.time).localeCompare(b.date+b.time));
+
+    const container = document.getElementById('lookup-result');
+    if (results.length === 0) {
+      container.innerHTML = `<div class="lookup-empty">📭<br />${T[lang].lookup_empty}</div>`;
+    } else {
+      container.innerHTML = results.map(r => {
+        const ds = formatDateStr(r.date);
+        return `
+          <div class="lookup-res-card" id="card-${r.id}">
+            <div class="lookup-res-top">
+              <div>
+                <div class="lookup-res-date">${ds}</div>
+                <div class="lookup-res-time">${r.time}</div>
+              </div>
+              <div style="text-align:right">
+                <div style="color:var(--accent);font-weight:500;font-size:1rem">${peopleSuffix(r.people)}</div>
+                <div style="color:var(--muted);font-size:0.76rem">${escH(r.name)}</div>
+              </div>
+            </div>
+            <button class="btn-cancel-res" onclick="cancelReservation('${r.id}')">
+              ${T[lang].lookup_cancel_btn}
+            </button>
+          </div>`;
+      }).join('');
+    }
+  } catch(e) {
+    document.getElementById('lookup-result').innerHTML =
+      `<div class="lookup-empty">오류가 발생했습니다. 잠시 후 다시 시도해 주세요.</div>`;
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = `<span data-i18n="lookup_btn">${T[lang].lookup_btn}</span>`;
+  }
+}
+
+// ── 예약 취소 ──
+async function cancelReservation(id) {
+  if (!confirm(T[lang].lookup_cancel_confirm)) return;
+  try {
+    await db.ref('reservations/' + id).remove();
+    const card = document.getElementById('card-' + id);
+    if (card) {
+      card.style.opacity = '0.5';
+      card.innerHTML = `<div style="text-align:center;padding:16px;color:var(--green);font-size:0.84rem">✓ ${T[lang].lookup_cancelled}</div>`;
+      setTimeout(() => card.remove(), 2000);
+    }
+  } catch(e) {
+    alert('취소 중 오류가 발생했습니다. 전화 또는 카카오톡으로 문의해 주세요.');
+  }
 }
 
 // ── XSS 방지 ──
-function escapeHtml(str) {
-  return String(str)
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+function escH(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
-function escapeAttr(str) {
-  return String(str).replace(/'/g,"\\'").replace(/\\/g,'\\\\');
-}
+function escA(s) { return String(s).replace(/'/g,"\\'").replace(/\\/g,'\\\\'); }
 
 // ── 초기화 ──
 applyLang('ko');
