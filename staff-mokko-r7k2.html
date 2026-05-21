@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>예약 관리 · Mokko Staff</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500&family=Noto+Serif+JP:wght@300;400&display=swap" rel="stylesheet" />
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:       #0e0e0e; --surface:  #161616; --surface2: #1e1e1e;
+      --border:   #2a2a2a; --text:     #e8e3db; --muted:    #7a7068;
+      --accent:   #c9a96e; --green:    #4caf82; --red:      #e05a5a;
+      --blue:     #5a9ae0; --font-sans:'Noto Sans KR',sans-serif;
+      --font-serif:'Noto Serif JP',serif; --ease: 0.2s ease;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg); color: var(--text); font-family: var(--font-sans);
+      font-weight: 300; font-size: 14px; line-height: 1.6;
+      -webkit-font-smoothing: antialiased; min-height: 100svh;
+    }
+    a { color: inherit; text-decoration: none; }
+    button { cursor: pointer; font-family: var(--font-sans); }
+
+    /* ── PIN 화면 ── */
+    #pin-screen {
+      position: fixed; inset: 0; z-index: 1000;
+      background: var(--bg); display: flex;
+      align-items: center; justify-content: center;
+    }
+    .pin-wrap {
+      text-align: center; padding: 40px 24px; max-width: 320px; width: 100%;
+    }
+    .pin-logo {
+      font-family: var(--font-serif); font-size: 1.4rem;
+      letter-spacing: 0.12em; color: var(--accent); margin-bottom: 6px;
+    }
+    .pin-sub {
+      font-size: 0.68rem; letter-spacing: 0.25em;
+      color: var(--muted); margin-bottom: 36px; text-transform: uppercase;
+    }
+    #pinInput {
+      width: 100%; height: 58px; text-align: center; font-size: 1.6rem;
+      letter-spacing: 0.4em; background: var(--surface);
+      border: 1px solid var(--border); border-radius: 6px;
+      color: var(--text); font-family: var(--font-sans);
+      margin-bottom: 12px; -webkit-appearance: none;
+      transition: border-color var(--ease);
+    }
+    #pinInput:focus { outline: none; border-color: var(--accent); }
+    #pinInput.shake {
+      animation: shake 0.4s ease;
+      border-color: var(--red) !important;
+    }
+    @keyframes shake {
+      0%,100%{transform:translateX(0)} 20%{transform:translateX(-8px)}
+      40%{transform:translateX(8px)} 60%{transform:translateX(-6px)}
+      80%{transform:translateX(6px)}
+    }
+    .btn-pin-confirm {
+      width: 100%; height: 52px; background: var(--accent);
+      border: none; border-radius: 6px; color: #0e0e0e;
+      font-size: 0.84rem; font-weight: 500; letter-spacing: 0.1em;
+      transition: opacity var(--ease);
+    }
+    .btn-pin-confirm:hover { opacity: 0.85; }
+    #pinError {
+      margin-top: 12px; color: var(--red);
+      font-size: 0.78rem; min-height: 20px;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(14,14,14,0.97);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-inner {
+      max-width: 1200px; margin: 0 auto; padding: 0 20px; height: 54px;
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    }
+    .nav-brand { display: flex; align-items: center; gap: 10px; }
+    .nav-badge {
+      font-size: 0.68rem; letter-spacing: 0.12em; color: #0e0e0e;
+      background: var(--accent); padding: 2px 8px; border-radius: 20px; font-weight: 500;
+    }
+    .nav-logo { font-family: var(--font-serif); font-size: 0.9rem; letter-spacing: 0.08em; color: var(--accent); }
+    .nav-actions { display: flex; align-items: center; gap: 8px; }
+    .btn-sm {
+      height: 34px; padding: 0 14px; font-size: 0.74rem; letter-spacing: 0.06em;
+      border-radius: 4px; border: 1px solid var(--border);
+      background: var(--surface); color: var(--muted); transition: var(--ease);
+    }
+    .btn-sm:hover { color: var(--text); border-color: var(--muted); }
+    .btn-sm.danger { border-color: rgba(224,90,90,0.4); color: var(--red); }
+    .btn-sm.danger:hover { background: rgba(224,90,90,0.1); }
+
+    /* ── LAYOUT ── */
+    .page-wrap { max-width: 1200px; margin: 0 auto; padding: 24px 20px 60px; }
+
+    /* ── 통계 카드 ── */
+    .stats-row { display: grid; grid-template-columns: repeat(2,1fr); gap: 12px; margin-bottom: 24px; }
+    @media(min-width:600px) { .stats-row { grid-template-columns: repeat(4,1fr); } }
+    .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+    .stat-label { font-size: 0.68rem; letter-spacing: 0.1em; color: var(--muted); text-transform: uppercase; margin-bottom: 6px; }
+    .stat-value { font-size: 1.6rem; font-weight: 500; color: var(--text); line-height: 1; }
+    .stat-unit { font-size: 0.8rem; color: var(--muted); font-weight: 300; margin-left: 2px; }
+    .stat-sub { font-size: 0.7rem; color: var(--muted); margin-top: 4px; }
+
+    /* ── 탭 ── */
+    .view-tabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
+    .view-tab {
+      height: 42px; padding: 0 18px; font-size: 0.78rem; letter-spacing: 0.04em;
+      background: none; border: none; border-bottom: 2px solid transparent;
+      color: var(--muted); transition: var(--ease);
+    }
+    .view-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .view-tab:hover:not(.active) { color: var(--text); }
+
+    /* ── 날짜 네비게이션 ── */
+    .date-nav { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 20px; }
+    .date-nav-title { font-family: var(--font-serif); font-size: 1rem; letter-spacing: 0.04em; text-align: center; flex: 1; }
+    .btn-nav {
+      width: 36px; height: 36px; background: var(--surface); border: 1px solid var(--border);
+      border-radius: 4px; color: var(--text); font-size: 0.9rem;
+      display: flex; align-items: center; justify-content: center; transition: var(--ease); flex-shrink: 0;
+    }
+    .btn-nav:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-today {
+      height: 36px; padding: 0 12px; background: var(--surface); border: 1px solid var(--border);
+      border-radius: 4px; color: var(--muted); font-size: 0.74rem; letter-spacing: 0.06em; transition: var(--ease); flex-shrink: 0;
+    }
+    .btn-today:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── 주간 뷰 ── */
+    #week-view { display: block; } #day-view { display: none; } #list-view { display: none; } #settings-view { display: none; }
+    .week-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; border: 1px solid var(--border); border-radius: 8px; }
+    .week-table { min-width: 700px; width: 100%; border-collapse: collapse; }
+    .week-table th {
+      background: var(--surface); padding: 10px 8px; text-align: center;
+      font-size: 0.72rem; letter-spacing: 0.08em; font-weight: 500;
+      border-bottom: 1px solid var(--border); border-right: 1px solid var(--border);
+    }
+    .week-table th:last-child { border-right: none; }
+    .week-table th .th-day { font-size: 0.68rem; color: var(--muted); margin-bottom: 2px; }
+    .week-table th .th-date { font-size: 1rem; font-weight: 500; }
+    .week-table th.today-col .th-date { color: var(--accent); }
+    .week-table th.sat-col .th-day { color: var(--blue); }
+    .week-table th.closed-col { opacity: 0.4; }
+    .week-table td {
+      padding: 6px; vertical-align: top;
+      border-bottom: 1px solid var(--border); border-right: 1px solid var(--border);
+      min-height: 60px; width: calc(100%/7);
+    }
+    .week-table td:last-child { border-right: none; }
+    .week-table td.time-cell {
+      width: 52px; background: var(--surface); text-align: center;
+      font-size: 0.72rem; color: var(--muted); padding: 8px 4px;
+      vertical-align: middle; white-space: nowrap;
+    }
+    .week-table tr:last-child td { border-bottom: none; }
+    .week-table td.closed-cell {
+      background: repeating-linear-gradient(45deg,transparent,transparent 4px,rgba(42,42,42,0.4) 4px,rgba(42,42,42,0.4) 6px);
+    }
+    .res-chip {
+      background: rgba(201,169,110,0.15); border: 1px solid rgba(201,169,110,0.3);
+      border-radius: 4px; padding: 5px 7px; margin-bottom: 4px;
+      font-size: 0.7rem; cursor: pointer; transition: background var(--ease); line-height: 1.4;
+    }
+    .res-chip:hover { background: rgba(201,169,110,0.25); }
+    .res-chip .chip-name { font-weight: 500; color: var(--text); }
+    .res-chip .chip-ppl  { color: var(--accent); font-weight: 500; }
+    .res-chip .chip-ph   { color: var(--muted); font-size: 0.65rem; }
+    .cap-bar { height: 3px; background: var(--border); border-radius: 2px; margin-top: 4px; overflow: hidden; }
+    .cap-fill { height: 100%; border-radius: 2px; background: var(--green); transition: width 0.3s ease; }
+    .cap-fill.warn { background: #e0a85a; } .cap-fill.full { background: var(--red); }
+    .slot-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; font-size: 0.65rem; color: var(--muted); }
+    .slot-pax.ok   { color: var(--green); } .slot-pax.warn { color: #e0a85a; } .slot-pax.full { color: var(--red); }
+
+    /* ── 일별 뷰 ── */
+    .day-schedule { display: flex; flex-direction: column; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+    .day-slot { display: flex; border-bottom: 1px solid var(--border); }
+    .day-slot:last-child { border-bottom: none; }
+    .day-time { width: 64px; flex-shrink: 0; background: var(--surface); padding: 12px 10px; font-size: 0.78rem; color: var(--muted); border-right: 1px solid var(--border); display: flex; align-items: flex-start; justify-content: center; }
+    .day-res-area { flex: 1; padding: 8px 12px; min-height: 64px; }
+    .day-cap-info { font-size: 0.72rem; color: var(--muted); margin-bottom: 6px; }
+    .day-res-list { display: flex; flex-direction: column; gap: 6px; }
+    .day-res-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 10px 14px; cursor: pointer; transition: border-color var(--ease); }
+    .day-res-card:hover { border-color: var(--accent); }
+    .day-res-card .rc-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+    .day-res-card .rc-name { font-weight: 500; font-size: 0.88rem; }
+    .day-res-card .rc-ppl  { color: var(--accent); font-weight: 500; font-size: 0.88rem; }
+    .day-res-card .rc-ph   { font-size: 0.78rem; color: var(--muted); }
+    .empty-slot { font-size: 0.76rem; color: var(--muted); font-style: italic; }
+
+    /* ── 목록 뷰 ── */
+    .list-filters { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+    .list-filter-btn {
+      height: 32px; padding: 0 12px; font-size: 0.72rem; letter-spacing: 0.04em;
+      border-radius: 20px; border: 1px solid var(--border); background: none;
+      color: var(--muted); transition: var(--ease);
+    }
+    .list-filter-btn.active { background: var(--accent); border-color: var(--accent); color: #0e0e0e; font-weight: 500; }
+    .res-table-wrap { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; overflow-x: auto; }
+    .res-table { width: 100%; min-width: 560px; border-collapse: collapse; }
+    .res-table th { background: var(--surface); padding: 10px 14px; text-align: left; font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--border); white-space: nowrap; }
+    .res-table td { padding: 12px 14px; border-bottom: 1px solid var(--border); font-size: 0.84rem; }
+    .res-table tr:last-child td { border-bottom: none; }
+    .res-table tr:hover td { background: rgba(255,255,255,0.02); }
+    .res-table .td-ppl { color: var(--accent); font-weight: 500; }
+    .res-table .td-ph  { color: var(--muted); font-size: 0.78rem; }
+    .res-table .td-del { text-align: right; }
+    .btn-del { height: 28px; padding: 0 10px; font-size: 0.7rem; border-radius: 4px; border: 1px solid rgba(224,90,90,0.3); background: transparent; color: var(--red); transition: var(--ease); }
+    .btn-del:hover { background: rgba(224,90,90,0.1); }
+    .empty-table { padding: 40px; text-align: center; color: var(--muted); font-size: 0.84rem; }
+
+    /* ── 설정 뷰 ── */
+    .settings-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 24px; margin-bottom: 16px; max-width: 480px; }
+    .settings-title { font-family: var(--font-serif); font-size: 0.9rem; letter-spacing: 0.08em; color: var(--accent); margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+    .settings-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+    .settings-field label { display: block; font-size: 0.7rem; letter-spacing: 0.06em; color: var(--muted); text-transform: uppercase; margin-bottom: 6px; }
+    .settings-field input {
+      width: 100%; height: 46px; padding: 0 14px; background: var(--bg);
+      border: 1px solid var(--border); border-radius: 4px; color: var(--text);
+      font-family: var(--font-sans); font-size: 1rem; font-weight: 400;
+      transition: border-color var(--ease); -webkit-appearance: none;
+    }
+    .settings-field input:focus { outline: none; border-color: var(--accent); }
+    .settings-note { font-size: 0.74rem; color: var(--muted); line-height: 1.7; margin-bottom: 16px; padding: 12px 14px; background: rgba(201,169,110,0.06); border-left: 2px solid rgba(201,169,110,0.4); border-radius: 0 4px 4px 0; }
+    .btn-save-settings {
+      height: 44px; padding: 0 24px; background: var(--accent); border: none;
+      border-radius: 4px; color: #0e0e0e; font-size: 0.8rem; font-weight: 500;
+      letter-spacing: 0.08em; transition: opacity var(--ease);
+    }
+    .btn-save-settings:hover { opacity: 0.85; }
+    .settings-saved { display: inline-block; margin-left: 12px; font-size: 0.78rem; color: var(--green); opacity: 0; transition: opacity 0.3s; }
+    .settings-saved.show { opacity: 1; }
+    .current-cap { display: flex; gap: 20px; margin-bottom: 20px; }
+    .cap-badge { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 10px 16px; text-align: center; }
+    .cap-badge-val { font-size: 1.4rem; font-weight: 500; color: var(--text); }
+    .cap-badge-lbl { font-size: 0.68rem; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; margin-top: 2px; }
+
+    /* ── 수동 예약 추가 ── */
+    .add-form-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 24px; display: none; }
+    .add-form-card.open { display: block; }
+    .add-form-title { font-size: 0.82rem; letter-spacing: 0.08em; color: var(--accent); margin-bottom: 16px; font-weight: 500; }
+    .add-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    @media(min-width:600px) { .add-form-grid { grid-template-columns: repeat(5,1fr); } }
+    .af-group label { display: block; font-size: 0.68rem; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 5px; }
+    .af-group input, .af-group select { width: 100%; height: 36px; padding: 0 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 4px; color: var(--text); font-family: var(--font-sans); font-size: 0.82rem; -webkit-appearance: none; }
+    .af-group input:focus, .af-group select:focus { outline: none; border-color: var(--accent); }
+    .af-group select option { background: #1a1a1a; }
+    .add-form-actions { display: flex; gap: 8px; margin-top: 14px; }
+    .btn-add-save { height: 36px; padding: 0 18px; background: var(--accent); border: none; border-radius: 4px; color: #0e0e0e; font-size: 0.78rem; font-weight: 500; letter-spacing: 0.06em; transition: opacity var(--ease); }
+    .btn-add-save:hover { opacity: 0.85; }
+    .btn-add-cancel { height: 36px; padding: 0 14px; background: transparent; border: 1px solid var(--border); border-radius: 4px; color: var(--muted); font-size: 0.78rem; transition: var(--ease); }
+    .btn-add-cancel:hover { color: var(--text); }
+
+    /* ── 모달 ── */
+    .modal-bg { display: none; position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); align-items: center; justify-content: center; padding: 20px; }
+    .modal-bg.open { display: flex; }
+    .modal-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 28px; width: 100%; max-width: 400px; animation: mIn 0.2s ease; }
+    @keyframes mIn { from{opacity:0;transform:scale(0.96) translateY(8px)} to{opacity:1;transform:none} }
+    .modal-title { font-family: var(--font-serif); font-size: 1.1rem; font-weight: 300; margin-bottom: 16px; color: var(--accent); }
+    .modal-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
+    .modal-row:last-of-type { border-bottom: none; }
+    .modal-row .ml { color: var(--muted); font-size: 0.75rem; }
+    .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+    .btn-modal-close { flex: 1; height: 42px; background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; color: var(--text); font-size: 0.82rem; transition: var(--ease); }
+    .btn-modal-close:hover { border-color: var(--muted); }
+    .btn-modal-del { flex: 1; height: 42px; background: rgba(224,90,90,0.12); border: 1px solid rgba(224,90,90,0.4); border-radius: 4px; color: var(--red); font-size: 0.82rem; transition: var(--ease); }
+    .btn-modal-del:hover { background: rgba(224,90,90,0.2); }
+
+    .today-chip { display: inline-block; width: 6px; height: 6px; background: var(--accent); border-radius: 50%; margin-left: 4px; vertical-align: middle; }
+
+    /* 로딩 */
+    .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(201,169,110,0.3); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<!-- ── PIN 화면 ── -->
+<div id="pin-screen">
+  <div class="pin-wrap">
+    <div class="pin-logo">MOKKO</div>
+    <div class="pin-sub">Staff Access</div>
+    <input type="password" id="pinInput" inputmode="numeric" maxlength="6" placeholder="• • • •"
+      onkeydown="if(event.key==='Enter') checkPin()" />
+    <button class="btn-pin-confirm" onclick="checkPin()">확인</button>
+    <div id="pinError"></div>
+  </div>
+</div>
+
+<!-- ── 본문 (PIN 통과 후 표시) ── -->
+<div id="main-content" style="display:none">
+
+<nav>
+  <div class="nav-inner">
+    <div class="nav-brand">
+      <span class="nav-logo">MOKKO</span>
+      <span class="nav-badge">STAFF</span>
+    </div>
+    <div class="nav-actions">
+      <span id="realtimeIndicator" style="font-size:0.68rem;color:var(--muted);display:flex;align-items:center;gap:5px">
+        <span class="spinner"></span> 연결 중
+      </span>
+      <button class="btn-sm" onclick="toggleAddForm()">＋ 예약 추가</button>
+      <button class="btn-sm danger" onclick="clearAll()">전체 삭제</button>
+    </div>
+  </div>
+</nav>
+
+<div class="page-wrap">
+
+  <!-- 수동 예약 추가 폼 -->
+  <div class="add-form-card" id="addFormCard">
+    <div class="add-form-title">수동 예약 추가</div>
+    <div class="add-form-grid">
+      <div class="af-group"><label>날짜</label><input type="date" id="af-date" /></div>
+      <div class="af-group">
+        <label>시간</label>
+        <select id="af-time"><option value="">선택</option></select>
+      </div>
+      <div class="af-group">
+        <label>인원</label>
+        <select id="af-people">
+          <option value="">선택</option>
+          <option value="1">1명</option><option value="2">2명</option><option value="3">3명</option>
+          <option value="4">4명</option><option value="5">5명</option><option value="6">6명</option>
+          <option value="7">7명</option><option value="8">8명</option><option value="9">9명</option>
+          <option value="10">10명</option><option value="11">11명</option><option value="12">12명</option>
+          <option value="13">13명</option><option value="14">14명</option><option value="15">15명</option>
+          <option value="16">16명</option><option value="17">17명</option><option value="18">18명</option>
+          <option value="19">19명</option><option value="20">20명</option>
+        </select>
+      </div>
+      <div class="af-group"><label>이름</label><input type="text" id="af-name" placeholder="홍길동" /></div>
+      <div class="af-group"><label>연락처</label><input type="tel" id="af-phone" placeholder="010-0000-0000" /></div>
+    </div>
+    <div class="add-form-actions">
+      <button class="btn-add-save" onclick="saveManual()">저장</button>
+      <button class="btn-add-cancel" onclick="toggleAddForm()">취소</button>
+    </div>
+  </div>
+
+  <!-- 통계 -->
+  <div class="stats-row" id="statsRow"></div>
+
+  <!-- 탭 -->
+  <div class="view-tabs">
+    <button class="view-tab active" onclick="switchTab('week',this)">주간 뷰</button>
+    <button class="view-tab"        onclick="switchTab('day',this)">일별 뷰</button>
+    <button class="view-tab"        onclick="switchTab('list',this)">목록 뷰</button>
+    <button class="view-tab"        onclick="switchTab('settings',this)">⚙️ 좌석 설정</button>
+  </div>
+
+  <!-- 주간 뷰 -->
+  <div id="week-view">
+    <div class="date-nav">
+      <button class="btn-nav" onclick="weekOffset--;renderWeek()">‹</button>
+      <div class="date-nav-title" id="weekTitle"></div>
+      <button class="btn-today" onclick="weekOffset=0;renderWeek()">오늘</button>
+      <button class="btn-nav" onclick="weekOffset++;renderWeek()">›</button>
+    </div>
+    <div class="week-scroll"><table class="week-table" id="weekTable"></table></div>
+  </div>
+
+  <!-- 일별 뷰 -->
+  <div id="day-view">
+    <div class="date-nav">
+      <button class="btn-nav" onclick="dayOffset--;renderDay()">‹</button>
+      <div class="date-nav-title" id="dayTitle"></div>
+      <button class="btn-today" onclick="dayOffset=0;renderDay()">오늘</button>
+      <button class="btn-nav" onclick="dayOffset++;renderDay()">›</button>
+    </div>
+    <div class="day-schedule" id="daySchedule"></div>
+  </div>
+
+  <!-- 목록 뷰 -->
+  <div id="list-view">
+    <div class="list-filters">
+      <button class="list-filter-btn active" onclick="setFilter('upcoming',this)">예정</button>
+      <button class="list-filter-btn"        onclick="setFilter('today',this)">오늘</button>
+      <button class="list-filter-btn"        onclick="setFilter('all',this)">전체</button>
+    </div>
+    <div class="res-table-wrap">
+      <table class="res-table">
+        <thead><tr>
+          <th>날짜</th><th>시간</th><th>인원</th><th>예약자</th><th>연락처</th><th>등록일시</th><th></th>
+        </tr></thead>
+        <tbody id="resListBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 설정 뷰 -->
+  <div id="settings-view">
+    <div class="settings-card">
+      <div class="settings-title">현재 좌석 설정</div>
+      <div class="current-cap">
+        <div class="cap-badge">
+          <div class="cap-badge-val" id="cur-total">—</div>
+          <div class="cap-badge-lbl">전체 좌석</div>
+        </div>
+        <div class="cap-badge">
+          <div class="cap-badge-val" id="cur-avail" style="color:var(--green)">—</div>
+          <div class="cap-badge-lbl">온라인 가용</div>
+        </div>
+      </div>
+      <div class="settings-title">좌석 변경</div>
+      <div class="settings-note">
+        <strong style="color:var(--text)">온라인 가용 좌석</strong>이 다 찼을 때 손님은 전화 / 카카오톡 문의 안내를 받습니다.<br />
+        예: 단체 예약이 있는 날은 온라인 가용을 줄이거나 0으로 설정하세요.
+      </div>
+      <div class="settings-row">
+        <div class="settings-field">
+          <label>전체 좌석</label>
+          <input type="number" id="set-total" min="1" max="200" placeholder="40" />
+        </div>
+        <div class="settings-field">
+          <label>온라인 가용 좌석</label>
+          <input type="number" id="set-avail" min="0" max="200" placeholder="32" />
+        </div>
+      </div>
+      <button class="btn-save-settings" onclick="saveCapacity()">저장</button>
+      <span class="settings-saved" id="savedMsg">✓ 저장됨</span>
+    </div>
+  </div>
+
+</div><!-- /page-wrap -->
+</div><!-- /main-content -->
+
+<!-- 상세 모달 -->
+<div class="modal-bg" id="detailModal" onclick="closeModal(event)">
+  <div class="modal-card">
+    <div class="modal-title">예약 상세</div>
+    <div id="modalBody"></div>
+    <div class="modal-actions">
+      <button class="btn-modal-close" onclick="closeModalDirect()">닫기</button>
+      <button class="btn-modal-del"   id="modalDelBtn">예약 취소</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── PIN ──
+const STAFF_PIN = '1234'; // ← 여기서 PIN 변경
+
+function checkPin() {
+  const val = document.getElementById('pinInput').value;
+  if (val === STAFF_PIN) {
+    document.getElementById('pin-screen').style.display = 'none';
+    document.getElementById('main-content').style.display = 'block';
+    initApp();
+  } else {
+    const inp = document.getElementById('pinInput');
+    inp.classList.remove('shake');
+    void inp.offsetWidth; // reflow
+    inp.classList.add('shake');
+    inp.value = '';
+    document.getElementById('pinError').textContent = 'PIN이 올바르지 않습니다';
+  }
+}
+
+// ── Firebase ──
+const firebaseConfig = {
+  apiKey: "AIzaSyDKRtm23KJVtj8qXSRDJfCP1Lvpk4vBH3U",
+  databaseURL: "https://mokko-reservation-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "mokko-reservation",
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+// ── 상수 ──
+const DAY_NAMES = ['일','월','화','수','목','금','토'];
+const DEFAULT_TOTAL = 40;
+const DEFAULT_AVAIL = 32;
+
+const TIME_SLOTS = {
+  1: ['18:00','18:30','19:00','19:30','20:00','20:30','21:00','21:30'],
+  2: ['18:00','18:30','19:00','19:30','20:00','20:30','21:00','21:30'],
+  3: ['18:00','18:30','19:00','19:30','20:00','20:30','21:00','21:30'],
+  4: ['18:00','18:30','19:00','19:30','20:00','20:30','21:00','21:30'],
+  5: ['18:00','18:30','19:00','19:30','20:00','20:30','21:00','21:30'],
+  6: ['17:00','17:30','18:00','18:30','19:00','19:30','20:00','20:30','21:00','21:30'],
+};
+const ALL_TIMES = ['17:00','17:30','18:00','18:30','19:00','19:30','20:00','20:30','21:00','21:30'];
+
+let reservations = {};     // Firebase 실시간 데이터
+let capacity = { total: DEFAULT_TOTAL, available: DEFAULT_AVAIL };
+let weekOffset = 0, dayOffset = 0, listFilter = 'upcoming', currentTab = 'week';
+
+// ── 앱 초기화 (PIN 통과 후) ──
+function initApp() {
+  // 예약 실시간 리스닝
+  db.ref('reservations').on('value', snap => {
+    reservations = snap.val() || {};
+    renderCurrent();
+    document.getElementById('realtimeIndicator').innerHTML =
+      '<span style="color:var(--green);font-size:0.8rem">●</span> 실시간 연결됨';
+  }, err => {
+    document.getElementById('realtimeIndicator').innerHTML =
+      '<span style="color:var(--red);font-size:0.8rem">●</span> 연결 오류';
+  });
+
+  // 용량 설정 로드
+  db.ref('settings/capacity').on('value', snap => {
+    const c = snap.val();
+    if (c) {
+      capacity = c;
+      document.getElementById('cur-total').textContent = c.total;
+      document.getElementById('cur-avail').textContent = c.available;
+      document.getElementById('set-total').value = c.total;
+      document.getElementById('set-avail').value = c.available;
+    }
+  });
+
+  // 날짜 기본값
+  const today = toDateStr(new Date());
+  document.getElementById('af-date').value = today;
+  updateAfTime(today);
+}
+
+// ── 헬퍼 ──
+function toDateStr(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function todayStr() { return toDateStr(new Date()); }
+function weekStart(offset=0) {
+  const d = new Date(); d.setDate(d.getDate()-d.getDay()+1+offset*7); d.setHours(0,0,0,0); return d;
+}
+function addDays(d,n) { const r=new Date(d); r.setDate(r.getDate()+n); return r; }
+function formatDate(ds) {
+  const d=new Date(ds+'T00:00:00'); return `${d.getMonth()+1}/${d.getDate()} (${DAY_NAMES[d.getDay()]})`;
+}
+function formatDateTime(iso) {
+  const d=new Date(iso);
+  return `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+}
+function getResList() {
+  return Object.entries(reservations).map(([id,r]) => ({id,...r}));
+}
+function bookedCount(date, time) {
+  return getResList().filter(r=>r.date===date&&r.time===time).reduce((s,r)=>s+r.people,0);
+}
+
+// ── 통계 ──
+function renderStats() {
+  const res = getResList();
+  const today = todayStr();
+  const todayRes    = res.filter(r=>r.date===today);
+  const upcomingRes = res.filter(r=>r.date>=today);
+  const todayPax = todayRes.reduce((s,r)=>s+r.people,0);
+  const upPax    = upcomingRes.reduce((s,r)=>s+r.people,0);
+  const remToday = Math.max(0, capacity.available - todayPax);
+
+  document.getElementById('statsRow').innerHTML = `
+    <div class="stat-card">
+      <div class="stat-label">총 예약 건수</div>
+      <div class="stat-value">${res.length}<span class="stat-unit">건</span></div>
+      <div class="stat-sub">전체 누적</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">오늘 예약</div>
+      <div class="stat-value">${todayRes.length}<span class="stat-unit">건</span></div>
+      <div class="stat-sub">${todayPax}명 예약됨</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">예정 예약</div>
+      <div class="stat-value">${upcomingRes.length}<span class="stat-unit">건</span></div>
+      <div class="stat-sub">오늘 이후 ${upPax}명</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">오늘 잔여 가용</div>
+      <div class="stat-value" style="color:${remToday<=0?'var(--red)':remToday<=8?'#e0a85a':'var(--green)'}">${remToday}<span class="stat-unit">명</span></div>
+      <div class="stat-sub">가용 ${capacity.available}명 기준</div>
+    </div>`;
+}
+
+// ── 주간 뷰 ──
+function renderWeek() {
+  const ws = weekStart(weekOffset);
+  const we = addDays(ws,5);
+  const today = todayStr();
+  document.getElementById('weekTitle').textContent =
+    `${ws.getFullYear()}년 ${ws.getMonth()+1}월 ${ws.getDate()}일 — ${we.getMonth()+1}월 ${we.getDate()}일`;
+  const cap = capacity.available;
+
+  let html = '<thead><tr><th style="width:52px"></th>';
+  for (let i=0;i<6;i++) {
+    const d=addDays(ws,i), ds=toDateStr(d), dow=d.getDay();
+    const isToday=ds===today;
+    let cls='';
+    if(isToday) cls+=' today-col';
+    if(dow===6) cls+=' sat-col';
+    if(!TIME_SLOTS[dow]) cls+=' closed-col';
+    html+=`<th class="${cls}"><div class="th-day">${DAY_NAMES[dow]}${isToday?'<span class="today-chip"></span>':''}</div><div class="th-date">${d.getDate()}</div></th>`;
+  }
+  html+='</tr></thead><tbody>';
+
+  ALL_TIMES.forEach(time=>{
+    html+=`<tr><td class="time-cell">${time}</td>`;
+    for(let i=0;i<6;i++){
+      const d=addDays(ws,i),ds=toDateStr(d),dow=d.getDay();
+      const slots=TIME_SLOTS[dow];
+      if(!slots||!slots.includes(time)){html+=`<td class="closed-cell"></td>`;continue;}
+      const recs=getResList().filter(r=>r.date===ds&&r.time===time);
+      const total=recs.reduce((s,r)=>s+r.people,0);
+      const pct=Math.min(100,Math.round(total/cap*100));
+      const fillCls=pct>=100?'full':pct>=70?'warn':'';
+      const paxCls=pct>=100?'full':pct>=70?'warn':'ok';
+      let chips='';
+      recs.forEach(r=>{chips+=`<div class="res-chip" onclick="openModal('${r.id}')"><span class="chip-name">${escH(r.name)}</span><span class="chip-ppl"> · ${r.people}명</span><div class="chip-ph">${escH(r.phone)}</div></div>`;});
+      html+=`<td><div class="slot-header"><span class="slot-pax ${paxCls}">${total}/${cap}명</span></div>${chips}<div class="cap-bar"><div class="cap-fill ${fillCls}" style="width:${pct}%"></div></div></td>`;
+    }
+    html+='</tr>';
+  });
+  html+='</tbody>';
+  document.getElementById('weekTable').innerHTML=html;
+}
+
+// ── 일별 뷰 ──
+function renderDay() {
+  const base=new Date(); base.setDate(base.getDate()+dayOffset);
+  const ds=toDateStr(base), dow=base.getDay(), slots=TIME_SLOTS[dow]||[];
+  const cap=capacity.available;
+  document.getElementById('dayTitle').textContent=
+    `${base.getFullYear()}년 ${base.getMonth()+1}월 ${base.getDate()}일 (${DAY_NAMES[dow]})`;
+  const container=document.getElementById('daySchedule');
+  if(!slots.length){container.innerHTML=`<div style="padding:40px;text-align:center;color:var(--muted);font-size:0.84rem">일요일은 휴무입니다</div>`;return;}
+  let html='';
+  slots.forEach(time=>{
+    const recs=getResList().filter(r=>r.date===ds&&r.time===time);
+    const total=recs.reduce((s,r)=>s+r.people,0);
+    const remain=cap-total;
+    const pct=Math.min(100,Math.round(total/cap*100));
+    const fillCls=pct>=100?'full':pct>=70?'warn':'';
+    const sc=remain<=0?'var(--red)':remain<=8?'#e0a85a':'var(--green)';
+    let cards=recs.length===0?`<div class="empty-slot">예약 없음</div>`:recs.map(r=>`
+      <div class="day-res-card" onclick="openModal('${r.id}')">
+        <div class="rc-top"><span class="rc-name">${escH(r.name)}</span><span class="rc-ppl">${r.people}명</span></div>
+        <div class="rc-ph">${escH(r.phone)}</div>
+      </div>`).join('');
+    html+=`<div class="day-slot"><div class="day-time">${time}</div><div class="day-res-area">
+      <div class="day-cap-info" style="color:${sc}">${total}명 예약 · <span style="color:var(--muted)">잔여 ${remain}명</span>
+        <div class="cap-bar" style="margin-top:4px"><div class="cap-fill ${fillCls}" style="width:${pct}%"></div></div>
+      </div><div class="day-res-list">${cards}</div></div></div>`;
+  });
+  container.innerHTML=html;
+}
+
+// ── 목록 뷰 ──
+function renderList() {
+  const today=todayStr();
+  let res=getResList();
+  if(listFilter==='upcoming') res=res.filter(r=>r.date>=today);
+  else if(listFilter==='today') res=res.filter(r=>r.date===today);
+  res.sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
+  const tbody=document.getElementById('resListBody');
+  if(!res.length){tbody.innerHTML=`<tr><td colspan="7" class="empty-table">예약 내역이 없습니다</td></tr>`;return;}
+  tbody.innerHTML=res.map(r=>`
+    <tr>
+      <td>${formatDate(r.date)}</td>
+      <td>${r.time}</td>
+      <td class="td-ppl">${r.people}명</td>
+      <td>${escH(r.name)}</td>
+      <td class="td-ph"><a href="tel:${escH(r.phone)}" style="color:var(--accent)">${escH(r.phone)}</a></td>
+      <td style="color:var(--muted);font-size:0.76rem">${formatDateTime(r.createdAt)}</td>
+      <td class="td-del"><button class="btn-del" onclick="deleteReservation('${r.id}')">취소</button></td>
+    </tr>`).join('');
+}
+
+// ── 탭 전환 ──
+function switchTab(tab,el) {
+  currentTab=tab;
+  document.querySelectorAll('.view-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  ['week-view','day-view','list-view','settings-view'].forEach(id=>{
+    document.getElementById(id).style.display='none';
+  });
+  document.getElementById(tab+'-view').style.display='block';
+  if(tab!=='settings') renderCurrent();
+}
+
+function renderCurrent() {
+  renderStats();
+  if(currentTab==='week') renderWeek();
+  else if(currentTab==='day') renderDay();
+  else if(currentTab==='list') renderList();
+}
+
+function setFilter(f,el) {
+  listFilter=f;
+  document.querySelectorAll('.list-filter-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  renderList();
+}
+
+// ── 모달 ──
+function openModal(id) {
+  const r=getResList().find(x=>x.id===id);
+  if(!r) return;
+  const d=new Date(r.date+'T00:00:00');
+  document.getElementById('modalBody').innerHTML=`
+    <div class="modal-row"><span class="ml">날짜</span><span>${d.getMonth()+1}월 ${d.getDate()}일 (${DAY_NAMES[d.getDay()]})</span></div>
+    <div class="modal-row"><span class="ml">시간</span><span>${r.time}</span></div>
+    <div class="modal-row"><span class="ml">인원</span><span style="color:var(--accent);font-weight:500">${r.people}명</span></div>
+    <div class="modal-row"><span class="ml">예약자</span><span>${escH(r.name)}</span></div>
+    <div class="modal-row"><span class="ml">연락처</span><span><a href="tel:${escH(r.phone)}" style="color:var(--accent)">${escH(r.phone)}</a></span></div>
+    <div class="modal-row"><span class="ml">등록</span><span style="font-size:0.78rem;color:var(--muted)">${formatDateTime(r.createdAt)}</span></div>`;
+  document.getElementById('modalDelBtn').onclick=()=>{deleteReservation(id);closeModalDirect();};
+  document.getElementById('detailModal').classList.add('open');
+}
+function closeModal(e){if(e.target.id==='detailModal')closeModalDirect();}
+function closeModalDirect(){document.getElementById('detailModal').classList.remove('open');}
+
+// ── 삭제 ──
+async function deleteReservation(id) {
+  if(!confirm('이 예약을 취소하시겠습니까?')) return;
+  try { await db.ref('reservations/'+id).remove(); }
+  catch(e){ alert('삭제 중 오류가 발생했습니다.'); }
+}
+
+// ── 전체 삭제 ──
+async function clearAll() {
+  if(!confirm('모든 예약 데이터를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.')) return;
+  try { await db.ref('reservations').remove(); }
+  catch(e){ alert('오류가 발생했습니다.'); }
+}
+
+// ── 수동 추가 ──
+function toggleAddForm() {
+  const card=document.getElementById('addFormCard');
+  card.classList.toggle('open');
+  if(card.classList.contains('open')){
+    const today=todayStr();
+    document.getElementById('af-date').value=today;
+    updateAfTime(today);
+  }
+}
+document.getElementById('af-date').addEventListener('change',function(){updateAfTime(this.value);});
+function updateAfTime(ds){
+  const sel=document.getElementById('af-time');
+  sel.innerHTML='<option value="">선택</option>';
+  if(!ds)return;
+  const slots=TIME_SLOTS[new Date(ds+'T00:00:00').getDay()]||[];
+  slots.forEach(t=>{const o=document.createElement('option');o.value=t;o.textContent=t;sel.appendChild(o);});
+}
+
+async function saveManual() {
+  const date  =document.getElementById('af-date').value;
+  const time  =document.getElementById('af-time').value;
+  const people=parseInt(document.getElementById('af-people').value);
+  const name  =document.getElementById('af-name').value.trim();
+  const phone =document.getElementById('af-phone').value.trim();
+  if(!date||!time||!people||!name||!phone){alert('모든 항목을 입력해 주세요.');return;}
+  const booked=bookedCount(date,time);
+  if(booked+people>capacity.available){
+    if(!confirm(`가용 잔여 인원(${capacity.available-booked}명)을 초과합니다. 그래도 추가하시겠습니까?`))return;
+  }
+  try {
+    await db.ref('reservations').push({date,time,people,name,phone,createdAt:new Date().toISOString()});
+    document.getElementById('af-name').value='';
+    document.getElementById('af-phone').value='';
+    document.getElementById('af-people').value='';
+    document.getElementById('addFormCard').classList.remove('open');
+    alert('예약이 추가되었습니다.');
+  } catch(e){ alert('저장 중 오류가 발생했습니다.'); }
+}
+
+// ── 좌석 설정 저장 ──
+async function saveCapacity() {
+  const total=parseInt(document.getElementById('set-total').value);
+  const avail=parseInt(document.getElementById('set-avail').value);
+  if(!total||!avail||isNaN(total)||isNaN(avail)){alert('올바른 숫자를 입력해 주세요.');return;}
+  if(avail>total){alert('온라인 가용 좌석은 전체 좌석보다 클 수 없습니다.');return;}
+  try {
+    await db.ref('settings/capacity').set({total,available:avail});
+    const msg=document.getElementById('savedMsg');
+    msg.classList.add('show');
+    setTimeout(()=>msg.classList.remove('show'),2000);
+  } catch(e){ alert('저장 중 오류가 발생했습니다.'); }
+}
+
+// ── XSS 방지 ──
+function escH(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+</script>
+</body>
+</html>
