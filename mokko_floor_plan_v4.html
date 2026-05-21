@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #13132b;
+    font-family: 'Segoe UI', sans-serif;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 20px 12px 28px;
+  }
+  h1 { color: #c9a96e; font-size: 15px; font-weight: 700; letter-spacing: 3px; margin-bottom: 3px; text-transform: uppercase; }
+  .subtitle { color: #666; font-size: 11px; margin-bottom: 14px; letter-spacing: 1px; }
+  .card {
+    background: #0f0f24; border: 1.5px solid #252545; border-radius: 14px;
+    padding: 14px 14px 12px; width: 100%; max-width: 580px; position: relative;
+  }
+  .legend { display: flex; gap: 14px; justify-content: flex-end; margin-bottom: 10px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #999; }
+  .leg-box { width: 13px; height: 13px; border-radius: 3px; }
+  svg { display: block; width: 100%; height: auto; }
+  .tooltip {
+    position: absolute; background: #1e1e40; color: #e8e8ff;
+    border: 1px solid #c9a96e; border-radius: 6px; padding: 5px 10px;
+    font-size: 11px; pointer-events: none; opacity: 0;
+    transition: opacity 0.15s; white-space: nowrap; z-index: 20;
+  }
+  .stats { margin-top: 10px; display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
+  .stat { background: #0a0a1e; border: 1px solid #252545; border-radius: 8px; padding: 7px 10px; text-align: center; }
+  .stat-label { color: #666; font-size: 10px; letter-spacing: 1px; margin-bottom: 2px; }
+  .stat-val { color: #c9a96e; font-size: 19px; font-weight: 700; }
+  .stat-unit { color: #777; font-size: 11px; margin-left: 2px; }
+</style>
+</head>
+<body>
+<h1>🍶 Mokko Izakaya</h1>
+<div class="subtitle">H1 홀 좌석 배치도</div>
+
+<div class="card">
+  <div class="legend">
+    <div class="legend-item"><div class="leg-box" style="background:#e07a4a;"></div>4인석</div>
+    <div class="legend-item"><div class="leg-box" style="background:#2e8a78;"></div>2인석</div>
+  </div>
+  <div class="tooltip" id="tip"></div>
+
+  <!--
+    ViewBox: 560 × 520
+    ┌────────────┬──────────────────┬──────────┐  y=8
+    │  H1.X zone │    화장실          │          │
+    │  [  4인  ] │                  │ H1.A zone│
+    ├────────────┤  ────────────    │ [  4인  ]│  y=146
+    │  H1.D zone │    카운터          │ [  2인  ]│
+    │ [4인][4인] │                  │ [  2인  ]│  y=218
+    ├────────────┴──────────────────┴──────────┤
+    │        출입구 및 통로 (40px tall)           │  y=258
+    ├──────────────────────┬────────┬──────────┤
+    │                      │ H1.C   │  H1.B    │
+    │       주방 (wider)    │[ 2인 ] │ [ 2인 ]  │
+    │                      │[ 4인 ] │ [ 4인 ]  │
+    │                      │[ 4인 ] │ [ 4인 ]  │  y=502
+    └──────────────────────┴────────┴──────────┘
+
+    KEY ALIGNMENT:
+      H1.A zone right = H1.B zone right = right wall (x=552)
+      H1.A zone left  = H1.B zone left  = x=436
+      → Perfect vertical column alignment
+
+    Columns:
+      Left (X/D zones)  : x=8   → 212
+      Center (화장실/카운터): x=220  → 428
+      Right (A/B zones)  : x=436 → 552  (w=116)
+
+    H1.C zone          : x=314  → 428  (w=114, right of 주방)
+    Divider            : x=428  → 436  (w=8)
+    H1.B zone          : x=436  → 552  (w=116)
+
+    주방 (lower left)   : x=8   → 308  (w=300, expanded!)
+    통로                : y=218  → 258  (h=40, expanded!)
+
+    Table sizes (uniform):
+      4인 : 82 × 54
+      2인 : 82 × 40
+  -->
+  <svg viewBox="0 0 560 510" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <pattern id="g" width="18" height="18" patternUnits="userSpaceOnUse">
+        <path d="M18 0L0 0 0 18" fill="none" stroke="#18183a" stroke-width="0.5"/>
+      </pattern>
+      <filter id="sh">
+        <feDropShadow dx="0" dy="2" stdDeviation="2.5" flood-color="#000" flood-opacity="0.5"/>
+      </filter>
+    </defs>
+
+    <!-- Floor background -->
+    <rect width="560" height="510" fill="url(#g)" rx="8"/>
+    <!-- Outer wall -->
+    <rect x="1" y="1" width="558" height="508" rx="8" fill="none" stroke="#30305a" stroke-width="2.5"/>
+
+    <!-- ──────────────────────────────────── -->
+    <!-- STRUCTURAL ROOMS                    -->
+    <!-- ──────────────────────────────────── -->
+
+    <!-- 화장실 -->
+    <rect x="220" y="8" width="208" height="130" rx="5" fill="#0b0b1f" stroke="#2a2a4a" stroke-width="1.5"/>
+    <text x="324" y="68" text-anchor="middle" fill="#484870" font-size="14" font-weight="600" letter-spacing="3">화장실</text>
+    <text x="324" y="85" text-anchor="middle" fill="#383858" font-size="10" letter-spacing="2">RESTROOM</text>
+    <path d="M235 136 Q235 150 249 150" fill="none" stroke="#303055" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="235" y1="136" x2="235" y2="150" stroke="#303055" stroke-width="1.5"/>
+
+    <!-- 카운터 -->
+    <rect x="220" y="146" width="208" height="66" rx="5" fill="#0d0d22" stroke="#2a2a4a" stroke-width="1.5"/>
+    <text x="324" y="178" text-anchor="middle" fill="#484870" font-size="13" font-weight="600" letter-spacing="3">카운터</text>
+    <text x="324" y="195" text-anchor="middle" fill="#383858" font-size="9.5" letter-spacing="2">COUNTER</text>
+
+    <!-- 출입구 및 통로 (40px tall — much wider) -->
+    <rect x="8" y="220" width="544" height="38" rx="0" fill="#111128" stroke="none"/>
+    <line x1="8" y1="220" x2="552" y2="220" stroke="#2e2e52" stroke-width="1.2"/>
+    <line x1="8" y1="258" x2="552" y2="258" stroke="#2e2e52" stroke-width="1.2"/>
+    <!-- Arrow suggesting entrance flow -->
+    <line x1="280" y1="228" x2="280" y2="250" stroke="#c9a96e" stroke-width="1.2" stroke-opacity="0.5"/>
+    <polygon points="280,253 276,246 284,246" fill="#c9a96e" fill-opacity="0.5"/>
+    <text x="324" y="243" text-anchor="middle" fill="#666" font-size="9.5" letter-spacing="1">출입구 및 통로</text>
+
+    <!-- 주방 (wider: x=8, w=300) -->
+    <rect x="8" y="262" width="300" height="240" rx="5" fill="#0b0b1f" stroke="#2a2a4a" stroke-width="1.5"/>
+    <text x="158" y="386" text-anchor="middle" fill="#484870" font-size="15" font-weight="600" letter-spacing="4">주방</text>
+    <text x="158" y="404" text-anchor="middle" fill="#383858" font-size="10" letter-spacing="2">KITCHEN</text>
+
+    <!-- Divider wall between H1.C and H1.B -->
+    <rect x="430" y="272" width="8" height="228" rx="3" fill="#252545" stroke="#383860" stroke-width="1"/>
+
+    <!-- ──────────────────────────────────── -->
+    <!-- ZONE BORDERS                        -->
+    <!-- ──────────────────────────────────── -->
+
+    <!-- H1.X zone -->
+    <rect x="8" y="8" width="204" height="130" rx="7" fill="none" stroke="#e07a4a" stroke-width="1.3" stroke-opacity="0.5"/>
+    <text x="40" y="22" fill="#c9a96e" font-size="9.5" font-weight="700" letter-spacing="1">H1.X zone</text>
+
+    <!-- H1.D zone -->
+    <rect x="8" y="146" width="204" height="66" rx="7" fill="none" stroke="#e07a4a" stroke-width="1.3" stroke-opacity="0.5"/>
+    <text x="30" y="160" fill="#c9a96e" font-size="9.5" font-weight="700" letter-spacing="1">H1.D zone</text>
+
+    <!-- H1.A zone (x=436, w=116, right=552) -->
+    <rect x="436" y="8" width="116" height="204" rx="7" fill="none" stroke="#e07a4a" stroke-width="1.3" stroke-opacity="0.5"/>
+    <text x="462" y="22" fill="#c9a96e" font-size="9.5" font-weight="700" letter-spacing="1">H1.A zone</text>
+
+    <!-- H1.C zone (x=314, w=114) -->
+    <rect x="314" y="262" width="114" height="238" rx="7" fill="none" stroke="#2e8a78" stroke-width="1.3" stroke-opacity="0.55"/>
+    <text x="356" y="276" text-anchor="middle" fill="#c9a96e" font-size="9.5" font-weight="700" letter-spacing="1">H1.C zone</text>
+
+    <!-- H1.B zone (x=440, w=112, right=552) — aligned with H1.A -->
+    <rect x="440" y="262" width="112" height="238" rx="7" fill="none" stroke="#2e8a78" stroke-width="1.3" stroke-opacity="0.55"/>
+    <text x="480" y="276" text-anchor="middle" fill="#c9a96e" font-size="9.5" font-weight="700" letter-spacing="1">H1.B zone</text>
+
+    <!-- Vertical alignment guide (subtle dashed line) -->
+    <line x1="436" y1="8" x2="436" y2="510" stroke="#c9a96e" stroke-width="0.5" stroke-opacity="0.12" stroke-dasharray="4,4"/>
+
+    <!-- ──────────────────────────────────── -->
+    <!-- TABLES                              -->
+    <!-- 4인: 82×54  /  2인: 82×40 (uniform) -->
+    <!-- ──────────────────────────────────── -->
+
+    <!-- H1.X: X-1(4인) — centered in 204×130 -->
+    <!-- x: 8+(204-82)/2=69, y: 8+(130-54)/2=46 -->
+    <g class="tbl" data-zone="H1.X" data-seats="4" data-id="X-1">
+      <rect x="69" y="46" width="82" height="54" rx="6" fill="#e07a4a" filter="url(#sh)"/>
+      <text x="110" y="70" text-anchor="middle" fill="#fff" font-size="14" font-weight="700">4인</text>
+      <text x="110" y="86" text-anchor="middle" fill="rgba(255,255,255,0.5)" font-size="9">TABLE X-1</text>
+    </g>
+
+    <!-- H1.D: D-1, D-2(4인) — centered in 204×66 -->
+    <!-- y: 146+(66-54)/2=152  |  D-1 x=20, D-2 x=112 -->
+    <g class="tbl" data-zone="H1.D" data-seats="4" data-id="D-1">
+      <rect x="20" y="152" width="82" height="54" rx="6" fill="#e07a4a" filter="url(#sh)"/>
+      <text x="61" y="176" text-anchor="middle" fill="#fff" font-size="14" font-weight="700">4인</text>
+      <text x="61" y="192" text-anchor="middle" fill="rgba(255,255,255,0.5)" font-size="9">TABLE D-1</text>
+    </g>
+    <g class="tbl" data-zone="H1.D" data-seats="4" data-id="D-2">
+      <rect x="112" y="152" width="82" height="54" rx="6" fill="#e07a4a" filter="url(#sh)"/>
+      <text x="153" y="176" text-anchor="middle" fill="#fff" font-size="14" font-weight="700">4인</text>
+      <text x="153" y="192" text-anchor="middle" fill="rgba(255,255,255,0.5)" font-size="9">TABLE D-2</text>
+    </g>
+
+    <!-- H1.A: A-1(4인), A-2(2인), A-3(2인) -->
+    <!-- x: 436+(116-82)/2=453  -->
+    <!-- A-1 y=26, A-2 y=98, A-3 y=155 -->
+    <g class="tbl" data-zone="H1.A" data-seats="4" data-id="A-1">
+      <rect x="453" y="26" width="82" height="54" rx="6" fill="#e07a4a" filter="url(#sh)"/>
+      <text x="494" y="50" text-anchor="middle" fill="#fff" font-size="14" font-weight="700">4인</text>
+      <text x="494" y="66" text-anchor="middle" fill="rgba(255,255,255,0.5)" font-size="9">TABLE A-1</text>
+    </g>
+    <g class="tbl" data-zone="H1.A" data-seats="2" data-id="A-2">
+      <rect x="453" y="96" width="82" height="40" rx="6" fill="#2e8a78" filter="url(#sh)"/>
+      <text x="494" y="113" text-anchor="middle" fill="#fff" font-size="14" font-weight="700">2인</text>
+      <text x="494" y="127" text-anchor="middle" fill="rgba(255,255,255,0.5)" font-size="9">TABLE A-2</text>
+    </g>
+    <g class="tbl" data-zone="H1.A" data-seats="2" data-id="A-3">
+      <rect x="453" y="152" width="82" height="40" rx="6" fill="#2e8a78" filter="url(#sh)"/>
+      <text x="494" y="169" text-anchor="middle" fill="#fff" font-size="14" font-weight="700">2인</text>
+      <text x="494" y="183" text-anchor="middle" fill="rgba(255,255,255,0.5)" font-size="9">TABLE A-3</text>
+    </g>
+
+    <!-- H1.C: C-1(2인), C-2(4인), C-3(4인) -->
+    <!-- x: 314+(114-82)/2=330 -->
+    <!-- C-1 y=282, C-2 y=336, C-3 y=406 -->
+    <g class="tbl" data-zone="H1.C" data-seats="2" data-id="C-1">
+      <rect x="330" y="282" width="82" height="40" rx="6" fill="#2e8a78" filter="url(#sh)"/>
+      <text x="371" y="299" text-anchor="middle" fill="#fff" font-size="14" font-weight="700">2인</text>
+      <text x="371" y="313" text-anchor="middle" fill="rgba(255,255,255,0.5)" font-size="9">TABLE C-1</text>
+    </g>
+    <g class="tbl" data-zone="H1.C" data-seats="4" data-id="C-2">
+      <rect x="330" y="336" width="82" height="54" rx="6" fill="#e07a4a" filter="url(#sh)"/>
+      <text x="371" y="360" text-anchor="middle" fill="#fff" font-size="14" font-weight="700">4인</text>
+      <text x="371" y="376" text-anchor="middle" fill="rgba(255,255,255,0.5)" font-size="9">TABLE C-2</text>
+    </g>
+    <g class="tbl" data-zone="H1.C" data-seats="4" data-id="C-3">
+      <rect x="330" y="406" width="82" height="54" rx="6" fill="#e07a4a" filter="url(#sh)"/>
+      <text x="371" y="430" text-anchor="middle" fill="#fff" font-size="14" font-weight="700">4인</text>
+      <text x="371" y="446" text-anchor="middle" fill="rgba(255,255,255,0.5)" font-size="9">TABLE C-3</text>
+    </g>
+
+    <!-- H1.B: B-1(2인), B-2(4인), B-3(4인) -->
+    <!-- x: 440+(112-82)/2=455 -->
+    <!-- B-1 y=282, B-2 y=336, B-3 y=406 — same y as H1.C for alignment -->
+    <g class="tbl" data-zone="H1.B" data-seats="2" data-id="B-1">
+      <rect x="455" y="282" width="82" height="40" rx="6" fill="#2e8a78" filter="url(#sh)"/>
+      <text x="496" y="299" text-anchor="middle" fill="#fff" font-size="14" font-weight="700">2인</text>
+      <text x="496" y="313" text-anchor="middle" fill="rgba(255,255,255,0.5)" font-size="9">TABLE B-1</text>
+    </g>
+    <g class="tbl" data-zone="H1.B" data-seats="4" data-id="B-2">
+      <rect x="455" y="336" width="82" height="54" rx="6" fill="#e07a4a" filter="url(#sh)"/>
+      <text x="496" y="360" text-anchor="middle" fill="#fff" font-size="14" font-weight="700">4인</text>
+      <text x="496" y="376" text-anchor="middle" fill="rgba(255,255,255,0.5)" font-size="9">TABLE B-2</text>
+    </g>
+    <g class="tbl" data-zone="H1.B" data-seats="4" data-id="B-3">
+      <rect x="455" y="406" width="82" height="54" rx="6" fill="#e07a4a" filter="url(#sh)"/>
+      <text x="496" y="430" text-anchor="middle" fill="#fff" font-size="14" font-weight="700">4인</text>
+      <text x="496" y="446" text-anchor="middle" fill="rgba(255,255,255,0.5)" font-size="9">TABLE B-3</text>
+    </g>
+
+  </svg>
+
+  <div class="stats">
+    <div class="stat"><div class="stat-label">총 테이블</div><div class="stat-val">11<span class="stat-unit">개</span></div></div>
+    <div class="stat"><div class="stat-label">총 수용 인원</div><div class="stat-val">36<span class="stat-unit">인</span></div></div>
+    <div class="stat"><div class="stat-label">존 수</div><div class="stat-val">5<span class="stat-unit">개</span></div></div>
+  </div>
+</div>
+
+<script>
+  const tables = document.querySelectorAll('.tbl');
+  const tip = document.getElementById('tip');
+  const card = document.querySelector('.card');
+  tables.forEach(g => {
+    const r = g.querySelector('rect');
+    g.style.cursor = 'pointer';
+    g.addEventListener('mouseenter', () => {
+      r.style.opacity = '0.75';
+      tip.textContent = `${g.dataset.zone} · TABLE ${g.dataset.id} · ${g.dataset.seats}인석`;
+      tip.style.opacity = '1';
+    });
+    g.addEventListener('mousemove', e => {
+      const b = card.getBoundingClientRect();
+      tip.style.left = (e.clientX - b.left + 12) + 'px';
+      tip.style.top  = (e.clientY - b.top  - 36) + 'px';
+    });
+    g.addEventListener('mouseleave', () => {
+      r.style.opacity = '1';
+      tip.style.opacity = '0';
+    });
+  });
+</script>
+</body>
+</html>
