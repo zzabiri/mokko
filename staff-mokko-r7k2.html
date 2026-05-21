@@ -142,7 +142,7 @@
     .btn-today:hover { border-color: var(--accent); color: var(--accent); }
 
     /* ── 주간 뷰 ── */
-    #week-view { display: block; } #day-view { display: none; } #list-view { display: none; } #settings-view { display: none; }
+    #week-view { display: none; } #day-view { display: block; } #list-view { display: none; } #settings-view { display: none; }
     .week-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; border: 1px solid var(--border); border-radius: 8px; }
     .week-table { min-width: 700px; width: 100%; border-collapse: collapse; }
     .week-table th {
@@ -285,6 +285,101 @@
     /* 로딩 */
     .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(201,169,110,0.3); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── 좌석 배치도 ── */
+    .fp-wrap { margin-top: 20px; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+    .fp-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 11px 16px; background: var(--surface2);
+      border-bottom: 1px solid var(--border); cursor: pointer; user-select: none;
+    }
+    .fp-header-title { font-size: 0.78rem; letter-spacing: 0.08em; color: var(--accent); font-weight: 500; }
+    .fp-legend { display: flex; gap: 12px; align-items: center; }
+    .fp-leg { display: flex; align-items: center; gap: 5px; font-size: 0.66rem; color: var(--muted); }
+    .fp-leg-dot { width: 9px; height: 9px; border-radius: 2px; flex-shrink: 0; }
+    .fp-body { display: none; padding: 12px; background: #111827; }
+    .fp-body.open { display: block; }
+
+    .fp-main-grid {
+      display: grid;
+      grid-template-columns: 2fr 1.8fr 0.9fr;
+      gap: 8px;
+      min-height: 360px;
+    }
+    .fp-col-left  { display: flex; flex-direction: column; gap: 8px; }
+    .fp-col-mid   { display: flex; flex-direction: column; gap: 8px; }
+    .fp-col-right { display: flex; flex-direction: column; gap: 8px; }
+
+    .fp-zone {
+      border: 1.5px dashed rgba(201,169,110,0.3);
+      border-radius: 6px; padding: 10px 8px 8px; position: relative;
+    }
+    .fp-zone-label {
+      position: absolute; top: -8px; left: 8px;
+      background: #111827; padding: 0 5px;
+      font-size: 0.58rem; color: var(--accent);
+      letter-spacing: 0.1em; font-weight: 600; text-transform: uppercase;
+    }
+    .fp-zone-tables { display: flex; flex-direction: column; gap: 6px; margin-top: 2px; }
+
+    .fp-table {
+      border-radius: 5px; padding: 7px 6px;
+      text-align: center; cursor: pointer;
+      transition: opacity 0.15s, transform 0.12s, box-shadow 0.12s;
+      position: relative; min-width: 56px;
+    }
+    .fp-table:hover { opacity: 0.85; transform: scale(1.04); box-shadow: 0 4px 14px rgba(0,0,0,0.5); }
+    .fp-table.cap4     { background: #c9593a; color: #fff; }
+    .fp-table.cap2     { background: #2a7a6a; color: #fff; }
+    .fp-table.assigned { background: var(--accent); color: #0e0e0e; }
+    .fp-table.drag-over { box-shadow: 0 0 0 2px var(--accent) !important; transform: scale(1.06) !important; }
+    .fp-table[draggable="true"] { cursor: grab; }
+    .fp-table[draggable="true"]:active { cursor: grabbing; }
+    .fp-table-cap { font-size: 0.8rem; font-weight: 700; line-height: 1; }
+    .fp-table-id  { font-size: 0.52rem; letter-spacing: 0.08em; opacity: 0.7; margin-top: 2px; }
+    .fp-table-res { font-size: 0.58rem; margin-top: 3px; font-weight: 500; line-height: 1.35; min-height: 0; word-break: keep-all; }
+
+    .fp-room {
+      border-radius: 6px; background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 10px 6px;
+    }
+    .fp-flex1 { flex: 1; }
+    .fp-room-name { font-size: 0.74rem; color: var(--muted); letter-spacing: 0.1em; }
+    .fp-room-en   { font-size: 0.58rem; color: rgba(120,112,104,0.55); letter-spacing: 0.12em; margin-top: 2px; }
+    .fp-entrance  { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; padding: 6px; }
+    .fp-bc-row    { display: flex; gap: 6px; flex: 1; }
+    .fp-bc-row > .fp-zone { flex: 1; }
+    .fp-bc-sep    { width: 4px; background: #0a0f1c; border-radius: 2px; flex-shrink: 0; }
+
+    /* 배정 모달 */
+    .assign-modal-bg { display: none; position: fixed; inset: 0; z-index: 300; background: rgba(0,0,0,0.78); backdrop-filter: blur(4px); align-items: center; justify-content: center; padding: 20px; }
+    .assign-modal-bg.open { display: flex; }
+    .assign-modal { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 22px; width: 100%; max-width: 340px; animation: mIn 0.18s ease; }
+    .assign-modal-title { font-size: 0.88rem; font-weight: 600; color: var(--accent); margin-bottom: 4px; letter-spacing: 0.05em; }
+    .assign-modal-sub   { font-size: 0.72rem; color: var(--muted); margin-bottom: 14px; }
+    .assign-res-list    { display: flex; flex-direction: column; gap: 6px; max-height: 270px; overflow-y: auto; margin-bottom: 14px; }
+    .assign-res-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 12px; background: var(--surface2);
+      border: 1px solid var(--border); border-radius: 6px;
+      cursor: pointer; font-size: 0.82rem; transition: border-color 0.15s;
+    }
+    .assign-res-item:hover { border-color: var(--accent); }
+    .assign-res-item.cur  { border-color: var(--accent); background: rgba(201,169,110,0.1); }
+    .assign-res-time  { font-size: 0.7rem; color: var(--accent); font-weight: 600; min-width: 38px; }
+    .assign-res-name  { flex: 1; font-weight: 500; }
+    .assign-res-ppl   { font-size: 0.7rem; color: var(--muted); }
+    .assign-res-check { color: var(--accent); font-weight: 700; }
+    .assign-empty     { text-align: center; padding: 20px; color: var(--muted); font-size: 0.78rem; }
+    .assign-actions   { display: flex; gap: 8px; }
+    .btn-assign-unset { flex: 1; height: 38px; background: rgba(224,90,90,0.1); border: 1px solid rgba(224,90,90,0.35); border-radius: 4px; color: var(--red); font-size: 0.78rem; display: none; cursor: pointer; transition: background 0.15s; }
+    .btn-assign-unset:hover { background: rgba(224,90,90,0.2); }
+    .btn-assign-unset.show { display: block; }
+    .btn-assign-close { flex: 1; height: 38px; background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; color: var(--text); font-size: 0.78rem; cursor: pointer; transition: border-color 0.15s; }
+    .btn-assign-close:hover { border-color: var(--muted); }
   </style>
 </head>
 <body>
@@ -358,8 +453,8 @@
 
   <!-- 탭 -->
   <div class="view-tabs">
-    <button class="view-tab active" onclick="switchTab('week',this)">주간 뷰</button>
-    <button class="view-tab"        onclick="switchTab('day',this)">일별 뷰</button>
+    <button class="view-tab active" onclick="switchTab('day',this)">일별 뷰</button>
+    <button class="view-tab"        onclick="switchTab('week',this)">주간 뷰</button>
     <button class="view-tab"        onclick="switchTab('list',this)">목록 뷰</button>
     <button class="view-tab"        onclick="switchTab('settings',this)">⚙️ 좌석 설정</button>
   </div>
@@ -384,6 +479,116 @@
       <button class="btn-nav" onclick="dayOffset++;renderDay()">›</button>
     </div>
     <div class="day-schedule" id="daySchedule"></div>
+
+    <!-- ── 좌석 배치도 ── -->
+    <div class="fp-wrap" id="fpWrap">
+      <div class="fp-header" onclick="toggleFloorPlan()">
+        <span class="fp-header-title">🏠 H1 홀 좌석 배치도</span>
+        <div style="display:flex;align-items:center;gap:16px">
+          <div class="fp-legend">
+            <div class="fp-leg"><div class="fp-leg-dot" style="background:#c9593a"></div>4인석</div>
+            <div class="fp-leg"><div class="fp-leg-dot" style="background:#2a7a6a"></div>2인석</div>
+            <div class="fp-leg"><div class="fp-leg-dot" style="background:var(--accent)"></div>배정됨</div>
+          </div>
+          <span id="fpToggleIcon" style="color:var(--muted);font-size:0.78rem;transition:transform 0.2s">▲</span>
+        </div>
+      </div>
+      <div class="fp-body open" id="fpBody">
+        <div class="fp-main-grid">
+
+          <!-- LEFT: X zone · D zone · 주방 -->
+          <div class="fp-col-left">
+            <div class="fp-zone">
+              <div class="fp-zone-label">H1.X zone</div>
+              <div class="fp-zone-tables">
+                <div class="fp-table cap4" id="fp-X-1" onclick="openAssignModal('X-1')">
+                  <div class="fp-table-cap">4인</div>
+                  <div class="fp-table-id">TABLE X-1</div>
+                  <div class="fp-table-res" id="fpr-X-1"></div>
+                </div>
+              </div>
+            </div>
+            <div class="fp-zone">
+              <div class="fp-zone-label">H1.D zone</div>
+              <div class="fp-zone-tables" style="flex-direction:row;gap:8px">
+                <div class="fp-table cap4" id="fp-D-1" onclick="openAssignModal('D-1')" style="flex:1">
+                  <div class="fp-table-cap">4인</div>
+                  <div class="fp-table-id">TABLE D-1</div>
+                  <div class="fp-table-res" id="fpr-D-1"></div>
+                </div>
+                <div class="fp-table cap4" id="fp-D-2" onclick="openAssignModal('D-2')" style="flex:1">
+                  <div class="fp-table-cap">4인</div>
+                  <div class="fp-table-id">TABLE D-2</div>
+                  <div class="fp-table-res" id="fpr-D-2"></div>
+                </div>
+              </div>
+            </div>
+            <div class="fp-room fp-flex1">
+              <div class="fp-room-name">주 방</div>
+              <div class="fp-room-en">KITCHEN</div>
+            </div>
+          </div>
+
+          <!-- MIDDLE: 화장실 · 카운터 · 출입구 · B+C zones -->
+          <div class="fp-col-mid">
+            <div class="fp-room" style="min-height:70px">
+              <div class="fp-room-name">화 장 실</div>
+              <div class="fp-room-en">RESTROOM</div>
+            </div>
+            <div class="fp-room" style="min-height:54px">
+              <div class="fp-room-name">카 운 터</div>
+              <div class="fp-room-en">COUNTER</div>
+            </div>
+            <div class="fp-entrance">
+              <div style="font-size:0.66rem;color:var(--muted);text-align:center;letter-spacing:0.04em">출입구 및 통로</div>
+              <div style="font-size:1.3rem;color:var(--muted)">↓</div>
+            </div>
+            <div class="fp-bc-row">
+              <div class="fp-zone fp-flex1"
+                   ondragover="fpZoneDragOver(event,'C')"
+                   ondrop="fpZoneDrop(event,'C')"
+                   ondragleave="fpZoneDragLeave(event)">
+                <div class="fp-zone-label">H1.C zone</div>
+                <div class="fp-zone-tables" id="fp-zone-tables-C"></div>
+              </div>
+              <div class="fp-bc-sep"></div>
+              <div class="fp-zone fp-flex1"
+                   ondragover="fpZoneDragOver(event,'B')"
+                   ondrop="fpZoneDrop(event,'B')"
+                   ondragleave="fpZoneDragLeave(event)">
+                <div class="fp-zone-label">H1.B zone</div>
+                <div class="fp-zone-tables" id="fp-zone-tables-B"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT: A zone -->
+          <div class="fp-col-right">
+            <div class="fp-zone fp-flex1"
+                 ondragover="fpZoneDragOver(event,'A')"
+                 ondrop="fpZoneDrop(event,'A')"
+                 ondragleave="fpZoneDragLeave(event)">
+              <div class="fp-zone-label">H1.A zone</div>
+              <div class="fp-zone-tables" id="fp-zone-tables-A"></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 배정 모달 -->
+  <div class="assign-modal-bg" id="assignModalBg" onclick="if(event.target===this)closeAssignModal()">
+    <div class="assign-modal">
+      <div class="assign-modal-title" id="assignModalTitle"></div>
+      <div class="assign-modal-sub"   id="assignModalSub"></div>
+      <div class="assign-res-list"    id="assignResList"></div>
+      <div class="assign-actions">
+        <button class="btn-assign-unset" id="btnAssignUnset" onclick="unassignTable()">배정 해제</button>
+        <button class="btn-assign-close" onclick="closeAssignModal()">닫기</button>
+      </div>
+    </div>
   </div>
 
   <!-- 목록 뷰 -->
@@ -498,7 +703,7 @@ const ALL_TIMES = ['17:00','17:30','18:00','18:30','19:00','19:30','20:00','20:3
 
 let reservations = {};     // Firebase 실시간 데이터
 let capacity = { total: DEFAULT_TOTAL, available: DEFAULT_AVAIL };
-let weekOffset = 0, dayOffset = 0, listFilter = 'upcoming', currentTab = 'week';
+let weekOffset = 0, dayOffset = 0, listFilter = 'upcoming', currentTab = 'day';
 
 // ── 앱 초기화 (PIN 통과 후) ──
 function initApp() {
@@ -633,6 +838,7 @@ function renderWeek() {
 function renderDay() {
   const base=new Date(); base.setDate(base.getDate()+dayOffset);
   const ds=toDateStr(base), dow=base.getDay(), slots=TIME_SLOTS[dow]||[];
+  fpListenDate(ds); // 배치도 날짜 동기화
   const cap=capacity.available;
   document.getElementById('dayTitle').textContent=
     `${base.getFullYear()}년 ${base.getMonth()+1}월 ${base.getDate()}일 (${DAY_NAMES[dow]})`;
@@ -794,6 +1000,195 @@ async function saveCapacity() {
 
 // ── XSS 방지 ──
 function escH(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+// ────────────────────────────────────────────────────────────
+// ── 좌석 배치도 ──
+// ────────────────────────────────────────────────────────────
+
+const FLOOR_TABLES = {
+  'X-1':{ cap:4 },
+  'A-1':{ cap:4 }, 'A-2':{ cap:2 }, 'A-3':{ cap:2 },
+  'D-1':{ cap:4 }, 'D-2':{ cap:4 },
+  'C-1':{ cap:2 }, 'C-2':{ cap:4 }, 'C-3':{ cap:4 },
+  'B-1':{ cap:2 }, 'B-2':{ cap:4 }, 'B-3':{ cap:4 },
+};
+
+const FP_DRAGGABLE_ZONES = ['A','B','C'];
+const FP_DEFAULT_ORDERS  = { A:['A-1','A-2','A-3'], B:['B-1','B-2','B-3'], C:['C-1','C-2','C-3'] };
+
+function fpLoadOrders(){ try{ return JSON.parse(localStorage.getItem('fpZoneOrders'))||{}; }catch{ return {}; } }
+function fpSaveOrders(){ localStorage.setItem('fpZoneOrders', JSON.stringify(fpZoneOrders)); }
+let fpZoneOrders = Object.assign({}, FP_DEFAULT_ORDERS, fpLoadOrders());
+
+let fpTableAssignments = {};  // { tableId: { resId, time, name, people } }
+let fpCurrentDate      = null;
+let fpUnsubscribe      = null;
+let fpDragSrc          = null;
+let fpAssignModalTable = null;
+
+// Firebase 리스너 — 날짜가 바뀔 때마다 재구독
+function fpListenDate(ds) {
+  if (fpCurrentDate === ds) return;  // 같은 날짜면 스킵
+  fpCurrentDate = ds;
+  if (fpUnsubscribe) { db.ref('tableAssignments/'+fpCurrentDate).off('value', fpUnsubscribe); fpUnsubscribe=null; }
+  const ref = db.ref('tableAssignments/'+ds);
+  fpUnsubscribe = ref.on('value', snap => {
+    fpTableAssignments = snap.val() || {};
+    fpRenderAll();
+  });
+}
+
+// 배치도 열기/닫기 토글
+function toggleFloorPlan() {
+  const body = document.getElementById('fpBody');
+  const icon = document.getElementById('fpToggleIcon');
+  const open = body.classList.toggle('open');
+  icon.style.transform = open ? '' : 'rotate(180deg)';
+}
+
+// 전체 렌더 — 드래그 가능 존(A,B,C)은 재빌드, 고정 테이블(X,D)은 제자리 업데이트
+function fpRenderAll() {
+  FP_DRAGGABLE_ZONES.forEach(zone => {
+    const container = document.getElementById('fp-zone-tables-'+zone);
+    if (!container) return;
+    container.innerHTML = '';
+    fpZoneOrders[zone].forEach(tid => container.appendChild(fpBuildTable(tid, true)));
+  });
+  ['X-1','D-1','D-2'].forEach(fpUpdateStaticTable);
+}
+
+// 테이블 DOM 요소 생성 (드래그 가능 여부 포함)
+function fpBuildTable(tid, draggable) {
+  const info = FLOOR_TABLES[tid];
+  const asgn = fpTableAssignments[tid];
+  const cls  = asgn ? 'assigned' : (info.cap === 4 ? 'cap4' : 'cap2');
+  const div  = document.createElement('div');
+  div.className = 'fp-table ' + cls;
+  div.id = 'fp-' + tid;
+  div.innerHTML =
+    `<div class="fp-table-cap">${info.cap}인</div>` +
+    `<div class="fp-table-id">TABLE ${tid}</div>` +
+    `<div class="fp-table-res" id="fpr-${tid}">${asgn ? asgn.time+' · '+escH(asgn.name)+' · '+asgn.people+'명' : ''}</div>`;
+  div.addEventListener('click', () => openAssignModal(tid));
+  if (draggable) {
+    div.setAttribute('draggable', 'true');
+    div.addEventListener('dragstart', e => {
+      fpDragSrc = tid;
+      e.dataTransfer.effectAllowed = 'move';
+      setTimeout(() => div.style.opacity = '0.5', 0);
+    });
+    div.addEventListener('dragend', () => {
+      div.style.opacity = '';
+      document.querySelectorAll('.fp-table').forEach(t => t.classList.remove('drag-over'));
+    });
+    div.addEventListener('dragenter', e => { e.preventDefault(); div.classList.add('drag-over'); });
+    div.addEventListener('dragleave', () => div.classList.remove('drag-over'));
+  }
+  return div;
+}
+
+// 고정 테이블(X-1, D-1, D-2) 상태 업데이트
+function fpUpdateStaticTable(tid) {
+  const el = document.getElementById('fp-'+tid);
+  if (!el) return;
+  const asgn = fpTableAssignments[tid];
+  const info = FLOOR_TABLES[tid];
+  el.className = 'fp-table ' + (asgn ? 'assigned' : (info.cap===4 ? 'cap4' : 'cap2'));
+  const resEl = document.getElementById('fpr-'+tid);
+  if (resEl) resEl.textContent = asgn ? asgn.time+' · '+asgn.name+' · '+asgn.people+'명' : '';
+}
+
+// 드래그 존 이벤트
+function fpZoneDragOver(e, zone) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+}
+function fpZoneDragLeave(e) {
+  if (!e.currentTarget.contains(e.relatedTarget))
+    e.currentTarget.querySelectorAll('.fp-table').forEach(t => t.classList.remove('drag-over'));
+}
+function fpZoneDrop(e, zone) {
+  e.preventDefault();
+  if (!fpDragSrc) return;
+  const srcZone = fpDragSrc.split('-')[0]; // 'A', 'B', 'C'
+  if (srcZone !== zone) return;            // 존 간 이동 불가
+
+  const targetEl = e.target.closest('.fp-table');
+  if (!targetEl || targetEl.id === 'fp-'+fpDragSrc) return;
+  const targetId = targetEl.id.replace('fp-','');
+
+  const order = fpZoneOrders[zone];
+  const fi = order.indexOf(fpDragSrc), ti = order.indexOf(targetId);
+  if (fi===-1 || ti===-1) return;
+  order.splice(fi, 1);
+  order.splice(ti, 0, fpDragSrc);
+  fpZoneOrders[zone] = order;
+  fpSaveOrders();
+  fpDragSrc = null;
+  fpRenderAll();
+}
+
+// ── 배정 모달 ──
+function openAssignModal(tid) {
+  fpAssignModalTable = tid;
+  const info  = FLOOR_TABLES[tid];
+  const asgn  = fpTableAssignments[tid];
+  const capLabel = info.cap + '인석';
+
+  document.getElementById('assignModalTitle').textContent = `TABLE ${tid} (${capLabel}) — 예약 배정`;
+  document.getElementById('assignModalSub').textContent =
+    fpCurrentDate
+      ? fpCurrentDate.replace(/(\d{4})-(\d{2})-(\d{2})/, '$1년 $2월 $3일')
+      : '';
+
+  // 해제 버튼
+  document.getElementById('btnAssignUnset').classList.toggle('show', !!asgn);
+
+  // 해당 날짜 예약 목록
+  const dayRes = getResList()
+    .filter(r => r.date === fpCurrentDate)
+    .sort((a,b) => a.time.localeCompare(b.time));
+
+  const list = document.getElementById('assignResList');
+  if (!dayRes.length) {
+    list.innerHTML = '<div class="assign-empty">이 날 등록된 예약이 없습니다.</div>';
+  } else {
+    list.innerHTML = dayRes.map(r => {
+      const isCur = asgn && asgn.resId === r.id;
+      return `<div class="assign-res-item${isCur?' cur':''}"
+                   onclick="fpAssignTo('${r.id}','${r.time}','${escH(r.name)}',${r.people})">
+        <div class="assign-res-time">${r.time}</div>
+        <div class="assign-res-name">${escH(r.name)}</div>
+        <div class="assign-res-ppl">${r.people}명</div>
+        ${isCur ? '<div class="assign-res-check">✓</div>' : ''}
+      </div>`;
+    }).join('');
+  }
+
+  document.getElementById('assignModalBg').classList.add('open');
+}
+
+function closeAssignModal() {
+  document.getElementById('assignModalBg').classList.remove('open');
+  fpAssignModalTable = null;
+}
+
+async function fpAssignTo(resId, time, name, people) {
+  if (!fpAssignModalTable || !fpCurrentDate) return;
+  try {
+    await db.ref('tableAssignments/'+fpCurrentDate+'/'+fpAssignModalTable)
+            .set({ resId, time, name, people });
+  } catch(e) { alert('저장 중 오류가 발생했습니다.'); }
+  closeAssignModal();
+}
+
+async function unassignTable() {
+  if (!fpAssignModalTable || !fpCurrentDate) return;
+  try {
+    await db.ref('tableAssignments/'+fpCurrentDate+'/'+fpAssignModalTable).remove();
+  } catch(e) { alert('오류가 발생했습니다.'); }
+  closeAssignModal();
+}
 </script>
 </body>
 </html>
