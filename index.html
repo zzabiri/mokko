@@ -489,6 +489,26 @@
       color: var(--muted);
     }
 
+    /* ── RESERVE CTA BUTTON ── */
+    .reserve-cta-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      padding: 14px 20px;
+      background: var(--accent);
+      color: #0e0e0e;
+      font-size: 0.84rem;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      border-radius: 4px;
+      text-decoration: none;
+      margin-bottom: 12px;
+      transition: background 0.22s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .reserve-cta-btn:hover { background: #dbb97e; }
+
     /* ── GOOGLE REVIEW BUTTON ── */
     .google-review-btn {
       display: flex;
@@ -678,7 +698,7 @@
     <ul class="nav-links" id="navLinks">
       <li><a href="#instagram" data-i18n="nav_insta"></a></li>
       <li><a href="#menu"      data-i18n="nav_menu"></a></li>
-      <li><a href="#reservation" data-i18n="nav_reservation"></a></li>
+      <li><a href="reservation.html" data-i18n="nav_reservation"></a></li>
       <li><a href="#reservation" data-i18n="nav_location"></a></li>
     </ul>
 
@@ -700,7 +720,7 @@
 <div class="nav-drawer" id="navDrawer">
   <a href="#instagram" data-i18n="nav_insta"></a>
   <a href="#menu"      data-i18n="nav_menu"></a>
-  <a href="#reservation" data-i18n="nav_reservation"></a>
+  <a href="reservation.html" data-i18n="nav_reservation"></a>
   <a href="#reservation" data-i18n="nav_location"></a>
   <div class="drawer-lang">
     <button class="lang-btn active" data-lang="ko">한국어</button>
@@ -714,7 +734,7 @@
   <p class="hero-eyebrow">居酒屋 · Izakaya · Schwalbach am Taunus</p>
   <img src="logo.png" alt="Mokko Izakaya" class="hero-logo" />
   <div class="hero-cta">
-    <a href="#reservation" class="btn btn-primary" data-i18n="btn_reserve"></a>
+    <a href="reservation.html" class="btn btn-primary" data-i18n="btn_reserve"></a>
     <a href="#menu"        class="btn btn-outline"  data-i18n="btn_menu"></a>
   </div>
 </section>
@@ -730,7 +750,7 @@
       <a href="https://instagram.com/mokko_izakaya" target="_blank" rel="noopener">@mokko_izakaya</a>
     </p>
     <div class="insta-cta">
-      <a href="#reservation" class="btn btn-primary" data-i18n="btn_reserve"></a>
+      <a href="reservation.html" class="btn btn-primary" data-i18n="btn_reserve"></a>
       <a href="#menu"        class="btn btn-outline"  data-i18n="btn_menu"></a>
     </div>
   </div>
@@ -912,7 +932,7 @@
   </div>
 </section>
 
-<!-- ── RESERVATION & LOCATION ── -->
+<!-- ── CONTACT & LOCATION ── -->
 <section id="reservation">
   <div class="container">
     <p class="section-label" data-i18n="res_label"></p>
@@ -929,6 +949,9 @@
         </div></div>
         <div class="info-row"><span class="label" data-i18n="res_price_label"></span><div>€10 – €30 p.P.</div></div>
         <div class="info-row"><span class="label" data-i18n="res_seating_label"></span><div data-ko="매장 내 식사 · 테이크아웃 가능" data-de="Im Restaurant & zum Mitnehmen" data-en="Dine-in & Takeout"></div></div>
+        <a href="reservation.html" class="reserve-cta-btn">
+          <span data-i18n="res_book_btn"></span>
+        </a>
         <a href="https://www.google.com/maps/place/Mokko+Izakaya/@50.154397,8.5271751,17z" target="_blank" rel="noopener" class="google-review-btn">
           <span class="google-stars">⭐ 4.9</span>
           <span data-ko="Google 리뷰 보기" data-de="Google Bewertungen ansehen" data-en="View Google Reviews"></span>
@@ -937,7 +960,7 @@
         <a href="https://open.kakao.com/o/XXXXXXXX" target="_blank" rel="noopener" class="kakao-box">
           <div class="kakao-icon">💬</div>
           <div class="kakao-text">
-            <h4 data-ko="카카오톡 예약 / 문의" data-de="KakaoTalk Reservierung" data-en="KakaoTalk Reservation"></h4>
+            <h4 data-ko="카카오톡 문의" data-de="KakaoTalk Kontakt" data-en="KakaoTalk Contact"></h4>
             <p data-ko="오픈채팅방으로 바로 연결됩니다" data-de="Direkt zum Chatroom" data-en="Connect via open chat"></p>
           </div>
         </a>
@@ -966,7 +989,7 @@
     <ul class="footer-links">
       <li><a href="#instagram" data-i18n="nav_insta"></a></li>
       <li><a href="#menu"      data-i18n="nav_menu"></a></li>
-      <li><a href="#reservation" data-i18n="nav_reservation"></a></li>
+      <li><a href="reservation.html" data-i18n="nav_reservation"></a></li>
     </ul>
     <p class="footer-copy">© 2026 Mokko Izakaya · Schwalbach am Taunus</p>
   </div>
@@ -975,9 +998,9 @@
 <script>
 // ── TRANSLATIONS ──
 const T = {
-  ko: { nav_insta:'인스타그램', nav_menu:'메뉴', nav_reservation:'예약', nav_location:'오시는 길', insta_label:'Instagram', insta_title:'최근 소식', btn_reserve:'예약하기', btn_menu:'메뉴 보기', menu_label:'Menu', menu_title:'메뉴', cat_starters:'전채', cat_fried:'튀김', cat_specials:'셰프 추천', cat_sashimi:'사시미', cat_grill:'그릴', cat_soup:'국물·전골', cat_extras:'추가', cat_lunch:'🌞 점심', res_label:'Reservation & Location', res_title:'예약 & 오시는 길', res_subtitle:'예약 안내', res_hours_label:'영업시간', res_price_label:'가격대', res_seating_label:'좌석', loc_subtitle:'오시는 길', loc_addr_label:'주소', loc_tel_label:'전화', loc_rating_label:'평점' },
-  de: { nav_insta:'Instagram', nav_menu:'Speisekarte', nav_reservation:'Reservierung', nav_location:'Anfahrt', insta_label:'Instagram', insta_title:'Neuigkeiten', btn_reserve:'Reservieren', btn_menu:'Speisekarte', menu_label:'Speisekarte', menu_title:'Speisekarte', cat_starters:'Vorspeisen', cat_fried:'Frittiertes', cat_specials:'Spezialitäten', cat_sashimi:'Sashimi', cat_grill:'Grill', cat_soup:'Suppen & Eintöpfe', cat_extras:'Extras', cat_lunch:'🌞 Mittagsmenü', res_label:'Reservierung & Standort', res_title:'Reservierung & Anfahrt', res_subtitle:'Reservierungsinfo', res_hours_label:'Öffnungszeiten', res_price_label:'Preisklasse', res_seating_label:'Sitzplätze', loc_subtitle:'Anfahrt', loc_addr_label:'Adresse', loc_tel_label:'Telefon', loc_rating_label:'Bewertung' },
-  en: { nav_insta:'Instagram', nav_menu:'Menu', nav_reservation:'Reservation', nav_location:'Location', insta_label:'Instagram', insta_title:'Latest Updates', btn_reserve:'Reserve a Table', btn_menu:'View Menu', menu_label:'Menu', menu_title:'Menu', cat_starters:'Starters', cat_fried:'Fried', cat_specials:"Chef's Specials", cat_sashimi:'Sashimi', cat_grill:'Grill', cat_soup:'Soups & Hotpot', cat_extras:'Extras', cat_lunch:'🌞 Lunch', res_label:'Reservation & Location', res_title:'Reservation & Location', res_subtitle:'Reservation Info', res_hours_label:'Hours', res_price_label:'Price range', res_seating_label:'Seating', loc_subtitle:'Location', loc_addr_label:'Address', loc_tel_label:'Phone', loc_rating_label:'Rating' }
+  ko: { nav_insta:'인스타그램', nav_menu:'메뉴', nav_reservation:'예약', nav_location:'오시는 길', insta_label:'Instagram', insta_title:'최근 소식', btn_reserve:'예약하기', btn_menu:'메뉴 보기', menu_label:'Menu', menu_title:'메뉴', cat_starters:'전채', cat_fried:'튀김', cat_specials:'셰프 추천', cat_sashimi:'사시미', cat_grill:'그릴', cat_soup:'국물·전골', cat_extras:'추가', cat_lunch:'🌞 점심', res_label:'Contact & Location', res_title:'연락 & 오시는 길', res_subtitle:'연락 안내', res_hours_label:'영업시간', res_price_label:'가격대', res_seating_label:'좌석', res_book_btn:'예약 페이지로 →', loc_subtitle:'오시는 길', loc_addr_label:'주소', loc_tel_label:'전화', loc_rating_label:'평점' },
+  de: { nav_insta:'Instagram', nav_menu:'Speisekarte', nav_reservation:'Reservierung', nav_location:'Anfahrt', insta_label:'Instagram', insta_title:'Neuigkeiten', btn_reserve:'Reservieren', btn_menu:'Speisekarte', menu_label:'Speisekarte', menu_title:'Speisekarte', cat_starters:'Vorspeisen', cat_fried:'Frittiertes', cat_specials:'Spezialitäten', cat_sashimi:'Sashimi', cat_grill:'Grill', cat_soup:'Suppen & Eintöpfe', cat_extras:'Extras', cat_lunch:'🌞 Mittagsmenü', res_label:'Kontakt & Standort', res_title:'Kontakt & Anfahrt', res_subtitle:'Kontaktinfo', res_hours_label:'Öffnungszeiten', res_price_label:'Preisklasse', res_seating_label:'Sitzplätze', res_book_btn:'Zur Reservierung →', loc_subtitle:'Anfahrt', loc_addr_label:'Adresse', loc_tel_label:'Telefon', loc_rating_label:'Bewertung' },
+  en: { nav_insta:'Instagram', nav_menu:'Menu', nav_reservation:'Reservation', nav_location:'Location', insta_label:'Instagram', insta_title:'Latest Updates', btn_reserve:'Reserve a Table', btn_menu:'View Menu', menu_label:'Menu', menu_title:'Menu', cat_starters:'Starters', cat_fried:'Fried', cat_specials:"Chef's Specials", cat_sashimi:'Sashimi', cat_grill:'Grill', cat_soup:'Soups & Hotpot', cat_extras:'Extras', cat_lunch:'🌞 Lunch', res_label:'Contact & Location', res_title:'Contact & Location', res_subtitle:'Contact Info', res_hours_label:'Hours', res_price_label:'Price range', res_seating_label:'Seating', res_book_btn:'Make a Reservation →', loc_subtitle:'Location', loc_addr_label:'Address', loc_tel_label:'Phone', loc_rating_label:'Rating' }
 };
 
 // ── LANGUAGE ──
