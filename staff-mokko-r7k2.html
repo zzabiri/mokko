@@ -192,10 +192,15 @@
     .day-res-list { display: flex; flex-direction: column; gap: 6px; }
     .day-res-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 10px 14px; cursor: pointer; transition: border-color var(--ease); }
     .day-res-card:hover { border-color: var(--accent); }
+    .day-res-card.card-assigned { border-color: rgba(201,169,110,0.35); }
     .day-res-card .rc-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
     .day-res-card .rc-name { font-weight: 500; font-size: 0.88rem; }
     .day-res-card .rc-ppl  { color: var(--accent); font-weight: 500; font-size: 0.88rem; }
     .day-res-card .rc-ph   { font-size: 0.78rem; color: var(--muted); }
+    .day-res-card .rc-tables { margin-top: 5px; display: flex; flex-wrap: wrap; gap: 4px; }
+    .rc-table-badge { font-size: 0.6rem; font-weight: 600; letter-spacing: 0.04em;
+      background: rgba(201,169,110,0.15); color: var(--accent);
+      border: 1px solid rgba(201,169,110,0.35); border-radius: 3px; padding: 1px 5px; }
     .empty-slot { font-size: 0.76rem; color: var(--muted); font-style: italic; }
 
     /* ── 일별 뷰 좌우 분할 레이아웃 ── */
@@ -328,6 +333,9 @@
     .assign-res-name  { flex: 1; font-weight: 500; }
     .assign-res-ppl   { font-size: 0.7rem; color: var(--muted); }
     .assign-res-check { color: var(--accent); font-weight: 700; }
+    .assign-res-item.assigned-other { opacity: 0.55; }
+    .assign-res-item.assigned-other:hover { opacity: 0.85; border-color: var(--green); }
+    .assign-res-badge { font-size: 0.62rem; color: var(--green); white-space: nowrap; font-weight: 600; }
     .assign-empty     { text-align: center; padding: 20px; color: var(--muted); font-size: 0.78rem; }
     .assign-actions   { display: flex; gap: 8px; }
     .btn-assign-unset { flex: 1; height: 38px; background: rgba(224,90,90,0.1); border: 1px solid rgba(224,90,90,0.35); border-radius: 4px; color: var(--red); font-size: 0.78rem; display: none; cursor: pointer; transition: background 0.15s; }
@@ -803,6 +811,15 @@ function renderDay() {
     `${base.getFullYear()}년 ${base.getMonth()+1}월 ${base.getDate()}일 (${DAY_NAMES[dow]})`;
   const container=document.getElementById('daySchedule');
   if(!slots.length){container.innerHTML=`<div style="padding:40px;text-align:center;color:var(--muted);font-size:0.84rem">일요일은 휴무입니다</div>`;return;}
+  // resId → 배정된 테이블 ID 목록
+  const resTableMap = {};
+  Object.entries(fpTableAssignments).forEach(([tableId, val]) => {
+    if (val && val.resId) {
+      if (!resTableMap[val.resId]) resTableMap[val.resId] = [];
+      resTableMap[val.resId].push(tableId);
+    }
+  });
+
   let html='';
   slots.forEach(time=>{
     const recs=getResList().filter(r=>r.date===ds&&r.time===time);
@@ -810,10 +827,16 @@ function renderDay() {
     const sc=total>=36?'var(--red)':total>=20?'#e0a85a':'var(--green)';
     let cards=recs.length===0?`<div class="empty-slot">예약 없음</div>`:recs.map(r=>{
       const timeRange=r.endTime?`${r.time} ~ ${r.endTime}`:`${r.time} ~`;
-      return `<div class="day-res-card" onclick="openModal('${r.id}')">
+      const assignedTables = resTableMap[r.id] || [];
+      const isAssigned = assignedTables.length > 0;
+      const badgesHtml = isAssigned
+        ? `<div class="rc-tables">${assignedTables.sort().map(t=>`<span class="rc-table-badge">${t}</span>`).join('')}</div>`
+        : '';
+      return `<div class="day-res-card${isAssigned?' card-assigned':''}" onclick="openModal('${r.id}')">
         <div class="rc-top"><span class="rc-name">${escH(r.name)}</span><span class="rc-ppl">${r.people}명</span></div>
         <div style="font-size:0.72rem;color:var(--accent);margin-bottom:2px">${timeRange}</div>
         <div class="rc-ph">${escH(r.phone)}</div>
+        ${badgesHtml}
       </div>`;
     }).join('');
     html+=`<div class="day-slot"><div class="day-time">${time}</div><div class="day-res-area">
@@ -1062,6 +1085,8 @@ function fpListenDate(ds) {
   fpUnsubscribe = ref.on('value', snap => {
     fpTableAssignments = snap.val() || {};
     fpRenderAll();
+    // 일별 뷰가 열려 있으면 카드의 테이블 배지도 갱신
+    if (currentTab === 'day') renderDay();
   });
 }
 
@@ -1174,12 +1199,21 @@ function openAssignModal(tid) {
     .filter(r => r.date === fpCurrentDate)
     .sort((a,b) => a.time.localeCompare(b.time));
 
+  // 다른 테이블에 이미 배정된 예약 목록 (resId → tableId)
+  const otherAssignedMap = {};
+  Object.entries(fpTableAssignments).forEach(([tableId, val]) => {
+    if (val && val.resId && tableId !== tid) {
+      otherAssignedMap[val.resId] = tableId;
+    }
+  });
+
   const list = document.getElementById('assignResList');
   if (!dayRes.length) {
     list.innerHTML = '<div class="assign-empty">이 날 등록된 예약이 없습니다.</div>';
   } else {
     list.innerHTML = dayRes.map(r => {
       const isCur = asgn && asgn.resId === r.id;
+      const assignedTo = otherAssignedMap[r.id]; // 다른 테이블에 배정됐으면 그 테이블 ID
       const timeDisp = r.endTime ? `${r.time}~${r.endTime}` : `${r.time}~`;
       // 현재 배정된 예약이 있고 다른 예약인 경우 → 시간 충돌 체크
       let conflictStr = '';
@@ -1189,11 +1223,16 @@ function openAssignModal(tid) {
           ? `<div class="assign-res-conflict">⚠ 시간 겹침</div>`
           : `<div class="assign-res-avail">✓ 시간 가능</div>`;
       }
-      return `<div class="assign-res-item${isCur?' cur':''}"
+      const badgeStr = assignedTo
+        ? `<div class="assign-res-badge">✓ ${assignedTo} 배정됨</div>`
+        : '';
+      const extraClass = assignedTo ? ' assigned-other' : '';
+      return `<div class="assign-res-item${isCur?' cur':''}${extraClass}"
                    onclick="fpAssignTo('${r.id}','${r.time}','${escH(r.name)}',${r.people})">
         <div class="assign-res-time">${timeDisp}</div>
         <div class="assign-res-name">${escH(r.name)}</div>
         <div class="assign-res-ppl">${r.people}명</div>
+        ${badgeStr}
         ${conflictStr}
         ${isCur ? '<div class="assign-res-check">✓</div>' : ''}
       </div>`;
