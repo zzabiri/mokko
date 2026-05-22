@@ -260,7 +260,7 @@
     .add-form-card.open { display: block; }
     .add-form-title { font-size: 0.82rem; letter-spacing: 0.08em; color: var(--accent); margin-bottom: 16px; font-weight: 500; }
     .add-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    @media(min-width:600px) { .add-form-grid { grid-template-columns: repeat(5,1fr); } }
+    @media(min-width:600px) { .add-form-grid { grid-template-columns: repeat(3,1fr); } }
     .af-group label { display: block; font-size: 0.68rem; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 5px; }
     .af-group input, .af-group select { width: 100%; height: 36px; padding: 0 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 4px; color: var(--text); font-family: var(--font-sans); font-size: 0.82rem; -webkit-appearance: none; }
     .af-group input:focus, .af-group select:focus { outline: none; border-color: var(--accent); }
@@ -322,7 +322,9 @@
     }
     .assign-res-item:hover { border-color: var(--accent); }
     .assign-res-item.cur  { border-color: var(--accent); background: rgba(201,169,110,0.1); }
-    .assign-res-time  { font-size: 0.7rem; color: var(--accent); font-weight: 600; min-width: 38px; }
+    .assign-res-time  { font-size: 0.7rem; color: var(--accent); font-weight: 600; min-width: 62px; }
+    .assign-res-conflict { font-size: 0.64rem; color: var(--red); white-space: nowrap; }
+    .assign-res-avail    { font-size: 0.64rem; color: var(--green); white-space: nowrap; }
     .assign-res-name  { flex: 1; font-weight: 500; }
     .assign-res-ppl   { font-size: 0.7rem; color: var(--muted); }
     .assign-res-check { color: var(--accent); font-weight: 700; }
@@ -378,6 +380,10 @@
       <div class="af-group">
         <label>시간</label>
         <select id="af-time"><option value="">선택</option></select>
+      </div>
+      <div class="af-group">
+        <label>종료 시간 <span style="color:var(--muted);font-weight:300;font-size:0.62rem">(선택)</span></label>
+        <select id="af-endtime"><option value="">미정 (영업종료까지)</option></select>
       </div>
       <div class="af-group">
         <label>인원</label>
@@ -646,6 +652,13 @@ const TIME_SLOTS = {
   6: ['17:00','17:30','18:00','18:30','19:00','19:30','20:00','20:30','21:00','21:30'],
 };
 const ALL_TIMES = ['17:00','17:30','18:00','18:30','19:00','19:30','20:00','20:30','21:00','21:30'];
+const CLOSING_TIME = '23:00'; // 종료 시간 미지정 시 기본값
+const END_TIME_OPTIONS = ['17:30','18:00','18:30','19:00','19:30','20:00','20:30','21:00','21:30','22:00','22:30','23:00'];
+function timeToMins(t) { const [h,m]=t.split(':').map(Number); return h*60+m; }
+function timesOverlap(s1,e1,s2,e2) {
+  return timeToMins(s1) < timeToMins(e2) && timeToMins(s2) < timeToMins(e1);
+}
+function getEffectiveEnd(r) { return (r && r.endTime) ? r.endTime : CLOSING_TIME; }
 
 let reservations = {};     // Firebase 실시간 데이터
 let capacity = { total: DEFAULT_TOTAL, available: DEFAULT_AVAIL };
@@ -795,11 +808,14 @@ function renderDay() {
     const recs=getResList().filter(r=>r.date===ds&&r.time===time);
     const total=recs.reduce((s,r)=>s+r.people,0);
     const sc=total>=36?'var(--red)':total>=20?'#e0a85a':'var(--green)';
-    let cards=recs.length===0?`<div class="empty-slot">예약 없음</div>`:recs.map(r=>`
-      <div class="day-res-card" onclick="openModal('${r.id}')">
+    let cards=recs.length===0?`<div class="empty-slot">예약 없음</div>`:recs.map(r=>{
+      const timeRange=r.endTime?`${r.time} ~ ${r.endTime}`:`${r.time} ~`;
+      return `<div class="day-res-card" onclick="openModal('${r.id}')">
         <div class="rc-top"><span class="rc-name">${escH(r.name)}</span><span class="rc-ppl">${r.people}명</span></div>
+        <div style="font-size:0.72rem;color:var(--accent);margin-bottom:2px">${timeRange}</div>
         <div class="rc-ph">${escH(r.phone)}</div>
-      </div>`).join('');
+      </div>`;
+    }).join('');
     html+=`<div class="day-slot"><div class="day-time">${time}</div><div class="day-res-area">
       ${total>0?`<div class="day-cap-info" style="color:${sc}">${total}명 예약</div>`:''}
       <div class="day-res-list">${cards}</div></div></div>`;
@@ -859,9 +875,22 @@ function openModal(id) {
   const r=getResList().find(x=>x.id===id);
   if(!r) return;
   const d=new Date(r.date+'T00:00:00');
+  // 종료 시간 선택 옵션 생성 (시작 시간 이후)
+  const endOpts = END_TIME_OPTIONS.filter(t=>t>r.time)
+    .map(t=>`<option value="${t}"${r.endTime===t?' selected':''}>${t}</option>`).join('');
+  const endSelectStyle = 'background:var(--bg);border:1px solid var(--border);border-radius:3px;color:var(--text);padding:2px 8px;font-size:0.8rem;font-family:var(--font-sans);cursor:pointer';
   document.getElementById('modalBody').innerHTML=`
     <div class="modal-row"><span class="ml">날짜</span><span>${d.getMonth()+1}월 ${d.getDate()}일 (${DAY_NAMES[d.getDay()]})</span></div>
     <div class="modal-row"><span class="ml">시간</span><span>${r.time}</span></div>
+    <div class="modal-row">
+      <span class="ml">종료 시간</span>
+      <span style="display:flex;align-items:center;gap:6px">
+        <select id="modalEndTime" onchange="updateResEndTime('${id}',this.value)" style="${endSelectStyle}">
+          <option value="">미정 (영업종료)</option>${endOpts}
+        </select>
+        <span id="modalEndTimeSaved" style="font-size:0.7rem;color:var(--green);opacity:0;transition:opacity 0.3s"></span>
+      </span>
+    </div>
     <div class="modal-row"><span class="ml">인원</span><span style="color:var(--accent);font-weight:500">${r.people}명</span></div>
     <div class="modal-row"><span class="ml">예약자</span><span>${escH(r.name)}</span></div>
     <div class="modal-row"><span class="ml">연락처</span><span><a href="tel:${escH(r.phone)}" style="color:var(--accent)">${escH(r.phone)}</a></span></div>
@@ -871,6 +900,14 @@ function openModal(id) {
 }
 function closeModal(e){if(e.target.id==='detailModal')closeModalDirect();}
 function closeModalDirect(){document.getElementById('detailModal').classList.remove('open');}
+
+async function updateResEndTime(id, endTime) {
+  try {
+    await db.ref('reservations/'+id+'/endTime').set(endTime||null);
+    const el=document.getElementById('modalEndTimeSaved');
+    if(el){el.textContent='✓ 저장됨';el.style.opacity='1';setTimeout(()=>el.style.opacity='0',2000);}
+  } catch(e){ alert('저장 중 오류가 발생했습니다.'); }
+}
 
 // ── 삭제 ──
 async function deleteReservation(id) {
@@ -897,30 +934,48 @@ function toggleAddForm() {
   }
 }
 document.getElementById('af-date').addEventListener('change',function(){updateAfTime(this.value);});
+document.getElementById('af-time').addEventListener('change',function(){updateEndTimeOptions(this.value);});
 function updateAfTime(ds){
   const sel=document.getElementById('af-time');
   sel.innerHTML='<option value="">선택</option>';
+  const esel=document.getElementById('af-endtime');
+  esel.innerHTML='<option value="">미정 (영업종료까지)</option>';
   if(!ds)return;
   const slots=TIME_SLOTS[new Date(ds+'T00:00:00').getDay()]||[];
   slots.forEach(t=>{const o=document.createElement('option');o.value=t;o.textContent=t;sel.appendChild(o);});
+  END_TIME_OPTIONS.forEach(t=>{const o=document.createElement('option');o.value=t;o.textContent=t;esel.appendChild(o);});
+}
+function updateEndTimeOptions(startTime){
+  const esel=document.getElementById('af-endtime');
+  if(!esel)return;
+  const curVal=esel.value;
+  esel.innerHTML='<option value="">미정 (영업종료까지)</option>';
+  END_TIME_OPTIONS.filter(t=>!startTime||t>startTime)
+    .forEach(t=>{const o=document.createElement('option');o.value=t;o.textContent=t;esel.appendChild(o);});
+  if(curVal && curVal>startTime) esel.value=curVal;
 }
 
 async function saveManual() {
-  const date  =document.getElementById('af-date').value;
-  const time  =document.getElementById('af-time').value;
-  const people=parseInt(document.getElementById('af-people').value);
-  const name  =document.getElementById('af-name').value.trim();
-  const phone =document.getElementById('af-phone').value.trim();
+  const date   =document.getElementById('af-date').value;
+  const time   =document.getElementById('af-time').value;
+  const endTime=document.getElementById('af-endtime').value || null;
+  const people =parseInt(document.getElementById('af-people').value);
+  const name   =document.getElementById('af-name').value.trim();
+  const phone  =document.getElementById('af-phone').value.trim();
   if(!date||!time||!people||!name||!phone){alert('모든 항목을 입력해 주세요.');return;}
+  if(endTime && endTime<=time){alert('종료 시간은 시작 시간보다 늦어야 합니다.');return;}
   const booked=bookedCount(date,time);
   if(booked+people>capacity.available){
     if(!confirm(`가용 잔여 인원(${capacity.available-booked}명)을 초과합니다. 그래도 추가하시겠습니까?`))return;
   }
   try {
-    await db.ref('reservations').push({date,time,people,name,phone,createdAt:new Date().toISOString()});
+    const data={date,time,people,name,phone,createdAt:new Date().toISOString()};
+    if(endTime) data.endTime=endTime;
+    await db.ref('reservations').push(data);
     document.getElementById('af-name').value='';
     document.getElementById('af-phone').value='';
     document.getElementById('af-people').value='';
+    document.getElementById('af-endtime').value='';
     document.getElementById('addFormCard').classList.remove('open');
     alert('예약이 추가되었습니다.');
   } catch(e){ alert('저장 중 오류가 발생했습니다.'); }
@@ -1075,14 +1130,16 @@ function fpRenderAll() {
     let inner;
     if (asgn) {
       const nameShort = asgn.name && asgn.name.length > 5 ? asgn.name.slice(0,5)+'…' : (asgn.name||'');
+      const timeRange = asgn.endTime ? `${asgn.time}~${asgn.endTime}` : asgn.time;
+      const timeFontSize = asgn.endTime ? 8.5 : (t.cap===4 ? 11 : 10);
       if (t.cap === 4) {
         inner =
-          `<text x="${cx}" y="${cy-10}" text-anchor="middle" fill="#0e0e0e" font-size="11" font-weight="700">${escH(asgn.time)}</text>` +
+          `<text x="${cx}" y="${cy-10}" text-anchor="middle" fill="#0e0e0e" font-size="${timeFontSize}" font-weight="700">${escH(timeRange)}</text>` +
           `<text x="${cx}" y="${cy+4}"  text-anchor="middle" fill="#1a0800" font-size="9.5" font-weight="600">${escH(nameShort)}</text>` +
           `<text x="${cx}" y="${cy+17}" text-anchor="middle" fill="#2a1400" font-size="8">${asgn.people}명 · TABLE ${t.id}</text>`;
       } else {
         inner =
-          `<text x="${cx}" y="${cy-6}" text-anchor="middle" fill="#0e0e0e" font-size="10" font-weight="700">${escH(asgn.time)}</text>` +
+          `<text x="${cx}" y="${cy-6}" text-anchor="middle" fill="#0e0e0e" font-size="${timeFontSize}" font-weight="700">${escH(timeRange)}</text>` +
           `<text x="${cx}" y="${cy+7}" text-anchor="middle" fill="#1a0800" font-size="8.5">${escH(nameShort)} · ${asgn.people}명</text>`;
       }
     } else {
@@ -1123,11 +1180,21 @@ function openAssignModal(tid) {
   } else {
     list.innerHTML = dayRes.map(r => {
       const isCur = asgn && asgn.resId === r.id;
+      const timeDisp = r.endTime ? `${r.time}~${r.endTime}` : `${r.time}~`;
+      // 현재 배정된 예약이 있고 다른 예약인 경우 → 시간 충돌 체크
+      let conflictStr = '';
+      if (asgn && !isCur) {
+        const overlap = timesOverlap(r.time, getEffectiveEnd(r), asgn.time, asgn.endTime||CLOSING_TIME);
+        conflictStr = overlap
+          ? `<div class="assign-res-conflict">⚠ 시간 겹침</div>`
+          : `<div class="assign-res-avail">✓ 시간 가능</div>`;
+      }
       return `<div class="assign-res-item${isCur?' cur':''}"
                    onclick="fpAssignTo('${r.id}','${r.time}','${escH(r.name)}',${r.people})">
-        <div class="assign-res-time">${r.time}</div>
+        <div class="assign-res-time">${timeDisp}</div>
         <div class="assign-res-name">${escH(r.name)}</div>
         <div class="assign-res-ppl">${r.people}명</div>
+        ${conflictStr}
         ${isCur ? '<div class="assign-res-check">✓</div>' : ''}
       </div>`;
     }).join('');
@@ -1143,9 +1210,12 @@ function closeAssignModal() {
 
 async function fpAssignTo(resId, time, name, people) {
   if (!fpAssignModalTable || !fpCurrentDate) return;
+  const res = getResList().find(r=>r.id===resId);
+  const endTime = res?.endTime || null;
   try {
-    await db.ref('tableAssignments/'+fpCurrentDate+'/'+fpAssignModalTable)
-            .set({ resId, time, name, people });
+    const payload = { resId, time, name, people };
+    if (endTime) payload.endTime = endTime;
+    await db.ref('tableAssignments/'+fpCurrentDate+'/'+fpAssignModalTable).set(payload);
   } catch(e) { alert('저장 중 오류가 발생했습니다.'); }
   closeAssignModal();
 }
