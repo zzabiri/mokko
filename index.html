@@ -1014,6 +1014,10 @@ function applyLang(l) {
     const v = el.getAttribute('data-' + l); if (v !== null) el.textContent = v;
   });
   document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === l));
+  // 예약 링크에 언어 파라미터 전달 (ko는 기본값이므로 생략)
+  document.querySelectorAll('a[href^="reservation.html"]').forEach(a => {
+    a.href = l === 'ko' ? 'reservation.html' : `reservation.html?lang=${l}`;
+  });
 }
 document.querySelectorAll('.lang-btn').forEach(b => b.addEventListener('click', () => {
   applyLang(b.dataset.lang);

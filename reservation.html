@@ -604,6 +604,7 @@ const T = {
 };
 
 let lang = 'ko';
+let lastUnavailState = null; // 언어 전환 시 결과 패널 재렌더링용
 
 // ── 언어 적용 ──
 function applyLang(l) {
@@ -627,6 +628,11 @@ function applyLang(l) {
     de:'Abendreservierung · Mokko Izakaya',
     en:'Dinner Reservation · Mokko Izakaya',
   }[l];
+  // 결과 패널이 열려 있으면 새 언어로 재렌더링
+  const rp = document.getElementById('result-panel');
+  if (lastUnavailState !== null && rp && rp.style.display !== 'none') {
+    renderUnavailPanel(lastUnavailState.isDayFull);
+  }
 }
 
 function buildPeopleSelect(cur) {
@@ -767,6 +773,26 @@ function peopleSuffix(n) {
   return n + (n===1?' guest':' guests');
 }
 
+// ── 예약 불가 패널 렌더링 (언어 전환 시 재사용) ──
+function renderUnavailPanel(isDayFull) {
+  const t = T[lang];
+  const telBtn   = `<a href="${TEL_HREF}" class="btn-tel"><div class="tel-ico">📞</div><div class="tel-label"><strong>${TEL}</strong><span>${t.tel_sub}</span></div></a>`;
+  const kakaoBtn = `<a href="${KAKAO_URL}" target="_blank" rel="noopener" class="btn-kakao"><div class="kakao-ico">💬</div><div class="kakao-label"><strong>${t.kakao_title}</strong></div></a>`;
+  const contactBtns = isDayFull ? telBtn + kakaoBtn : telBtn;
+  const msg = isDayFull ? t.unavail_full : t.unavail_partial;
+  // 전석 마감: 아이콘+타이틀+메시지 / 전화만 가능: 메시지만 (타이틀 없음)
+  const headerHtml = isDayFull
+    ? `<div class="result-icon">😔</div><div class="result-title ng">${t.unavail_title}</div>`
+    : `<div class="result-icon">📞</div>`;
+  document.getElementById('result-panel').innerHTML = `
+    <div class="result-card unavailable">
+      ${headerHtml}
+      <div class="result-desc">${msg}</div>
+      <div class="contact-btns">${contactBtns}</div>
+      <button class="btn-reset" onclick="goBack()">${t.btn_other}</button>
+    </div>`;
+}
+
 // ── 예약 가능 여부 확인 ──
 async function checkAvailability() {
   if (!validate()) return;
@@ -854,29 +880,8 @@ async function checkAvailability() {
           <button class="btn-reset" onclick="goBack()">${t.btn_back}</button>
         </div>`;
     } else {
-      // 전석 마감 여부에 따라 메시지·버튼 분기
-      const msg       = isDayFull ? t.unavail_full : t.unavail_partial;
-      const contactBtns = isDayFull
-        ? `<a href="${TEL_HREF}" class="btn-tel">
-              <div class="tel-ico">📞</div>
-              <div class="tel-label"><strong>${TEL}</strong><span>${t.tel_sub}</span></div>
-           </a>
-           <a href="${KAKAO_URL}" target="_blank" rel="noopener" class="btn-kakao">
-              <div class="kakao-ico">💬</div>
-              <div class="kakao-label"><strong>${t.kakao_title}</strong><span>${t.kakao_sub}</span></div>
-           </a>`
-        : `<a href="${TEL_HREF}" class="btn-tel">
-              <div class="tel-ico">📞</div>
-              <div class="tel-label"><strong>${TEL}</strong><span>${t.tel_sub}</span></div>
-           </a>`;
-      document.getElementById('result-panel').innerHTML = `
-        <div class="result-card unavailable">
-          <div class="result-icon">${isDayFull ? '😔' : '📞'}</div>
-          <div class="result-title ng">${t.unavail_title}</div>
-          <div class="result-desc">${msg}</div>
-          <div class="contact-btns">${contactBtns}</div>
-          <button class="btn-reset" onclick="goBack()">${t.btn_other}</button>
-        </div>`;
+      lastUnavailState = { isDayFull };
+      renderUnavailPanel(isDayFull);
     }
     document.getElementById('result-panel').scrollIntoView({behavior:'smooth',block:'start'});
   } catch(e) {
@@ -912,6 +917,7 @@ async function confirmReservation(date, time, people, name, phone, dateStr) {
 }
 
 function goBack() {
+  lastUnavailState = null;
   document.getElementById('result-panel').style.display = 'none';
   document.getElementById('form-section').style.display = 'block';
   window.scrollTo({top:0,behavior:'smooth'});
@@ -980,7 +986,7 @@ async function lookupReservations() {
       `<div class="lookup-empty">오류가 발생했습니다. 잠시 후 다시 시도해 주세요.</div>`;
   } finally {
     btn.disabled = false;
-    btn.innerHTML = `<span data-i18n="lookup_btn">${T[lang].lookup_btn}</span>`;
+        btn.innerHTML = `<span data-i18n="lookup_btn">${T[lang].lookup_btn}</span>`;
   }
 }
 
@@ -1006,8 +1012,12 @@ function escH(s) {
 }
 function escA(s) { return String(s).replace(/'/g,"\\'").replace(/\\/g,'\\\\'); }
 
-// ── 초기화 ──
-applyLang('ko');
+// ── 초기화 — URL 파라미터 lang 우선 적용 ──
+(function() {
+  const urlLang = new URLSearchParams(window.location.search).get('lang');
+  const validLangs = ['ko', 'de', 'en'];
+  applyLang(validLangs.includes(urlLang) ? urlLang : 'ko');
+})();
 </script>
 </body>
 </html>
