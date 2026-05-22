@@ -458,6 +458,9 @@
         <div style="display:flex;align-items:center;gap:10px">
           <button id="fpSwapBtn" onclick="event.stopPropagation();toggleSwapMode()"
                   style="height:26px;padding:0 10px;font-size:0.68rem;letter-spacing:0.04em;border-radius:4px;border:1px solid var(--muted);background:transparent;color:var(--text);cursor:pointer;transition:var(--ease)">↔ 순서</button>
+          <button onclick="event.stopPropagation();fpResetDefs()"
+                  style="height:26px;padding:0 10px;font-size:0.68rem;letter-spacing:0.04em;border-radius:4px;border:1px solid var(--muted);background:transparent;color:var(--muted);cursor:pointer;transition:var(--ease)"
+                  title="테이블 순서를 기본값으로 초기화">↺ 초기화</button>
           <div class="fp-legend">
             <div class="fp-leg"><div class="fp-leg-dot" style="background:#c9593a"></div>4인석</div>
             <div class="fp-leg"><div class="fp-leg-dot" style="background:#2a7a6a"></div>2인석</div>
@@ -735,10 +738,6 @@ function bookedCount(date, time) {
     .filter(r => r.date === date && r.time <= time && time < getEffectiveEnd(r))
     .reduce((s, r) => s + r.people, 0);
 }
-// 당일 전체 예약 인원 합계
-function dayTotalCount(date) {
-  return getResList().filter(r => r.date === date).reduce((s, r) => s + r.people, 0);
-}
 
 // ── 통계 ──
 function renderStats() {
@@ -994,15 +993,11 @@ async function saveManual() {
   const phone  =document.getElementById('af-phone').value.trim();
   if(!date||!time||!people||!name||!phone){alert('모든 항목을 입력해 주세요.');return;}
   if(endTime && endTime<=time){alert('종료 시간은 시작 시간보다 늦어야 합니다.');return;}
-  const booked   = bookedCount(date, time);
-  const dayTotal = dayTotalCount(date);
+  const booked     = bookedCount(date, time);
   const timeRemain = capacity.available - booked;
-  const dayRemain  = capacity.total - dayTotal;
 
   if (booked + people > capacity.available) {
     if (!confirm(`해당 시간대 잔여 인원(${timeRemain}명)을 초과합니다. 그래도 추가하시겠습니까?`)) return;
-  } else if (dayTotal + people > capacity.total) {
-    if (!confirm(`당일 전체 예약 인원(잔여 ${dayRemain}명)을 초과합니다. 그래도 추가하시겠습니까?`)) return;
   }
   try {
     const data={date,time,people,name,phone,createdAt:new Date().toISOString()};
@@ -1086,6 +1081,12 @@ function fpInitDefs() {
   fpRuntimeDefs = FP_TABLE_DEFS.map(t => ({...t}));
 }
 function fpSaveDefs() { localStorage.setItem('fpRuntimeDefs', JSON.stringify(fpRuntimeDefs)); }
+function fpResetDefs() {
+  if (!confirm('테이블 순서를 기본값으로 초기화하시겠습니까?')) return;
+  localStorage.removeItem('fpRuntimeDefs');
+  fpRuntimeDefs = FP_TABLE_DEFS.map(t => ({...t}));
+  fpRenderAll();
+}
 function fpGetZone(tid) { return tid.split('-')[0]; }
 
 // Firebase 리스너 — 날짜가 바뀔 때마다 재구독
@@ -1141,13 +1142,34 @@ function fpHandleTableClick(tid) {
     fpSwapSrc = tid; fpRenderAll(); return;
   }
 
-  // 같은 존 → 위치(x,y)만 교환, 크기(w,h)는 각 테이블 그대로
-  const i1 = fpRuntimeDefs.findIndex(d => d.id === fpSwapSrc);
-  const i2 = fpRuntimeDefs.findIndex(d => d.id === tid);
-  const {x:x1,y:y1} = fpRuntimeDefs[i1];
-  const {x:x2,y:y2} = fpRuntimeDefs[i2];
-  fpRuntimeDefs[i1] = {...fpRuntimeDefs[i1], x:x2, y:y2};
-  fpRuntimeDefs[i2] = {...fpRuntimeDefs[i2], x:x1, y:y1};
+  // 같은 존 → 존 내 순서를 바꾼 뒤 크기(h/w)에 맞춰 좌표 재계산 (겹침 방지)
+  const isHoriz = (zone === 'D');          // D존만 가로 배열, 나머지는 세로
+  const posKey  = isHoriz ? 'x' : 'y';
+  const sizeKey = isHoriz ? 'w' : 'h';
+  const ZONE_GAP = { A:16, B:14, C:14, D:10 };
+  const gap = ZONE_GAP[zone] ?? 14;
+
+  // 현재 존 테이블을 위치 순으로 정렬한 ID 배열
+  const zoneIds = fpRuntimeDefs
+    .filter(t => fpGetZone(t.id) === zone)
+    .sort((a, b) => a[posKey] - b[posKey])
+    .map(t => t.id);
+
+  // 두 테이블의 순서를 맞교환
+  const oi1 = zoneIds.indexOf(fpSwapSrc);
+  const oi2 = zoneIds.indexOf(tid);
+  [zoneIds[oi1], zoneIds[oi2]] = [zoneIds[oi2], zoneIds[oi1]];
+
+  // 존의 시작 좌표를 기준으로 각 테이블 크기+간격으로 재배치
+  const startPos = Math.min(
+    ...fpRuntimeDefs.filter(t => fpGetZone(t.id) === zone).map(t => t[posKey])
+  );
+  let pos = startPos;
+  zoneIds.forEach(id => {
+    const def = fpRuntimeDefs.find(d => d.id === id);
+    def[posKey] = pos;
+    pos += def[sizeKey] + gap;
+  });
   fpSwapSrc = null;
   fpSaveDefs();
   fpRenderAll();
