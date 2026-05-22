@@ -994,10 +994,14 @@ async function saveManual() {
   if(!date||!time||!people||!name||!phone){alert('모든 항목을 입력해 주세요.');return;}
   if(endTime && endTime<=time){alert('종료 시간은 시작 시간보다 늦어야 합니다.');return;}
   const booked     = bookedCount(date, time);
-  const timeRemain = capacity.available - booked;
+  // 직원 수동 예약은 실제 물리 좌석(total) 기준으로 체크
+  // (capacity.available 은 온라인 손님용 소프트 제한)
+  const timeRemain = capacity.total - booked;
 
-  if (booked + people > capacity.available) {
-    if (!confirm(`해당 시간대 잔여 인원(${timeRemain}명)을 초과합니다. 그래도 추가하시겠습니까?`)) return;
+  if (booked + people > capacity.total) {
+    if (!confirm(`전체 좌석(${capacity.total}명) 초과입니다. 잔여 ${timeRemain}명. 그래도 추가하시겠습니까?`)) return;
+  } else if (booked + people > capacity.available) {
+    if (!confirm(`온라인 가용 인원(${capacity.available}명) 초과지만 전체 좌석 기준 잔여 ${timeRemain}명 있습니다. 추가하시겠습니까?`)) return;
   }
   try {
     const data={date,time,people,name,phone,createdAt:new Date().toISOString()};
