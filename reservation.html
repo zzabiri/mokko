@@ -348,6 +348,11 @@
   <div id="booking-section">
 
     <div id="form-section">
+      <div class="note-box">
+        <strong data-i18n="note_title"></strong><br />
+        <span data-i18n="note_text"></span>
+      </div>
+
       <div class="form-card">
         <p class="form-section-title" data-i18n="form_title"></p>
 
@@ -390,11 +395,6 @@
       <button class="btn-primary" id="btnCheck" onclick="checkAvailability()">
         <span data-i18n="btn_check"></span>
       </button>
-
-      <div class="note-box">
-        <strong data-i18n="note_title"></strong><br />
-        <span data-i18n="note_text"></span>
-      </div>
     </div>
 
     <div id="result-panel"></div>
@@ -479,7 +479,7 @@ const T = {
     label_phone:'연락처', phone_placeholder:'010-0000-0000',
     btn_check:'예약 가능 여부 확인',
     note_title:'안내',
-    note_text:'예약은 저녁 시간만 가능합니다. 대규모 단체 또는 특별 요청은 카카오톡 또는 전화로 문의해 주세요. 예약 후 연락 없이 20분 이상 지체 시 예약이 취소될 수 있습니다.',
+    note_text:'9명 이상 단체 또는 특별 요청은 전화 또는 카카오톡으로 문의해 주세요. 예약 후 연락 없이 20분 이상 지체 시 예약이 취소될 수 있습니다.',
     err_date:'날짜를 선택해 주세요', err_sunday:'일요일은 영업하지 않습니다',
     err_time:'시간을 선택해 주세요', err_people:'인원을 선택해 주세요',
     err_name:'이름을 입력해 주세요', err_phone:'연락처를 입력해 주세요',
@@ -494,7 +494,7 @@ const T = {
     avail_desc_pre:'아래 정보를 확인하시고 예약을 확정해 주세요.',
     unavail_title:'예약이 어렵습니다',
     unavail_full:'현재는 온라인 예약이 어렵습니다. 카카오톡 또는 전화로 문의하시면, 예약 가능 여부를 말씀드리겠습니다.',
-    unavail_partial:'현재는 온라인 예약이 어렵습니다. 카카오톡 또는 전화로 문의하시면, 예약 가능 여부를 말씀드리겠습니다.',
+    unavail_partial:'전화 예약만 가능한 좌석이 있으니, 전화로 문의 바랍니다.',
     unavail_contact:'',
     s_date:'날짜', s_time:'시간', s_people:'인원', s_name:'예약자', s_phone:'연락처',
     btn_confirm:'예약 확정하기', btn_back:'← 다시 입력하기', btn_other:'← 다른 날짜·시간 확인하기',
@@ -524,7 +524,7 @@ const T = {
     label_phone:'Telefon', phone_placeholder:'+49 123 456789',
     btn_check:'Verfügbarkeit prüfen',
     note_title:'Hinweise',
-    note_text:'Reservierungen sind nur für das Abendessen möglich. Für Großgruppen oder besondere Anfragen per KakaoTalk oder Telefon. Bei mehr als 20 Minuten Verspätung kann Ihre Reservierung storniert werden.',
+    note_text:'Für Gruppen ab 9 Personen oder besondere Anfragen wenden Sie sich bitte telefonisch an uns. Reservierungen können storniert werden, wenn Sie mehr als 20 Minuten zu spät kommen, ohne sich zu melden.',
     err_date:'Bitte wählen Sie ein Datum', err_sunday:'Sonntags ist geschlossen',
     err_time:'Bitte wählen Sie eine Uhrzeit', err_people:'Bitte Personenzahl auswählen',
     err_name:'Bitte geben Sie Ihren Namen ein', err_phone:'Bitte geben Sie Ihre Telefonnummer ein',
@@ -539,7 +539,7 @@ const T = {
     avail_desc_pre:'Bitte überprüfen Sie Ihre Angaben und bestätigen Sie die Reservierung.',
     unavail_title:'Nicht verfügbar',
     unavail_full:'Online-Reservierungen sind derzeit leider nicht möglich. Bitte kontaktieren Sie uns per KakaoTalk oder Telefon, um die Verfügbarkeit zu erfragen.',
-    unavail_partial:'Online-Reservierungen sind derzeit leider nicht möglich. Bitte kontaktieren Sie uns per KakaoTalk oder Telefon, um die Verfügbarkeit zu erfragen.',
+    unavail_partial:'Möglicherweise sind noch Plätze per Telefon reservierbar. Bitte rufen Sie uns an.',
     unavail_contact:'',
     s_date:'Datum', s_time:'Uhrzeit', s_people:'Personen', s_name:'Name', s_phone:'Telefon',
     btn_confirm:'Reservierung bestätigen', btn_back:'← Zurück', btn_other:'← Anderen Termin',
@@ -569,7 +569,7 @@ const T = {
     label_phone:'Phone', phone_placeholder:'+49 123 456789',
     btn_check:'Check Availability',
     note_title:'Notes',
-    note_text:'Reservations are for dinner only. For large groups or special requests, contact us via KakaoTalk or phone. Reservations may be cancelled if you are more than 20 minutes late.',
+    note_text:'For groups of 9 or more, or for special requests, please contact us by phone. Reservations may be cancelled if you are more than 20 minutes late without notice.',
     err_date:'Please select a date', err_sunday:'We are closed on Sundays',
     err_time:'Please select a time', err_people:'Please select number of guests',
     err_name:'Please enter your name', err_phone:'Please enter your phone number',
@@ -584,7 +584,7 @@ const T = {
     avail_desc_pre:'Please confirm your reservation details below.',
     unavail_title:'Not Available',
     unavail_full:'Online reservations are currently unavailable. Please contact us via KakaoTalk or phone to check availability.',
-    unavail_partial:'Online reservations are currently unavailable. Please contact us via KakaoTalk or phone to check availability.',
+    unavail_partial:'Some seats may still be available by phone. Please give us a call.',
     unavail_contact:'',
     s_date:'Date', s_time:'Time', s_people:'Guests', s_name:'Name', s_phone:'Phone',
     btn_confirm:'Confirm Reservation', btn_back:'← Edit Details', btn_other:'← Try Another Time',
@@ -694,14 +694,28 @@ async function getCapacity() {
   try {
     const snap = await db.ref('settings/capacity').once('value');
     const c = snap.val();
-    return (c && c.available) ? c.available : DEFAULT_CAPACITY;
-  } catch { return DEFAULT_CAPACITY; }
+    if (c && c.available) return c;
+    return { available: DEFAULT_CAPACITY, total: DEFAULT_CAPACITY };
+  } catch { return { available: DEFAULT_CAPACITY, total: DEFAULT_CAPACITY }; }
 }
 
 async function getBookedCount(date, time) {
   const snap = await db.ref('reservations').orderByChild('date').equalTo(date).once('value');
   let total = 0;
-  snap.forEach(child => { const r = child.val(); if (r.time === time) total += r.people; });
+  const CLOSING = '23:00';
+  snap.forEach(child => {
+    const r = child.val();
+    const resEnd = r.endTime || CLOSING;
+    // 이 예약이 time 시점에 착석 중인가: 시작 <= time < 종료
+    if (r.time <= time && time < resEnd) total += r.people;
+  });
+  return total;
+}
+
+async function getTotalDayCount(date) {
+  const snap = await db.ref('reservations').orderByChild('date').equalTo(date).once('value');
+  let total = 0;
+  snap.forEach(child => { total += (child.val().people || 0); });
   return total;
 }
 
@@ -808,13 +822,15 @@ async function checkAvailability() {
       return;
     }
 
-    const [capacity, booked] = await Promise.all([
+    const [cap, booked, totalDay] = await Promise.all([
       getCapacity(),
       getBookedCount(date, time),
+      getTotalDayCount(date),
     ]);
 
-    const remaining = capacity - booked;
-    const dateStr   = formatDateStr(date);
+    const remaining  = cap.available - booked;
+    const isDayFull  = totalDay >= (cap.total || cap.available);
+    const dateStr    = formatDateStr(date);
 
     document.getElementById('result-panel').style.display = 'block';
     document.getElementById('form-section').style.display = 'none';
@@ -838,24 +854,27 @@ async function checkAvailability() {
           <button class="btn-reset" onclick="goBack()">${t.btn_back}</button>
         </div>`;
     } else {
-      const msg = remaining <= 0
-        ? t.unavail_full.replace('{date}',dateStr).replace('{time}',time)
-        : t.unavail_partial.replace('{remaining}',remaining);
-      document.getElementById('result-panel').innerHTML = `
-        <div class="result-card unavailable">
-          <div class="result-icon">😔</div>
-          <div class="result-title ng">${t.unavail_title}</div>
-          <div class="result-desc">${msg}<br />${t.unavail_contact}</div>
-          <div class="contact-btns">
-            <a href="${TEL_HREF}" class="btn-tel">
+      // 전석 마감 여부에 따라 메시지·버튼 분기
+      const msg       = isDayFull ? t.unavail_full : t.unavail_partial;
+      const contactBtns = isDayFull
+        ? `<a href="${TEL_HREF}" class="btn-tel">
               <div class="tel-ico">📞</div>
               <div class="tel-label"><strong>${TEL}</strong><span>${t.tel_sub}</span></div>
-            </a>
-            <a href="${KAKAO_URL}" target="_blank" rel="noopener" class="btn-kakao">
+           </a>
+           <a href="${KAKAO_URL}" target="_blank" rel="noopener" class="btn-kakao">
               <div class="kakao-ico">💬</div>
               <div class="kakao-label"><strong>${t.kakao_title}</strong><span>${t.kakao_sub}</span></div>
-            </a>
-          </div>
+           </a>`
+        : `<a href="${TEL_HREF}" class="btn-tel">
+              <div class="tel-ico">📞</div>
+              <div class="tel-label"><strong>${TEL}</strong><span>${t.tel_sub}</span></div>
+           </a>`;
+      document.getElementById('result-panel').innerHTML = `
+        <div class="result-card unavailable">
+          <div class="result-icon">${isDayFull ? '😔' : '📞'}</div>
+          <div class="result-title ng">${t.unavail_title}</div>
+          <div class="result-desc">${msg}</div>
+          <div class="contact-btns">${contactBtns}</div>
           <button class="btn-reset" onclick="goBack()">${t.btn_other}</button>
         </div>`;
     }
