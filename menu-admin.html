@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>메뉴 관리 · Mokko Izakaya</title>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0e0e0e; --surface: #161616; --surface2: #1e1e1e;
+      --border: #2a2a2a; --text: #e8e3db; --muted: #7a7068;
+      --accent: #c9a96e; --red: #e05a5a; --green: #4caf82;
+      --font: 'Segoe UI', 'Noto Sans KR', sans-serif;
+    }
+    body { background: var(--bg); color: var(--text); font-family: var(--font); font-size: 14px; line-height: 1.6; }
+    a { color: inherit; text-decoration: none; }
+
+    /* ── PIN SCREEN ── */
+    #pin-screen {
+      position: fixed; inset: 0; z-index: 999;
+      background: var(--bg);
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px;
+    }
+    #pin-screen h1 { font-size: 1.2rem; letter-spacing: 0.15em; color: var(--accent); }
+    #pin-screen p { font-size: 0.8rem; color: var(--muted); }
+    #pin-input {
+      width: 180px; height: 48px; text-align: center;
+      font-size: 1.4rem; letter-spacing: 0.3em;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 6px; color: var(--text); font-family: var(--font);
+    }
+    #pin-input:focus { outline: none; border-color: var(--accent); }
+    #pin-error { color: var(--red); font-size: 0.8rem; display: none; }
+
+    /* ── LAYOUT ── */
+    #app { display: none; flex-direction: column; min-height: 100vh; }
+
+    header {
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      padding: 14px 20px; display: flex; align-items: center; gap: 12px;
+      position: sticky; top: 0; z-index: 100;
+    }
+    header h1 { font-size: 0.95rem; letter-spacing: 0.1em; color: var(--accent); flex: 1; }
+    .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 5px; font-size: 0.8rem; font-family: var(--font); cursor: pointer; border: none; letter-spacing: 0.04em; transition: opacity 0.2s; }
+    .btn:hover { opacity: 0.8; }
+    .btn-accent { background: var(--accent); color: #0e0e0e; font-weight: 600; }
+    .btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border); }
+    .btn-red { background: transparent; color: var(--red); border: 1px solid rgba(224,90,90,0.4); }
+    .btn-green { background: var(--green); color: #fff; font-weight: 600; }
+    .btn-sm { padding: 5px 10px; font-size: 0.75rem; }
+
+    /* ── CATEGORY TABS ── */
+    .cat-tabs {
+      display: flex; overflow-x: auto; gap: 4px; padding: 12px 20px;
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      scrollbar-width: none;
+    }
+    .cat-tabs::-webkit-scrollbar { display: none; }
+    .cat-tab {
+      white-space: nowrap; padding: 7px 14px; border-radius: 20px;
+      font-size: 0.78rem; cursor: pointer; border: 1px solid var(--border);
+      color: var(--muted); background: transparent; font-family: var(--font);
+      transition: all 0.2s;
+    }
+    .cat-tab.active { background: var(--accent); color: #0e0e0e; border-color: var(--accent); font-weight: 600; }
+    .cat-tab:hover:not(.active) { color: var(--text); border-color: var(--muted); }
+
+    /* ── MAIN CONTENT ── */
+    main { flex: 1; padding: 20px; max-width: 900px; width: 100%; margin: 0 auto; }
+
+    .cat-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .cat-header h2 { font-size: 1rem; font-weight: 500; }
+    .cat-header span { font-size: 0.75rem; color: var(--muted); }
+
+    /* ── ITEM CARDS ── */
+    .item-list { display: flex; flex-direction: column; gap: 8px; }
+    .item-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+      padding: 14px 16px; display: flex; align-items: center; gap: 12px;
+    }
+    .item-card.inactive { opacity: 0.45; }
+    .item-info { flex: 1; min-width: 0; }
+    .item-name-ko { font-size: 0.92rem; font-weight: 500; }
+    .item-name-de { font-size: 0.78rem; color: var(--muted); margin-top: 1px; }
+    .item-allergens { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+    .allergen-badge {
+      display: inline-block; padding: 1px 6px; border-radius: 3px;
+      font-size: 0.68rem; font-weight: 600; letter-spacing: 0.05em;
+      background: rgba(201,169,110,0.15); color: var(--accent); border: 1px solid rgba(201,169,110,0.3);
+    }
+    .item-price { font-size: 0.95rem; font-weight: 500; color: var(--accent); white-space: nowrap; }
+    .item-actions { display: flex; gap: 6px; }
+
+    .empty-state {
+      text-align: center; padding: 40px 20px; color: var(--muted);
+      border: 1px dashed var(--border); border-radius: 8px;
+    }
+
+    /* ── MODAL ── */
+    .modal-bg {
+      position: fixed; inset: 0; z-index: 500;
+      background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
+      display: flex; align-items: center; justify-content: center; padding: 20px;
+    }
+    .modal-box {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; width: 100%; max-width: 620px;
+      max-height: 90vh; overflow-y: auto;
+    }
+    .modal-header {
+      padding: 18px 20px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .modal-header h3 { font-size: 0.95rem; }
+    .modal-body { padding: 20px; }
+    .modal-footer {
+      padding: 16px 20px; border-top: 1px solid var(--border);
+      display: flex; justify-content: flex-end; gap: 8px;
+    }
+    .close-btn { background: none; border: none; color: var(--muted); font-size: 1.2rem; cursor: pointer; padding: 4px; }
+    .close-btn:hover { color: var(--text); }
+
+    /* ── FORM ── */
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+    .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+    .form-single { margin-bottom: 16px; }
+    .field-label {
+      display: block; font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--muted); margin-bottom: 6px;
+    }
+    .field-label span { color: var(--accent); margin-left: 2px; }
+    input[type="text"], input[type="number"], textarea, select {
+      width: 100%; background: var(--bg); border: 1px solid var(--border);
+      border-radius: 5px; color: var(--text); font-family: var(--font);
+      font-size: 0.85rem; padding: 8px 10px; transition: border-color 0.2s;
+    }
+    input:focus, textarea:focus, select:focus { outline: none; border-color: var(--accent); }
+    textarea { resize: vertical; min-height: 60px; line-height: 1.5; }
+    input::placeholder, textarea::placeholder { color: var(--muted); }
+    .section-divider { font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); margin: 20px 0 12px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+
+    /* ── ALLERGEN CHECKBOXES ── */
+    .allergen-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+    .allergen-check { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+    .allergen-check input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; accent-color: var(--accent); }
+    .allergen-check label { font-size: 0.65rem; color: var(--muted); cursor: pointer; text-align: center; }
+    .allergen-check .a-id { font-size: 0.75rem; font-weight: 700; color: var(--accent); }
+
+    /* ── TOGGLE ── */
+    .toggle-row { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+    .toggle { position: relative; width: 42px; height: 24px; }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider {
+      position: absolute; inset: 0; background: var(--border); border-radius: 24px; cursor: pointer;
+      transition: 0.2s;
+    }
+    .toggle-slider::before {
+      content: ''; position: absolute; height: 18px; width: 18px;
+      left: 3px; bottom: 3px; background: var(--muted); border-radius: 50%; transition: 0.2s;
+    }
+    .toggle input:checked + .toggle-slider { background: var(--green); }
+    .toggle input:checked + .toggle-slider::before { transform: translateX(18px); background: #fff; }
+    .toggle-label { font-size: 0.82rem; }
+
+    /* ── PRINT STYLES ── */
+    @media print {
+      * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      body { background: #fff !important; color: #1a1a1a !important; font-family: 'Arial', sans-serif; font-size: 9pt; }
+      #pin-screen, #app > header, .cat-tabs, main { display: none !important; }
+      #print-view { display: block !important; }
+    }
+
+    /* ── PRINT VIEW ── */
+    #print-view {
+      display: none;
+      position: fixed; inset: 0; z-index: 800;
+      background: #fff; color: #1a1a1a;
+      overflow-y: auto; padding: 0;
+    }
+    .print-toolbar {
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      padding: 10px 20px; display: flex; align-items: center; gap: 10px;
+      position: sticky; top: 0; z-index: 10;
+    }
+    .print-toolbar span { flex: 1; font-size: 0.85rem; color: var(--muted); }
+    .print-pages { padding: 20px; }
+    .print-page {
+      width: 210mm; min-height: 297mm; margin: 0 auto 20px;
+      background: #fff; color: #1a1a1a;
+      padding: 15mm 15mm 15mm 15mm;
+      box-shadow: 0 2px 20px rgba(0,0,0,0.15);
+      font-family: 'Arial', 'Helvetica', sans-serif;
+    }
+    .print-logo-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8mm; padding-bottom: 4mm; border-bottom: 0.5pt solid #888; }
+    .print-brand { font-size: 16pt; font-weight: 700; letter-spacing: 0.05em; }
+    .print-brand sub { font-size: 8pt; font-weight: 400; color: #666; letter-spacing: 0.02em; }
+    .print-date { font-size: 7pt; color: #888; }
+    .print-section-title {
+      font-size: 9pt; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+      color: #b8860b; border-bottom: 0.5pt solid #ddd; padding-bottom: 2mm; margin-bottom: 3mm; margin-top: 5mm;
+    }
+    .print-section-title:first-of-type { margin-top: 0; }
+    .print-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 0 8mm; }
+    .print-item { display: flex; justify-content: space-between; align-items: baseline; padding: 1.5mm 0; border-bottom: 0.3pt dotted #e0e0e0; gap: 4mm; }
+    .print-item-info { flex: 1; min-width: 0; }
+    .print-item-name { font-size: 8.5pt; font-weight: 600; line-height: 1.3; }
+    .print-item-name-sub { font-size: 7pt; color: #555; font-style: italic; }
+    .print-item-desc { font-size: 6.5pt; color: #666; line-height: 1.3; margin-top: 0.5mm; }
+    .print-item-allergens { font-size: 6pt; color: #b8860b; font-weight: 700; margin-top: 0.5mm; }
+    .print-item-price { font-size: 8.5pt; font-weight: 700; white-space: nowrap; }
+    .print-note { font-size: 6.5pt; color: #666; font-style: italic; margin-top: 2mm; }
+    .print-allergen-legend {
+      margin-top: 6mm; padding-top: 3mm; border-top: 0.5pt solid #ddd;
+      font-size: 6pt; color: #888; line-height: 1.8;
+    }
+    .print-allergen-legend strong { color: #555; }
+    .print-page-break { page-break-after: always; }
+
+    /* ── TOAST ── */
+    #toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+      background: var(--surface); border: 1px solid var(--border); border-radius: 6px;
+      padding: 10px 20px; font-size: 0.82rem; z-index: 999;
+      opacity: 0; transition: opacity 0.3s; pointer-events: none;
+    }
+    #toast.show { opacity: 1; }
+    #toast.success { border-color: var(--green); color: var(--green); }
+    #toast.error { border-color: var(--red); color: var(--red); }
+
+    /* ── LOADING ── */
+    .loading { text-align: center; padding: 40px; color: var(--muted); }
+  </style>
+</head>
+<body>
+
+<!-- PIN SCREEN -->
+<div id="pin-screen">
+  <h1>🔒 MOKKO 메뉴 관리</h1>
+  <p>PIN 번호를 입력하세요</p>
+  <input type="password" id="pin-input" maxlength="4" placeholder="• • • •" autocomplete="off" />
+  <p id="pin-error">PIN이 올바르지 않습니다</p>
+</div>
+
+<!-- MAIN APP -->
+<div id="app">
+  <header>
+    <h1>🍽 Mokko 메뉴 관리</h1>
+    <button class="btn btn-green" onclick="openPrintView()">🖨 인쇄 미리보기</button>
+    <button class="btn btn-outline btn-sm" id="seed-btn" onclick="openSeedModal()" title="Firebase가 비어있을 때만 사용 가능" disabled style="opacity:0.4;cursor:not-allowed">⬇ 초기 로드</button>
+    <button class="btn btn-outline btn-sm" onclick="doLogout()">로그아웃</button>
+  </header>
+
+  <div class="cat-tabs" id="cat-tabs"></div>
+
+  <main id="main-content">
+    <div class="loading">불러오는 중...</div>
+  </main>
+</div>
+
+<!-- ITEM EDIT MODAL -->
+<div id="edit-modal" class="modal-bg" style="display:none;">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3 id="modal-title">메뉴 항목 추가</h3>
+      <button class="close-btn" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="section-divider">이름</div>
+      <div class="form-grid">
+        <div>
+          <label class="field-label">한국어 <span>*</span></label>
+          <input type="text" id="f-name-ko" placeholder="예: 에다마메" />
+        </div>
+        <div>
+          <label class="field-label">독일어 <span>*</span></label>
+          <input type="text" id="f-name-de" placeholder="예: Edamame" />
+        </div>
+        <div>
+          <label class="field-label">영어 <span>*</span></label>
+          <input type="text" id="f-name-en" placeholder="예: Edamame" />
+        </div>
+      </div>
+
+      <div class="section-divider">설명 (선택)</div>
+      <div class="form-grid">
+        <div>
+          <label class="field-label">한국어</label>
+          <textarea id="f-desc-ko" placeholder="재료, 조리법 등"></textarea>
+        </div>
+        <div>
+          <label class="field-label">독일어</label>
+          <textarea id="f-desc-de" placeholder="Zutaten, Zubereitung..."></textarea>
+        </div>
+        <div>
+          <label class="field-label">영어</label>
+          <textarea id="f-desc-en" placeholder="Ingredients, preparation..."></textarea>
+        </div>
+      </div>
+
+      <div class="section-divider">가격 & 상태</div>
+      <div class="form-grid-2">
+        <div>
+          <label class="field-label">가격 (€) <span>*</span></label>
+          <input type="number" id="f-price" step="0.10" min="0" placeholder="0.00" />
+        </div>
+        <div>
+          <label class="field-label">표시 순서</label>
+          <input type="number" id="f-order" min="1" placeholder="숫자가 작을수록 위" />
+        </div>
+      </div>
+      <div class="toggle-row">
+        <label class="toggle">
+          <input type="checkbox" id="f-active" checked />
+          <span class="toggle-slider"></span>
+        </label>
+        <span class="toggle-label">메뉴에 표시 (비활성화하면 숨김)</span>
+      </div>
+
+      <div class="section-divider">EU 알러지 정보 (해당하는 항목 체크)</div>
+      <div class="allergen-grid" id="allergen-checks"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal()">취소</button>
+      <button class="btn btn-accent" onclick="saveItem()">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- SEED MODAL -->
+<div id="seed-modal" class="modal-bg" style="display:none;">
+  <div class="modal-box" style="max-width:400px;">
+    <div class="modal-header">
+      <h3>초기 데이터 불러오기</h3>
+      <button class="close-btn" onclick="document.getElementById('seed-modal').style.display='none'">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:0.85rem;line-height:1.7;color:var(--muted);">
+        PDF 메뉴 기반으로 초기 데이터를 Firebase에 로드합니다.<br><br>
+        <strong style="color:var(--accent);">ℹ️ Firebase가 완전히 비어 있을 때만 사용 가능합니다.</strong><br>
+        이후에는 항목 추가/수정/삭제로 관리하세요.
+      </p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="document.getElementById('seed-modal').style.display='none'">취소</button>
+      <button class="btn btn-accent" onclick="loadSeedData()">불러오기</button>
+    </div>
+  </div>
+</div>
+
+<!-- PRINT VIEW -->
+<div id="print-view">
+  <div class="print-toolbar">
+    <button class="btn btn-accent" onclick="window.print()">🖨 인쇄 / PDF 저장</button>
+    <button class="btn btn-outline" onclick="closePrintView()">✕ 닫기</button>
+    <span>A4 인쇄 미리보기 — 브라우저에서 Ctrl+P 또는 위 버튼으로 인쇄</span>
+    <select id="print-lang" onchange="renderPrint()" style="width:auto;padding:6px 10px;font-size:0.8rem;">
+      <option value="de">독일어 (DE)</option>
+      <option value="en">영어 (EN)</option>
+      <option value="ko">한국어 (KO)</option>
+    </select>
+  </div>
+  <div class="print-pages" id="print-pages"></div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ─────────────────────────────────────────────
+//  FIREBASE
+// ─────────────────────────────────────────────
+const firebaseConfig = {
+  apiKey: "AIzaSyDKRtm23KJVtj8qXSRDJfCP1Lvpk4vBH3U",
+  databaseURL: "https://mokko-reservation-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "mokko-reservation",
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+// ─────────────────────────────────────────────
+//  CONSTANTS
+// ─────────────────────────────────────────────
+const PIN = '1234';
+
+const CATEGORIES = [
+  { id: 'starters', ko: '전채', de: 'Vorspeisen', en: 'Starters' },
+  { id: 'fried',    ko: '튀김', de: 'Frittierte Gerichte', en: 'Fried Dishes' },
+  { id: 'chefs',    ko: '셰프 특선', de: "Chef's Spezialitäten", en: "Chef's Specials" },
+  { id: 'sashimi',  ko: '사시미', de: 'Sashimi', en: 'Sashimi' },
+  { id: 'grill',    ko: '그릴', de: 'Grill', en: 'Grill' },
+  { id: 'tofu',     ko: '순두부', de: 'Tofu Suppe', en: 'Tofu Stew' },
+  { id: 'hotpot',   ko: '전골', de: 'Eintopf', en: 'Hotpot' },
+  { id: 'extras',   ko: '사이드', de: 'Extras', en: 'Extras' },
+  { id: 'beverages',ko: '음료', de: 'Getränke', en: 'Beverages' },
+  { id: 'lunch',    ko: '🌞 점심', de: '🌞 Mittagsmenü', en: '🌞 Lunch' },
+];
+
+const ALLERGENS = [
+  { id:'A', de:'Gluten',         ko:'글루텐' },
+  { id:'B', de:'Krebstiere',     ko:'갑각류' },
+  { id:'C', de:'Eier',           ko:'달걀' },
+  { id:'D', de:'Fisch',          ko:'어류' },
+  { id:'E', de:'Erdnüsse',       ko:'땅콩' },
+  { id:'F', de:'Soja',           ko:'대두' },
+  { id:'G', de:'Milch',          ko:'유제품' },
+  { id:'H', de:'Schalenfrüchte', ko:'견과류' },
+  { id:'I', de:'Sellerie',       ko:'셀러리' },
+  { id:'J', de:'Senf',           ko:'겨자' },
+  { id:'K', de:'Sesam',          ko:'참깨' },
+  { id:'L', de:'Sulfite',        ko:'아황산염' },
+  { id:'M', de:'Lupinen',        ko:'루핀' },
+  { id:'N', de:'Weichtiere',     ko:'연체동물' },
+];
+
+const SEED = {
+  starters: [
+    { name_ko:'삶은 콩 (에다마메)', name_de:'Edamame', name_en:'Edamame', desc_ko:'소금 간을 한 풋콩', desc_de:'Gedämpfte Sojabohnen', desc_en:'Salted steamed soybeans', price:3.90, allergens:['F'], active:true, order:1 },
+    { name_ko:'마라 오이샐러드', name_de:'Mala-Gurkensalat', name_en:'Mala Cucumber Salad', desc_ko:'마라 드레싱의 매콤한 오이 샐러드', desc_de:'Gurkensalat mit scharfem Maladressing', desc_en:'Cucumber salad with spicy mala dressing', price:4.90, allergens:['F','K'], active:true, order:2 },
+    { name_ko:'튀김 만두 5개', name_de:'Gebratene Teigtaschen (5 Stk.)', name_en:'Fried Dumplings (5 pcs)', desc_ko:'돼지고기 속 바삭한 튀김 만두', desc_de:'Frittierte Teigtaschen mit Schweinefleisch', desc_en:'Crispy fried pork dumplings', price:5.90, allergens:['A','C','F'], active:true, order:3 },
+    { name_ko:'계란찜', name_de:'Gedämpftes Ei', name_en:'Steamed Egg', desc_ko:'토비코를 곁들인 부드러운 한국식 계란찜', desc_de:'Gedämpftes Ei mit Tobiko, koreanische Art', desc_en:'Soft steamed egg with tobiko, Korean style', price:12.90, allergens:['C','D'], active:true, order:4 },
+    { name_ko:'감자전', name_de:'Kartoffelpfannkuchen', name_en:'Potato Pancake', desc_ko:'치즈와 양파를 넣은 한국식 감자전', desc_de:'Koreanischer Kartoffelpfannkuchen mit Käse und Zwiebeln', desc_en:'Korean potato pancake with cheese and onions', price:12.90, allergens:['A','C','G'], active:true, order:5 },
+    { name_ko:'해물부추전', name_de:'Meeresfrüchte-Pfannkuchen', name_en:'Seafood Pancake', desc_ko:'해산물과 부추를 넣은 바삭한 전', desc_de:'Koreanischer Meeresfrüchtepfannkuchen mit Frühlingszwiebeln', desc_en:'Crispy Korean pancake with seafood and chives', price:16.90, allergens:['A','B','C','D','N'], active:true, order:6 },
+    { name_ko:'오코노미야키', name_de:'Okonomiyaki', name_en:'Okonomiyaki', desc_ko:'양배추·베이컨·해산물, 마요·데리야키 소스', desc_de:'Japanischer Pfannkuchen mit Weißkohl, Bacon & Meeresfrüchten', desc_en:'Japanese pancake with cabbage, bacon & seafood', price:15.90, allergens:['A','C','D','F'], active:true, order:7 },
+  ],
+  fried: [
+    { name_ko:'가라아게 (타르타르 소스)', name_de:'Karaage mit Tartar-Soße', name_en:'Karaage with Tartar Sauce', desc_ko:'일본식 닭튀김, 수제 타르타르 소스', desc_de:'Japanisches Karaage mit hausgemachter Tatarsoße', desc_en:'Japanese fried chicken, house tartar sauce', price:10.90, allergens:['A','C','F'], active:true, order:1 },
+    { name_ko:'양념 가라아게 (스위트칠리)', name_de:'Karaage mit Sweet-Chili-Soße', name_en:'Karaage with Sweet Chili Sauce', desc_ko:'달콤한 한국식 칠리 소스로 버무린 가라아게', desc_de:'Karaage mit koreanischer Sweet-Chili-Soße', desc_en:'Karaage glazed with Korean sweet chili sauce', price:11.90, allergens:['A','C','F'], active:true, order:2 },
+    { name_ko:'에비후라이 6개', name_de:'Ebi-Fry (6 Stk.)', name_en:'Ebi-Fry (6 pcs)', desc_ko:'바삭하게 튀긴 새우', desc_de:'Knusprig frittierte Garnelen', desc_en:'Crispy deep-fried prawns', price:9.90, allergens:['A','B','C'], active:true, order:3 },
+    { name_ko:'굴튀김 5개', name_de:'Frittierte Austern (5 Stk.)', name_en:'Fried Oysters (5 pcs)', desc_ko:'수제 타르타르 소스와 함께하는 굴튀김', desc_de:'Frittierte Austern mit hausgemachter Tatar-Soße', desc_en:'Deep-fried oysters with homemade tartar sauce', price:12.90, allergens:['A','C','N'], active:true, order:4 },
+    { name_ko:'고기튀김', name_de:'Frittiertes Schweinefleisch', name_en:'Fried Pork', desc_ko:'달콤 짭쪼름한 간장소스와 바삭한 돼지고기', desc_de:'Knusprig frittiertes Schweinefleisch mit süß-saurer Sojasoße', desc_en:'Crispy pork with sweet and sour soy sauce', price:24.90, allergens:['A','C','F'], active:true, order:5 },
+  ],
+  chefs: [
+    { name_ko:'돼지 껍데기', name_de:'Gegrillte Schweinehaut', name_en:'Grilled Pork Skin', desc_ko:'숯불에 구운 바삭한 돼지 껍데기', desc_de:'Schweinehaut gegrillt', desc_en:'Grilled crispy pork skin', price:12.90, allergens:['F'], active:true, order:1 },
+    { name_ko:'마늘 닭똥집 볶음', name_de:'Hühnermagen mit Knoblauch', name_en:'Chicken Gizzard with Garlic', desc_ko:'마늘과 함께 볶은 닭똥집', desc_de:'Gebratene Hühnermagen mit Knoblauch', desc_en:'Stir-fried chicken gizzard with garlic', price:12.90, allergens:['F','K'], active:true, order:2 },
+    { name_ko:'마라 닭똥집 볶음', name_de:'Hühnermagen Mala (scharf)', name_en:'Chicken Gizzard with Mala Sauce', desc_ko:'마라 마리네이드의 매콤한 닭똥집과 떡', desc_de:'Hühnermagen und Reiskuchen mit Mala-Marinade (scharf)', desc_en:'Gizzard and rice cake in spicy mala marinade', price:13.90, allergens:['F','K'], active:true, order:3 },
+    { name_ko:'육회', name_de:'Koreanisches Rindertatar', name_en:'Korean Beef Tartare', desc_ko:'배·오이·달걀노른자·파 곁들임', desc_de:'Mit Nashi-Birne, Gurke, Eigelb, Frühlingszwiebeln und Nori', desc_en:'With nashi pear, cucumber, egg yolk & spring onions', price:27.90, allergens:['C','F','K'], active:true, order:4 },
+    { name_ko:'오징어 초무침 + 소면', name_de:'Scharf marinierter Tintenfischsalat mit Nudeln', name_en:'Spicy Squid Salad with Noodles', desc_ko:'매콤한 소스의 오징어 샐러드와 소면', desc_de:'Kalt servierter Tintenfischsalat mit Chilisoße und Nudeln', desc_en:'Cold spicy squid salad with vermicelli noodles', price:27.90, allergens:['A','F','K','N'], active:true, order:5 },
+    { name_ko:'오삼불고기 + 쌈', name_de:'Schweinebauch & Tintenfisch Bulgogi + Blattsalat', name_en:'Spicy Pork Belly & Squid Bulgogi + Wraps', desc_ko:'매콤한 고추장 소스의 돼지고기와 오징어 볶음', desc_de:'Gebratenes Schweinefleisch mit Tintenfisch in Chilisoße + Blattgemüse', desc_en:'Stir-fried pork and squid in Korean chili sauce + lettuce wraps', price:23.90, allergens:['F','K','N'], active:true, order:6 },
+    { name_ko:'골뱅이 소면', name_de:'Scharf marinierte Meeresschnecken mit Nudeln', name_en:'Spicy Whelk Salad with Noodles', desc_ko:'매콤한 소스의 골뱅이와 소면', desc_de:'Kalt servierte Meeresschnecken mit Chilisoße und Nudeln', desc_en:'Cold spicy whelk salad with vermicelli noodles', price:28.90, allergens:['A','F','K','N'], active:true, order:7 },
+    { name_ko:'차돌수육', name_de:'Dünn geschnittene Rinderbrust (koreanische Art)', name_en:'Korean-style Beef Brisket', desc_ko:'얇게 썬 부드러운 한국식 수육', desc_de:'Dünn geschnittenes, gekochtes Rindfleisch koreanischer Art', desc_en:'Thinly sliced boiled beef brisket, Korean style', price:39.90, allergens:['F'], active:true, order:8 },
+    { name_ko:'매운 등갈비찜 + 주먹밥', name_de:'Scharfe Schweinerippchen + Koreanische Reisbällchen', name_en:'Spicy Pork Ribs + Korean Rice Balls', desc_ko:'매콤달콤 등갈비찜과 주먹밥', desc_de:'Koreanische scharfe Schweinerippchen + Koreanische Reisbällchen', desc_en:'Spicy marinated pork ribs + Korean rice balls', price:32.90, allergens:['A','F','K'], active:true, order:9 },
+  ],
+  sashimi: [
+    { name_ko:'방어 사시미', name_de:'Hamachi-Sashimi', name_en:'Hamachi Sashimi', desc_ko:'신선한 방어 사시미', desc_de:'Frisches Hamachi-Sashimi', desc_en:'Fresh yellowtail sashimi', price:25.90, allergens:['D'], active:true, order:1 },
+    { name_ko:'광어 사시미', name_de:'Hirame-Sashimi', name_en:'Hirame Sashimi', desc_ko:'신선한 광어 사시미', desc_de:'Frisches Hirame-Sashimi', desc_en:'Fresh flounder sashimi', price:25.90, allergens:['D'], active:true, order:2 },
+    { name_ko:'3종 사시미 (방어·광어·문어)', name_de:'Sashimi-Trio (Hamachi, Hirame & Oktopus)', name_en:'Sashimi Trio (Hamachi, Hirame & Octopus)', desc_ko:'방어, 광어, 문어 3종 사시미 모둠', desc_de:'Drei Sorten Sashimi: Hamachi, Hirame und Oktopus', desc_en:'Three kinds of sashimi: yellowtail, flounder & octopus', price:32.90, allergens:['D','N'], active:true, order:3 },
+  ],
+  grill: [
+    { name_ko:'고등어 구이', name_de:'Gegrillte Makrele', name_en:'Grilled Mackerel', desc_ko:'숯불에 구운 고등어', desc_de:'Gegrillte Makrele', desc_en:'Charcoal-grilled mackerel', price:13.90, allergens:['D'], active:true, order:1 },
+    { name_ko:'야키토리 2개', name_de:'Yakitori (2 Stk.)', name_en:'Yakitori (2 pcs)', desc_ko:'데리야키 소스의 닭꼬치 2개', desc_de:'Gegrillte Hähnchenspieße mit Teriyaki (2 Stk.)', desc_en:'Grilled chicken skewers with teriyaki (2 pcs)', price:8.90, allergens:['A','F'], active:true, order:2 },
+    { name_ko:'석쇠 불고기 + 쌈', name_de:'Gegrilltes Schweinenacken-Bulgogi + Blattsalat', name_en:'Grilled Pork Bulgogi + Wraps', desc_ko:'수제 간장마리네이드의 돼지목살 + 쌈채소 (비빔냉면 추가 9€)', desc_de:'Gegrilltes Schweinenacken mit Sojamarinade + Blattgemüse (kalt gemischte Nudeln +9€)', desc_en:'Grilled pork neck in soy marinade + lettuce wraps (cold noodle +€9)', price:22.90, allergens:['A','F','K'], active:true, order:3 },
+    { name_ko:'고추장 삼겹살 + 쌈', name_de:'Gochujang-Schweinebauch + Blattsalat', name_en:'Spicy Pork Belly + Wraps', desc_ko:'고추장 마리네이드의 삼겹살 + 쌈채소', desc_de:'Gegrillter Schweinebauch in Gochujang-Sauce + Blattgemüse', desc_en:'Pork belly in gochujang sauce + lettuce wraps', price:22.90, allergens:['F','K'], active:true, order:4 },
+    { name_ko:'일본 뽀도독 소시지 5개', name_de:'Japanische Bratwürstchen (5 Stk.)', name_en:'Japanese Mini Sausages (5 pcs)', desc_ko:'작고 바삭한 일본식 그릴 소시지', desc_de:'Kleine japanische Bratwürstchen', desc_en:'Bite-sized Japanese grilled sausages', price:7.50, allergens:['A'], active:true, order:5 },
+    { name_ko:'반 건조 갑오징어 구이', name_de:'Halbgetrocknete gegrillte Sepia', name_en:'Grilled Semi-dried Cuttlefish', desc_ko:'반건조 갑오징어 구이', desc_de:'Halbgetrocknete, gegrillte Sepia', desc_en:'Semi-dried cuttlefish, grilled', price:18.90, allergens:['N'], active:true, order:6 },
+  ],
+  tofu: [
+    { name_ko:'고기 순두부 찌개', name_de:'Tofu-Suppe mit Schweinefleisch', name_en:'Tofu Stew with Pork', desc_ko:'돼지고기와 함께하는 순한 맛 순두부 찌개', desc_de:'Weiches Tofugericht mit Schweinefleisch (mild)', desc_en:'Soft tofu stew with pork (mild)', price:14.90, allergens:['F'], active:true, order:1 },
+    { name_ko:'해물 순두부 찌개', name_de:'Tofu-Suppe mit Schweinefleisch & Meeresfrüchten', name_en:'Tofu Stew with Pork & Seafood', desc_ko:'돼지고기와 해산물을 넣은 순두부 찌개', desc_de:'Tofu-Suppe mit Schweinefleisch und Meeresfrüchten (mild)', desc_en:'Soft tofu stew with pork and seafood (mild)', price:15.90, allergens:['B','D','F','N'], active:true, order:2 },
+  ],
+  hotpot: [
+    { name_ko:'해물 순두부 전골 (2~3인)', name_de:'Meeresfrüchte-Tofu-Eintopf (2–3 Pers.)', name_en:'Seafood Tofu Hotpot (2–3 pax)', desc_ko:'해산물과 두부가 들어간 전골', desc_de:'Tofueintopf mit Schweinefleisch und Meeresfrüchten', desc_en:'Tofu hotpot with pork and seafood', price:27.90, allergens:['B','D','F','N'], active:true, order:1 },
+    { name_ko:'어묵전골 (2~3인)', name_de:'Fischkuchen-Eintopf (2–3 Pers.)', name_en:'Fish Cake Hotpot (2–3 pax)', desc_ko:'어묵, 떡, 우동, 야채 전골', desc_de:'Fischkuchen, Reiskuchen, Udon-Nudeln und Gemüse', desc_en:'Fish cake, rice cake, udon noodles and vegetables', price:29.90, allergens:['A','D','F'], active:true, order:2 },
+    { name_ko:'김치 스지 전골 (2~3인)', name_de:'Kimchi-Rindfleischsehnen-Eintopf (2–3 Pers.)', name_en:'Kimchi Beef Tendon Hotpot (2–3 pax)', desc_ko:'김치와 소힘줄이 들어간 진한 전골', desc_de:'Kimchi-Rindfleischsehneneintopf', desc_en:'Rich hotpot with kimchi and beef tendon', price:35.90, allergens:['A','F'], active:true, order:3 },
+    { name_ko:'추가 면사리 (우동/라면/소면/떡)', name_de:'Extra Nudeln (Udon/Ramyeon/Weizennudeln/Reiskuchen)', name_en:'Extra Noodles (Udon/Ramyeon/Vermicelli/Rice cake)', desc_ko:'전골에 추가하는 면사리', desc_de:'Udon / Ramyeon / Weizennudeln / Reiskuchen', desc_en:'Udon / Ramyeon / Vermicelli / Rice cake', price:3.00, allergens:['A'], active:true, order:4 },
+    { name_ko:'추가 토핑 (어묵/스지/만두/대창)', name_de:'Extra Toppings (Fischkuchen/Rindersehne/Teigtaschen)', name_en:'Extra Toppings (Fish cake/Tendon/Dumplings)', desc_ko:'전골에 추가하는 토핑', desc_de:'Fischkuchen / Rindersehne / Teigtaschen', desc_en:'Fish cake / Tendon / Dumplings', price:7.90, allergens:['A','D','F'], active:true, order:5 },
+  ],
+  extras: [
+    { name_ko:'공기밥', name_de:'Extra Reis', name_en:'Steamed Rice', desc_ko:'공깃밥 한 그릇', desc_de:'Eine Portion Reis', desc_en:'A bowl of steamed rice', price:2.00, allergens:[], active:true, order:1 },
+    { name_ko:'겉절이 김치', name_de:'Hausgemachter Kimchi', name_en:'Homemade Kimchi', desc_ko:'신선하게 만든 하우스 김치', desc_de:'Frisch zubereiteter Kimchi', desc_en:'Freshly made house kimchi', price:3.00, allergens:['F'], active:true, order:2 },
+  ],
+  beverages: [
+    { name_ko:'콜라/제로/환타/스프라이트 200ml', name_de:'Cola/Zero/Fanta/Sprite 200ml', name_en:'Cola/Zero/Fanta/Sprite 200ml', desc_ko:'', desc_de:'', desc_en:'', price:3.00, allergens:[], active:true, order:1 },
+    { name_ko:'토닉 워터 200ml', name_de:'Schweppes Tonic Water 200ml', name_en:'Tonic Water 200ml', desc_ko:'', desc_de:'', desc_en:'', price:3.00, allergens:[], active:true, order:2 },
+    { name_ko:'스틸 워터 750ml', name_de:'Selters Stilles Wasser 750ml', name_en:'Still Water 750ml', desc_ko:'', desc_de:'', desc_en:'', price:6.90, allergens:[], active:true, order:3 },
+    { name_ko:'스파클링 워터 750ml', name_de:'Selters Sprudelwasser 750ml', name_en:'Sparkling Water 750ml', desc_ko:'', desc_de:'', desc_en:'', price:6.90, allergens:[], active:true, order:4 },
+    { name_ko:'삿포로 생맥주 소 0.25L', name_de:'Sapporo vom Fass Klein 0,25l', name_en:'Sapporo Draft Beer Small 0.25l', desc_ko:'', desc_de:'', desc_en:'', price:4.90, allergens:['A'], active:true, order:5 },
+    { name_ko:'삿포로 생맥주 대 0.5L', name_de:'Sapporo vom Fass Groß 0,5l', name_en:'Sapporo Draft Beer Large 0.5l', desc_ko:'', desc_de:'', desc_en:'', price:6.50, allergens:['A'], active:true, order:6 },
+    { name_ko:'삿포로 라들러 소 0.25L', name_de:'Sapporo Radler Klein 0,25l', name_en:'Sapporo Radler Small 0.25l', desc_ko:'', desc_de:'', desc_en:'', price:4.90, allergens:['A'], active:true, order:7 },
+    { name_ko:'삿포로 라들러 대 0.5L', name_de:'Sapporo Radler Groß 0,5l', name_en:'Sapporo Radler Large 0.5l', desc_ko:'', desc_de:'', desc_en:'', price:6.50, allergens:['A'], active:true, order:8 },
+    { name_ko:'기린 330ml', name_de:'Kirin Bier 330ml', name_en:'Kirin Beer 330ml', desc_ko:'', desc_de:'', desc_en:'', price:4.80, allergens:['A'], active:true, order:9 },
+    { name_ko:'비트부어거 필스 500ml', name_de:'Bitburger Pils 500ml', name_en:'Bitburger Pils 500ml', desc_ko:'', desc_de:'', desc_en:'', price:5.00, allergens:['A'], active:true, order:10 },
+    { name_ko:'에어딩어 바이쩬 500ml', name_de:'Erdinger Weissbier 500ml', name_en:'Erdinger Weissbier 500ml', desc_ko:'', desc_de:'', desc_en:'', price:5.00, allergens:['A'], active:true, order:11 },
+    { name_ko:'기린 논알콜 0.0% 330ml', name_de:'Kirin Alkoholfrei 0,0% 330ml', name_en:'Kirin Non-alcoholic 0.0% 330ml', desc_ko:'', desc_de:'', desc_en:'', price:4.80, allergens:['A'], active:true, order:12 },
+    { name_ko:'참이슬 350ml', name_de:'Chamisul Soju 16,5% 350ml', name_en:'Chamisul Soju 16.5% 350ml', desc_ko:'', desc_de:'', desc_en:'', price:13.90, allergens:[], active:true, order:13 },
+    { name_ko:'진로 350ml', name_de:'Jinro Soju 16,5% 350ml', name_en:'Jinro Soju 16.5% 350ml', desc_ko:'', desc_de:'', desc_en:'', price:13.90, allergens:[], active:true, order:14 },
+    { name_ko:'새로 375ml', name_de:'Saero Soju 16% 375ml', name_en:'Saero Soju 16% 375ml', desc_ko:'', desc_de:'', desc_en:'', price:13.90, allergens:[], active:true, order:15 },
+    { name_ko:'화요 25도 375ml', name_de:'Hwayo 25% 375ml', name_en:'Hwayo 25% 375ml', desc_ko:'', desc_de:'', desc_en:'', price:39.00, allergens:[], active:true, order:16 },
+    { name_ko:'막걸리 750ml', name_de:'Makgeolli (Koreanischer Reiswein 6%) 750ml', name_en:'Makgeolli (Korean Rice Wine 6%) 750ml', desc_ko:'', desc_de:'', desc_en:'', price:10.90, allergens:[], active:true, order:17 },
+    { name_ko:'하이볼 (일반/토닉) 300ml', name_de:'Highball (Soda/Tonic) 300ml', name_en:'Highball (Soda/Tonic) 300ml', desc_ko:'', desc_de:'', desc_en:'', price:7.90, allergens:[], active:true, order:18 },
+    { name_ko:'하이볼 (일반/토닉) 600ml', name_de:'Highball (Soda/Tonic) 600ml', name_en:'Highball (Soda/Tonic) 600ml', desc_ko:'', desc_de:'', desc_en:'', price:12.90, allergens:[], active:true, order:19 },
+    { name_ko:'오토코 우메 츄하이 600ml', name_de:'Japanischer Pflaumen-Soju-Highball 600ml', name_en:'Japanese Salted Plum Soju Highball 600ml', desc_ko:'', desc_de:'', desc_en:'', price:13.90, allergens:[], active:true, order:20 },
+    { name_ko:'화요 토닉 세트', name_de:'Hwayo Tonic Set', name_en:'Hwayo Tonic Set', desc_ko:'화요 25도 + 토닉워터 3병 + 레몬 + 얼음', desc_de:'Hwayo 25 mit 3 Tonic Waters, Zitrone und Eis', desc_en:'Hwayo 25 with 3 tonic waters, lemon and ice', price:49.00, allergens:[], active:true, order:21 },
+    { name_ko:'간노코 쇼츄 720ml', name_de:'Satsuma Shuzo Shochu (Kannoko) 720ml', name_en:'Kannoko Shochu 720ml', desc_ko:'', desc_de:'', desc_en:'', price:62.00, allergens:[], active:true, order:22 },
+    { name_ko:'토쿠리 사케 200ml', name_de:'Tokkuri Sake (Honjozo) 200ml', name_en:'Tokkuri Sake (Honjozo) 200ml', desc_ko:'', desc_de:'', desc_en:'', price:13.90, allergens:[], active:true, order:23 },
+    { name_ko:'쿠보타 센쥬 사케 720ml', name_de:'Kubota Senju Sake (Ginjo) 720ml', name_en:'Kubota Senju Sake (Ginjo) 720ml', desc_ko:'', desc_de:'', desc_en:'', price:44.50, allergens:[], active:true, order:24 },
+    { name_ko:'핫카이산 사케 720ml', name_de:'Hakkaisan Sake (Junmai Daiginjo) 720ml', name_en:'Hakkaisan Sake (Junmai Daiginjo) 720ml', desc_ko:'', desc_de:'', desc_en:'', price:74.50, allergens:[], active:true, order:25 },
+    { name_ko:'닷사이 45 사케 720ml', name_de:'Dassai 45 Sake (Junmai Daiginjo) 720ml', name_en:'Dassai 45 Sake (Junmai Daiginjo) 720ml', desc_ko:'', desc_de:'', desc_en:'', price:89.50, allergens:[], active:true, order:26 },
+    { name_ko:'닷사이 23 사케 720ml', name_de:'Dassai 23 Sake (Junmai Daiginjo) 720ml', name_en:'Dassai 23 Sake (Junmai Daiginjo) 720ml', desc_ko:'', desc_de:'', desc_en:'', price:139.50, allergens:[], active:true, order:27 },
+  ],
+  lunch: [
+    { name_ko:'점심 세트 메뉴', name_de:'Mittagsmenü', name_en:'Lunch Set Menu',
+      desc_ko:'1 메인 선택 + 밥, 국, 반찬 포함\n① 제육볶음(화,목) / 돼지불고기(수,금)\n② 순살 생선조림 (매움)\n③ 양념 가라아게 + 에비후라이 2개\n④ 고등어 구이\n메인 추가 +8€ / 밥 추가 +2€',
+      desc_de:'1 Hauptgericht nach Wahl + Reis, Tagessuppe & Beilagen\n① Gebratener Schweinebauch scharf (Di,Do) / Bulgogi (Mi,Fr)\n② Geschmortes Fischfilet (scharf)\n③ Karaage + Ebi-Fry (2 Stk.)\n④ Gegrillte Makrele\nExtra Hauptgericht +8€ / Extra Reis +2€',
+      desc_en:'Choose 1 main + rice, daily soup & sides\n① Spicy pork (Tue,Thu) / Pork bulgogi (Wed,Fri)\n② Spicy braised fish fillet\n③ Karaage + Ebi-Fry (2 pcs)\n④ Grilled mackerel\nExtra main +€8 / Extra rice +€2',
+      price:15.50, allergens:['A','D','F'], active:true, order:1 },
+  ],
+};
+
+// ─────────────────────────────────────────────
+//  STATE
+// ─────────────────────────────────────────────
+let currentCat = 'starters';
+let menuData = {};
+let editingKey = null;
+let editingCat = null;
+
+// ─────────────────────────────────────────────
+//  PIN
+// ─────────────────────────────────────────────
+document.getElementById('pin-input').addEventListener('input', e => {
+  if (e.target.value.length === 4) {
+    if (e.target.value === PIN) {
+      document.getElementById('pin-screen').style.display = 'none';
+      document.getElementById('app').style.display = 'flex';
+      init();
+    } else {
+      document.getElementById('pin-error').style.display = 'block';
+      e.target.value = '';
+      setTimeout(() => document.getElementById('pin-error').style.display = 'none', 2000);
+    }
+  }
+});
+
+function doLogout() {
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('pin-screen').style.display = 'flex';
+  document.getElementById('pin-input').value = '';
+}
+
+// ─────────────────────────────────────────────
+//  INIT
+// ─────────────────────────────────────────────
+function init() {
+  renderCatTabs();
+  renderAllergenChecks();
+  loadCategory(currentCat);
+  // Firebase가 비어 있을 때만 초기 로드 버튼 활성화
+  db.ref('menu').once('value', snap => {
+    const btn = document.getElementById('seed-btn');
+    if (!snap.exists()) {
+      btn.disabled = false;
+      btn.style.opacity = '1';
+      btn.style.cursor = 'pointer';
+      btn.title = 'Firebase가 비어 있습니다. 초기 데이터를 로드하세요.';
+    } else {
+      btn.disabled = true;
+      btn.style.opacity = '0.3';
+      btn.title = '이미 데이터가 있습니다 (항목 추가/수정/삭제로 관리)';
+    }
+  });
+}
+
+function renderCatTabs() {
+  const el = document.getElementById('cat-tabs');
+  el.innerHTML = CATEGORIES.map(c => `
+    <button class="cat-tab ${c.id === currentCat ? 'active' : ''}"
+      onclick="switchCat('${c.id}')">${c.ko}</button>
+  `).join('');
+}
+
+function switchCat(id) {
+  currentCat = id;
+  renderCatTabs();
+  loadCategory(id);
+}
+
+function loadCategory(catId) {
+  const main = document.getElementById('main-content');
+  main.innerHTML = '<div class="loading">불러오는 중...</div>';
+  db.ref(`menu/${catId}`).once('value', snap => {
+    const data = snap.val() || {};
+    menuData[catId] = data;
+    renderCategory(catId, data);
+  });
+}
+
+function renderCategory(catId, data) {
+  const cat = CATEGORIES.find(c => c.id === catId);
+  const items = Object.entries(data).sort((a,b) => (a[1].order||99) - (b[1].order||99));
+  const main = document.getElementById('main-content');
+  main.innerHTML = `
+    <div class="cat-header">
+      <div>
+        <h2>${cat.ko} <span style="font-size:0.8rem;color:var(--muted);font-weight:400;">${cat.de}</span></h2>
+        <span>${items.length}개 항목</span>
+      </div>
+      <button class="btn btn-accent" onclick="openAddModal('${catId}')">+ 항목 추가</button>
+    </div>
+    <div class="item-list">
+      ${items.length === 0 ? '<div class="empty-state">아직 항목이 없습니다.<br>위 버튼으로 추가해보세요.</div>' :
+        items.map(([key, item]) => renderItemCard(catId, key, item)).join('')}
+    </div>
+  `;
+}
+
+function renderItemCard(catId, key, item) {
+  const allergenBadges = (item.allergens || []).map(a =>
+    `<span class="allergen-badge">${a}</span>`).join('');
+  return `
+    <div class="item-card ${item.active === false ? 'inactive' : ''}">
+      <div class="item-info">
+        <div class="item-name-ko">${item.name_ko || ''} ${item.active === false ? '<span style="font-size:0.7rem;color:var(--muted)">(숨김)</span>' : ''}</div>
+        <div class="item-name-de">${item.name_de || ''}</div>
+        ${allergenBadges ? `<div class="item-allergens">${allergenBadges}</div>` : ''}
+      </div>
+      <div class="item-price">${item.price ? '€' + Number(item.price).toFixed(2) : ''}</div>
+      <div class="item-actions">
+        <button class="btn btn-outline btn-sm" onclick="openEditModal('${catId}','${key}')">수정</button>
+        <button class="btn btn-red btn-sm" onclick="deleteItem('${catId}','${key}')">삭제</button>
+      </div>
+    </div>
+  `;
+}
+
+// ─────────────────────────────────────────────
+//  ALLERGEN CHECKBOXES
+// ─────────────────────────────────────────────
+function renderAllergenChecks() {
+  document.getElementById('allergen-checks').innerHTML = ALLERGENS.map(a => `
+    <div class="allergen-check">
+      <input type="checkbox" id="al-${a.id}" value="${a.id}" />
+      <span class="a-id">${a.id}</span>
+      <label for="al-${a.id}">${a.ko}<br><span style="font-size:0.6rem">${a.de}</span></label>
+    </div>
+  `).join('');
+}
+
+// ─────────────────────────────────────────────
+//  MODAL
+// ─────────────────────────────────────────────
+function openAddModal(catId) {
+  editingKey = null;
+  editingCat = catId;
+  document.getElementById('modal-title').textContent = '메뉴 항목 추가';
+  clearForm();
+  // Set default order = count + 1
+  const count = Object.keys(menuData[catId] || {}).length;
+  document.getElementById('f-order').value = count + 1;
+  document.getElementById('edit-modal').style.display = 'flex';
+}
+
+function openEditModal(catId, key) {
+  editingKey = key;
+  editingCat = catId;
+  const item = menuData[catId][key];
+  document.getElementById('modal-title').textContent = '메뉴 항목 수정';
+  document.getElementById('f-name-ko').value = item.name_ko || '';
+  document.getElementById('f-name-de').value = item.name_de || '';
+  document.getElementById('f-name-en').value = item.name_en || '';
+  document.getElementById('f-desc-ko').value = item.desc_ko || '';
+  document.getElementById('f-desc-de').value = item.desc_de || '';
+  document.getElementById('f-desc-en').value = item.desc_en || '';
+  document.getElementById('f-price').value = item.price || '';
+  document.getElementById('f-order').value = item.order || '';
+  document.getElementById('f-active').checked = item.active !== false;
+  ALLERGENS.forEach(a => {
+    document.getElementById(`al-${a.id}`).checked = (item.allergens || []).includes(a.id);
+  });
+  document.getElementById('edit-modal').style.display = 'flex';
+}
+
+function closeModal() {
+  document.getElementById('edit-modal').style.display = 'none';
+}
+
+function clearForm() {
+  ['f-name-ko','f-name-de','f-name-en','f-desc-ko','f-desc-de','f-desc-en','f-price','f-order']
+    .forEach(id => document.getElementById(id).value = '');
+  document.getElementById('f-active').checked = true;
+  ALLERGENS.forEach(a => document.getElementById(`al-${a.id}`).checked = false);
+}
+
+function saveItem() {
+  const nameKo = document.getElementById('f-name-ko').value.trim();
+  const nameDe = document.getElementById('f-name-de').value.trim();
+  const nameEn = document.getElementById('f-name-en').value.trim();
+  const price = parseFloat(document.getElementById('f-price').value);
+  if (!nameKo || !nameDe || !nameEn) { showToast('이름을 모두 입력해주세요', 'error'); return; }
+  if (isNaN(price)) { showToast('가격을 입력해주세요', 'error'); return; }
+  const allergens = ALLERGENS.filter(a => document.getElementById(`al-${a.id}`).checked).map(a => a.id);
+  const item = {
+    name_ko: nameKo, name_de: nameDe, name_en: nameEn,
+    desc_ko: document.getElementById('f-desc-ko').value.trim(),
+    desc_de: document.getElementById('f-desc-de').value.trim(),
+    desc_en: document.getElementById('f-desc-en').value.trim(),
+    price: price,
+    order: parseInt(document.getElementById('f-order').value) || 99,
+    active: document.getElementById('f-active').checked,
+    allergens: allergens,
+    updatedAt: new Date().toISOString(),
+  };
+  const ref = editingKey
+    ? db.ref(`menu/${editingCat}/${editingKey}`)
+    : db.ref(`menu/${editingCat}`).push();
+  ref.set(item).then(() => {
+    showToast('저장되었습니다 ✓', 'success');
+    closeModal();
+    loadCategory(editingCat);
+  }).catch(e => showToast('오류: ' + e.message, 'error'));
+}
+
+function deleteItem(catId, key) {
+  const item = menuData[catId][key];
+  if (!confirm(`"${item.name_ko}" 을(를) 삭제하시겠습니까?`)) return;
+  db.ref(`menu/${catId}/${key}`).remove().then(() => {
+    showToast('삭제되었습니다', 'success');
+    loadCategory(catId);
+  }).catch(e => showToast('오류: ' + e.message, 'error'));
+}
+
+// ─────────────────────────────────────────────
+//  SEED DATA
+// ─────────────────────────────────────────────
+function openSeedModal() {
+  document.getElementById('seed-modal').style.display = 'flex';
+}
+
+async function loadSeedData() {
+  document.getElementById('seed-modal').style.display = 'none';
+  showToast('데이터 확인 중...', 'success');
+  try {
+    // 기존 데이터 존재 여부 재확인
+    const snap = await db.ref('menu').once('value');
+    if (snap.exists()) {
+      showToast('이미 데이터가 있습니다. 초기 로드 불가.', 'error');
+      return;
+    }
+    showToast('초기 데이터 로딩 중...', 'success');
+    for (const [cat, items] of Object.entries(SEED)) {
+      for (const item of items) {
+        await db.ref(`menu/${cat}`).push({...item, updatedAt: new Date().toISOString()});
+      }
+    }
+    showToast('초기 데이터 로드 완료! ✓', 'success');
+    document.getElementById('seed-btn').disabled = true;
+    document.getElementById('seed-btn').style.opacity = '0.4';
+    loadCategory(currentCat);
+  } catch(e) {
+    showToast('오류: ' + e.message, 'error');
+  }
+}
+
+// ─────────────────────────────────────────────
+//  PRINT VIEW
+// ─────────────────────────────────────────────
+async function openPrintView() {
+  showToast('데이터 불러오는 중...', 'success');
+  // Load all categories
+  const snap = await db.ref('menu').once('value');
+  const allData = snap.val() || {};
+  // Store globally for re-render
+  window._printData = allData;
+  document.getElementById('print-view').style.display = 'block';
+  renderPrint();
+}
+
+function closePrintView() {
+  document.getElementById('print-view').style.display = 'none';
+}
+
+function renderPrint() {
+  const lang = document.getElementById('print-lang').value;
+  const allData = window._printData || {};
+  const today = new Date().toLocaleDateString('de-DE', {year:'numeric',month:'long',day:'numeric'});
+
+  // Food categories (excluding beverages & lunch)
+  const foodCats = ['starters','fried','chefs','sashimi','grill','tofu','hotpot','extras'];
+  const catLabels = { de: {starters:'Vorspeisen',fried:'Frittierte Gerichte',chefs:"Chef's Spezialitäten",sashimi:'Sashimi',grill:'Grill',tofu:'Tofu Suppe',hotpot:'Eintopf Gerichte',extras:'Beilagen',beverages:'Getränke',lunch:'Mittagsmenü'}, en: {starters:'Starters',fried:'Fried Dishes',chefs:"Chef's Specials",sashimi:'Sashimi',grill:'Grill',tofu:'Tofu Stew',hotpot:'Hotpot',extras:'Extras',beverages:'Beverages',lunch:'Lunch'}, ko: {starters:'전채',fried:'튀김',chefs:'셰프 특선',sashimi:'사시미',grill:'그릴',tofu:'순두부',hotpot:'전골',extras:'사이드',beverages:'음료',lunch:'점심'} };
+
+  const allergenLegend = ALLERGENS.map(a => `<strong>${a.id}</strong> ${lang==='ko'?a.ko:a.de}`).join(' &nbsp;·&nbsp; ');
+
+  function renderItems(catId, twoCol) {
+    const items = Object.values(allData[catId] || {})
+      .filter(i => i.active !== false)
+      .sort((a,b) => (a.order||99)-(b.order||99));
+    if (!items.length) return '';
+    const nameKey = `name_${lang}`;
+    const descKey = `desc_${lang}`;
+    const html = items.map(item => {
+      const al = (item.allergens||[]).join('');
+      return `<div class="print-item">
+        <div class="print-item-info">
+          <div class="print-item-name">${item[nameKey]||item.name_de||''}</div>
+          ${item[descKey] ? `<div class="print-item-desc">${(item[descKey]||'').replace(/\n/g,'<br>')}</div>` : ''}
+          ${al ? `<div class="print-item-allergens">(${al})</div>` : ''}
+        </div>
+        <div class="print-item-price">${item.price ? '€&nbsp;'+Number(item.price).toFixed(2) : ''}</div>
+      </div>`;
+    }).join('');
+    return html;
+  }
+
+  // ── PAGE 1: Food Menu ──
+  let foodHtml = '';
+  for (const catId of foodCats) {
+    const items = renderItems(catId, false);
+    if (!items) continue;
+    foodHtml += `<div class="print-section-title">${catLabels[lang][catId]||catId}</div>`;
+    if (catId === 'hotpot') {
+      // hotpot note
+      foodHtml += `<div class="print-note">${lang==='de'?'Ab 2–3 Personen. Am Tisch mit Gasbrenner zubereitet':lang==='en'?'For 2–3 persons. Cooked at your table with a gas burner':'2~3인 이상, 테이블 가스버너 제공'}</div>`;
+    }
+    foodHtml += `<div class="print-cols"><div>${items}</div><div></div></div>`;
+  }
+
+  // ── PAGE 2: Beverages ──
+  const bevItems = renderItems('beverages', false);
+  const lunchItems = renderItems('lunch', false);
+
+  const pages = `
+    <div class="print-page">
+      <div class="print-logo-row">
+        <div class="print-brand">MOKKO IZAKAYA <sub>Korean-Japanese Restaurant</sub></div>
+        <div class="print-date">Marktplatz 44, 65824 Schwalbach am Taunus &nbsp;·&nbsp; ${today}</div>
+      </div>
+      ${foodHtml}
+      ${lunchItems ? `<div class="print-section-title">${catLabels[lang]['lunch']}</div>${lunchItems}` : ''}
+      <div class="print-allergen-legend">
+        <strong>${lang==='de'?'Allergene:':lang==='en'?'Allergens:':'알러지 정보:'}</strong> &nbsp; ${allergenLegend}<br>
+        ${lang==='de'?'Allergene auf Anfrage beim Personal.':lang==='en'?'Please ask staff for allergen information.':'알러지 정보는 직원에게 문의하세요.'}
+      </div>
+    </div>
+    <div class="print-page print-page-break">
+      <div class="print-logo-row">
+        <div class="print-brand">MOKKO IZAKAYA <sub>${lang==='de'?'Getränkekarte':lang==='en'?'Drinks Menu':'음료 메뉴'}</sub></div>
+        <div class="print-date">${today}</div>
+      </div>
+      ${bevItems ? `<div class="print-section-title">${catLabels[lang]['beverages']}</div>${bevItems}` : ''}
+      <div class="print-allergen-legend">
+        <strong>${lang==='de'?'Allergene:':lang==='en'?'Allergens:':'알러지 정보:'}</strong> &nbsp; ${allergenLegend}
+      </div>
+    </div>
+  `;
+  document.getElementById('print-pages').innerHTML = pages;
+}
+
+// ─────────────────────────────────────────────
+//  TOAST
+// ─────────────────────────────────────────────
+function showToast(msg, type='success') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = `show ${type}`;
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.className = '', 2500);
+}
+</script>
+</body>
+</html>

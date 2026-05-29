@@ -9,6 +9,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500&family=Noto+Serif+JP:wght@300;400&display=swap" rel="stylesheet" />
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
 
   <script>
     (() => {
@@ -1024,6 +1026,78 @@ document.querySelectorAll('.lang-btn').forEach(b => b.addEventListener('click', 
   hamburger.classList.remove('open');
 }));
 applyLang('ko');
+// ── FIREBASE 메뉴 로딩 ──
+(function loadMenuFromFirebase() {
+  let menuApp;
+  try { menuApp = firebase.app('menu'); }
+  catch(e) {
+    menuApp = firebase.initializeApp({
+      apiKey: "AIzaSyDKRtm23KJVtj8qXSRDJfCP1Lvpk4vBH3U",
+      databaseURL: "https://mokko-reservation-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "mokko-reservation",
+    }, 'menu');
+  }
+
+  function esc(s) {
+    return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function mkItems(items) {
+    return items
+      .filter(i => i.active !== false)
+      .sort((a,b) => (a.order||99)-(b.order||99))
+      .map(item => {
+        const al = (item.allergens||[]).join('');
+        return '<div class="menu-item">' +
+          '<div class="menu-item-info">' +
+            '<div class="menu-item-name" data-ko="' + esc(item.name_ko) + '" data-de="' + esc(item.name_de) + '" data-en="' + esc(item.name_en) + '"></div>' +
+            ((item.desc_ko||item.desc_de||item.desc_en) ?
+              '<div class="menu-item-desc" data-ko="' + esc(item.desc_ko) + '" data-de="' + esc(item.desc_de) + '" data-en="' + esc(item.desc_en) + '"></div>' : '') +
+          '</div>' +
+          '<div class="menu-item-price">€' + Number(item.price).toFixed(2) + '</div>' +
+        '</div>';
+      }).join('');
+  }
+
+  function setPanel(panelId, items) {
+    const panel = document.getElementById('panel-' + panelId);
+    if (!panel) return;
+    const cat = panel.querySelector('.menu-category');
+    if (cat) cat.innerHTML = mkItems(items);
+  }
+
+  menuApp.database().ref('menu').once('value', snap => {
+    const data = snap.val();
+    if (!data) return; // Firebase 비어 있으면 기존 하드코딩 유지
+
+    // 단순 패널들
+    const simple = { starters:'starters', fried:'fried', chefs:'specials', sashimi:'sashimi', grill:'grill', extras:'extras' };
+    Object.entries(simple).forEach(([fbCat, panelId]) => {
+      const items = Object.values(data[fbCat] || {});
+      if (items.length) setPanel(panelId, items);
+    });
+
+    // 수프/전골 패널 (두 개 서브섹션)
+    const soupPanel = document.getElementById('panel-soup');
+    if (soupPanel) {
+      const cats = soupPanel.querySelectorAll('.menu-category');
+      if (cats[0] && data.tofu) {
+        const h3 = cats[0].querySelector('h3');
+        const items = mkItems(Object.values(data.tofu));
+        cats[0].innerHTML = (h3 ? h3.outerHTML : '') + items;
+      }
+      if (cats[1] && data.hotpot) {
+        const h3 = cats[1].querySelector('h3');
+        const note = cats[1].querySelector('.hotpot-note');
+        const items = mkItems(Object.values(data.hotpot));
+        cats[1].innerHTML = (h3 ? h3.outerHTML : '') + (note ? note.outerHTML : '') + items;
+      }
+    }
+
+    // 현재 언어 다시 적용
+    applyLang(lang);
+  });
+})();
 
 // ── NAV ──
 const mainNav  = document.getElementById('mainNav');
