@@ -170,55 +170,159 @@
     /* ── PRINT STYLES ── */
     @media print {
       * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      body { background: #fff !important; color: #1a1a1a !important; font-family: 'Arial', sans-serif; font-size: 9pt; }
+      body { background: #fff !important; color: #1a1a1a !important; font-size: 9pt; margin: 0; padding: 0; }
       #pin-screen, #app > header, .cat-tabs, main { display: none !important; }
-      #print-view { display: block !important; }
+      #print-view { display: block !important; position: static !important; overflow: visible !important; }
+      .print-toolbar { display: none !important; }
+      .print-pages { padding: 0 !important; background: #fff !important; }
+      .print-page { box-shadow: none !important; margin: 0 !important; page-break-after: always; }
+      .print-page:last-child { page-break-after: auto; }
     }
 
     /* ── PRINT VIEW ── */
     #print-view {
       display: none;
       position: fixed; inset: 0; z-index: 800;
-      background: #fff; color: #1a1a1a;
+      background: #f0ede8; color: #1a1a1a;
       overflow-y: auto; padding: 0;
     }
     .print-toolbar {
-      background: var(--surface); border-bottom: 1px solid var(--border);
+      background: #1a1a1a; border-bottom: 2px solid #c9a96e;
       padding: 10px 20px; display: flex; align-items: center; gap: 10px;
       position: sticky; top: 0; z-index: 10;
     }
-    .print-toolbar span { flex: 1; font-size: 0.85rem; color: var(--muted); }
-    .print-pages { padding: 20px; }
+    .print-toolbar span { flex: 1; font-size: 0.8rem; color: #888; }
+    .print-pages { padding: 30px 20px; background: #f0ede8; }
+
+    /* ── A4 PAGE ── */
     .print-page {
-      width: 210mm; min-height: 297mm; margin: 0 auto 20px;
+      width: 210mm; min-height: 297mm; margin: 0 auto 30px;
       background: #fff; color: #1a1a1a;
-      padding: 15mm 15mm 15mm 15mm;
-      box-shadow: 0 2px 20px rgba(0,0,0,0.15);
-      font-family: 'Arial', 'Helvetica', sans-serif;
+      padding: 14mm 16mm 14mm 16mm;
+      box-shadow: 0 4px 30px rgba(0,0,0,0.2);
+      font-family: 'Georgia', 'Times New Roman', serif;
+      position: relative;
+      box-sizing: border-box;
     }
-    .print-logo-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8mm; padding-bottom: 4mm; border-bottom: 0.5pt solid #888; }
-    .print-brand { font-size: 16pt; font-weight: 700; letter-spacing: 0.05em; }
-    .print-brand sub { font-size: 8pt; font-weight: 400; color: #666; letter-spacing: 0.02em; }
-    .print-date { font-size: 7pt; color: #888; }
+
+    /* 페이지 외곽 장식 테두리 */
+    .print-page::before {
+      content: '';
+      position: absolute;
+      inset: 6mm;
+      border: 0.4pt solid #c9a96e;
+      pointer-events: none;
+    }
+
+    /* ── 헤더 ── */
+    .print-header {
+      text-align: center;
+      padding-bottom: 5mm;
+      margin-bottom: 5mm;
+      border-bottom: 1pt solid #1a1a1a;
+      position: relative;
+    }
+    .print-header::after {
+      content: '— ✦ —';
+      display: block;
+      font-size: 7pt;
+      color: #c9a96e;
+      letter-spacing: 0.3em;
+      margin-top: 2.5mm;
+    }
+    .print-brand-main {
+      font-size: 20pt; font-weight: 700; letter-spacing: 0.18em;
+      text-transform: uppercase; color: #1a1a1a;
+      font-family: 'Georgia', serif;
+    }
+    .print-brand-sub {
+      font-size: 7.5pt; letter-spacing: 0.25em; color: #888;
+      text-transform: uppercase; margin-top: 1mm;
+      font-family: 'Arial', sans-serif;
+    }
+    .print-address {
+      font-size: 6.5pt; color: #aaa; margin-top: 1.5mm;
+      font-family: 'Arial', sans-serif; letter-spacing: 0.05em;
+    }
+
+    /* ── SECTION ── */
+    .print-section {
+      margin-top: 4.5mm;
+    }
     .print-section-title {
-      font-size: 9pt; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
-      color: #b8860b; border-bottom: 0.5pt solid #ddd; padding-bottom: 2mm; margin-bottom: 3mm; margin-top: 5mm;
+      font-size: 7.5pt; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase;
+      color: #fff; background: #1a1a1a;
+      padding: 1.5mm 3mm;
+      margin-bottom: 2.5mm;
+      font-family: 'Arial', sans-serif;
+      display: flex; align-items: center; gap: 2mm;
     }
-    .print-section-title:first-of-type { margin-top: 0; }
-    .print-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 0 8mm; }
-    .print-item { display: flex; justify-content: space-between; align-items: baseline; padding: 1.5mm 0; border-bottom: 0.3pt dotted #e0e0e0; gap: 4mm; }
+    .print-section-title::before {
+      content: '◆';
+      color: #c9a96e;
+      font-size: 5pt;
+    }
+    .print-note {
+      font-size: 6pt; color: #888; font-style: italic;
+      margin-bottom: 2mm; margin-left: 1mm;
+      font-family: 'Arial', sans-serif;
+    }
+
+    /* ── 2단 그리드 ── */
+    .print-cols {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0 7mm;
+    }
+    .print-col { }
+
+    /* ── ITEM ── */
+    .print-item {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      padding: 1.8mm 0; border-bottom: 0.3pt solid #ebebeb; gap: 3mm;
+    }
+    .print-item:last-child { border-bottom: none; }
     .print-item-info { flex: 1; min-width: 0; }
-    .print-item-name { font-size: 8.5pt; font-weight: 600; line-height: 1.3; }
-    .print-item-name-sub { font-size: 7pt; color: #555; font-style: italic; }
-    .print-item-desc { font-size: 6.5pt; color: #666; line-height: 1.3; margin-top: 0.5mm; }
-    .print-item-allergens { font-size: 6pt; color: #b8860b; font-weight: 700; margin-top: 0.5mm; }
-    .print-item-price { font-size: 8.5pt; font-weight: 700; white-space: nowrap; }
-    .print-note { font-size: 6.5pt; color: #666; font-style: italic; margin-top: 2mm; }
-    .print-allergen-legend {
-      margin-top: 6mm; padding-top: 3mm; border-top: 0.5pt solid #ddd;
-      font-size: 6pt; color: #888; line-height: 1.8;
+    .print-item-name {
+      font-size: 8pt; font-weight: 700; line-height: 1.3;
+      font-family: 'Arial', sans-serif; color: #1a1a1a;
     }
-    .print-allergen-legend strong { color: #555; }
+    .print-item-desc {
+      font-size: 6pt; color: #777; line-height: 1.35; margin-top: 0.4mm;
+      font-family: 'Arial', sans-serif; font-style: italic;
+    }
+    .print-item-allergens {
+      font-size: 5.5pt; color: #c9a96e; font-weight: 700; margin-top: 0.3mm;
+      font-family: 'Arial', sans-serif; letter-spacing: 0.05em;
+    }
+    .print-item-price {
+      font-size: 8pt; font-weight: 700; white-space: nowrap;
+      color: #1a1a1a; font-family: 'Arial', sans-serif;
+      padding-top: 0.5mm;
+    }
+
+    /* ── 알러지 범례 ── */
+    .print-allergen-legend {
+      margin-top: 5mm; padding: 2.5mm 3mm;
+      border: 0.3pt solid #ddd; background: #fafafa;
+      font-size: 5.5pt; color: #888; line-height: 2;
+      font-family: 'Arial', sans-serif;
+    }
+    .print-allergen-legend strong { color: #c9a96e; margin-right: 1mm; }
+    .print-allergen-label { color: #555; }
+
+    /* ── 음료 페이지 헤더 ── */
+    .print-bev-header {
+      text-align: center;
+      padding-bottom: 4mm; margin-bottom: 4mm;
+      border-bottom: 1pt solid #1a1a1a;
+    }
+    .print-bev-header::after {
+      content: '— ✦ —';
+      display: block; font-size: 7pt; color: #c9a96e;
+      letter-spacing: 0.3em; margin-top: 2mm;
+    }
+
     .print-page-break { page-break-after: always; }
 
     /* ── TOAST ── */
@@ -356,13 +460,13 @@
 <div id="print-view">
   <div class="print-toolbar">
     <button class="btn btn-accent" onclick="window.print()">🖨 인쇄 / PDF 저장</button>
-    <button class="btn btn-outline" onclick="closePrintView()">✕ 닫기</button>
-    <span>A4 인쇄 미리보기 — 브라우저에서 Ctrl+P 또는 위 버튼으로 인쇄</span>
-    <select id="print-lang" onchange="renderPrint()" style="width:auto;padding:6px 10px;font-size:0.8rem;">
-      <option value="de">독일어 (DE)</option>
-      <option value="en">영어 (EN)</option>
-      <option value="ko">한국어 (KO)</option>
+    <select id="print-lang" onchange="renderPrint()" style="width:auto;padding:6px 10px;font-size:0.8rem;background:#2a2a2a;color:#e8e3db;border:1px solid #3a3a3a;border-radius:4px;">
+      <option value="de">🇩🇪 독일어</option>
+      <option value="en">🇬🇧 영어</option>
+      <option value="ko">🇰🇷 한국어</option>
     </select>
+    <span>← 언어 선택 후 인쇄 버튼을 누르세요</span>
+    <button class="btn btn-outline" onclick="closePrintView()">✕ 닫기</button>
   </div>
   <div class="print-pages" id="print-pages"></div>
 </div>
@@ -777,72 +881,118 @@ function renderPrint() {
   const allData = window._printData || {};
   const today = new Date().toLocaleDateString('de-DE', {year:'numeric',month:'long',day:'numeric'});
 
-  // Food categories (excluding beverages & lunch)
   const foodCats = ['starters','fried','chefs','sashimi','grill','tofu','hotpot','extras'];
-  const catLabels = { de: {starters:'Vorspeisen',fried:'Frittierte Gerichte',chefs:"Chef's Spezialitäten",sashimi:'Sashimi',grill:'Grill',tofu:'Tofu Suppe',hotpot:'Eintopf Gerichte',extras:'Beilagen',beverages:'Getränke',lunch:'Mittagsmenü'}, en: {starters:'Starters',fried:'Fried Dishes',chefs:"Chef's Specials",sashimi:'Sashimi',grill:'Grill',tofu:'Tofu Stew',hotpot:'Hotpot',extras:'Extras',beverages:'Beverages',lunch:'Lunch'}, ko: {starters:'전채',fried:'튀김',chefs:'셰프 특선',sashimi:'사시미',grill:'그릴',tofu:'순두부',hotpot:'전골',extras:'사이드',beverages:'음료',lunch:'점심'} };
+  const catLabels = {
+    de: {starters:'Vorspeisen',fried:'Frittiertes',chefs:"Chef's Spezialitäten",sashimi:'Sashimi',grill:'Vom Grill',tofu:'Tofu Suppe',hotpot:'Eintopf',extras:'Beilagen',beverages:'Getränke',lunch:'Mittagsmenü'},
+    en: {starters:'Starters',fried:'Fried',chefs:"Chef's Specials",sashimi:'Sashimi',grill:'From the Grill',tofu:'Tofu Stew',hotpot:'Hotpot',extras:'Sides',beverages:'Beverages',lunch:'Lunch'},
+    ko: {starters:'전채',fried:'튀김',chefs:'셰프 특선',sashimi:'사시미',grill:'그릴',tofu:'순두부',hotpot:'전골',extras:'사이드',beverages:'음료',lunch:'점심'}
+  };
 
-  const allergenLegend = ALLERGENS.map(a => `<strong>${a.id}</strong> ${lang==='ko'?a.ko:a.de}`).join(' &nbsp;·&nbsp; ');
+  // 알러지 범례 HTML
+  const allergenLegend = ALLERGENS.map(a =>
+    `<span><strong>${a.id}</strong> <span class="print-allergen-label">${lang==='ko'?a.ko:a.de}</span></span>`
+  ).join(' &thinsp;·&thinsp; ');
 
-  function renderItems(catId, twoCol) {
+  // 아이템 HTML (단일 아이템)
+  function itemHtml(item) {
+    const nameKey = `name_${lang}`;
+    const descKey = `desc_${lang}`;
+    const al = (item.allergens||[]).join(' ');
+    return `<div class="print-item">
+      <div class="print-item-info">
+        <div class="print-item-name">${item[nameKey]||item.name_de||''}</div>
+        ${item[descKey] ? `<div class="print-item-desc">${(item[descKey]||'').replace(/\n/g,'<br>')}</div>` : ''}
+        ${al ? `<div class="print-item-allergens">${al}</div>` : ''}
+      </div>
+      <div class="print-item-price">${item.price ? '€ '+Number(item.price).toFixed(2) : ''}</div>
+    </div>`;
+  }
+
+  // 카테고리 → 2단 섹션 HTML
+  function sectionHtml(catId, note) {
     const items = Object.values(allData[catId] || {})
       .filter(i => i.active !== false)
       .sort((a,b) => (a.order||99)-(b.order||99));
     if (!items.length) return '';
-    const nameKey = `name_${lang}`;
-    const descKey = `desc_${lang}`;
-    const html = items.map(item => {
-      const al = (item.allergens||[]).join('');
-      return `<div class="print-item">
-        <div class="print-item-info">
-          <div class="print-item-name">${item[nameKey]||item.name_de||''}</div>
-          ${item[descKey] ? `<div class="print-item-desc">${(item[descKey]||'').replace(/\n/g,'<br>')}</div>` : ''}
-          ${al ? `<div class="print-item-allergens">(${al})</div>` : ''}
+    const half = Math.ceil(items.length / 2);
+    const col1 = items.slice(0, half).map(itemHtml).join('');
+    const col2 = items.slice(half).map(itemHtml).join('');
+    const label = catLabels[lang][catId] || catId;
+    return `
+      <div class="print-section">
+        <div class="print-section-title">${label}</div>
+        ${note ? `<div class="print-note">${note}</div>` : ''}
+        <div class="print-cols">
+          <div class="print-col">${col1}</div>
+          <div class="print-col">${col2}</div>
         </div>
-        <div class="print-item-price">${item.price ? '€&nbsp;'+Number(item.price).toFixed(2) : ''}</div>
       </div>`;
-    }).join('');
-    return html;
   }
 
-  // ── PAGE 1: Food Menu ──
-  let foodHtml = '';
-  for (const catId of foodCats) {
-    const items = renderItems(catId, false);
-    if (!items) continue;
-    foodHtml += `<div class="print-section-title">${catLabels[lang][catId]||catId}</div>`;
-    if (catId === 'hotpot') {
-      // hotpot note
-      foodHtml += `<div class="print-note">${lang==='de'?'Ab 2–3 Personen. Am Tisch mit Gasbrenner zubereitet':lang==='en'?'For 2–3 persons. Cooked at your table with a gas burner':'2~3인 이상, 테이블 가스버너 제공'}</div>`;
-    }
-    foodHtml += `<div class="print-cols"><div>${items}</div><div></div></div>`;
-  }
+  // ── PAGE 1: 푸드 메뉴 ──
+  const hotpotNote = lang==='de'
+    ? 'Für 2–3 Personen. Am Tisch mit Gasbrenner zubereitet.'
+    : lang==='en' ? 'For 2–3 persons. Cooked at your table with a gas burner.'
+    : '2~3인 이상, 테이블 가스버너 제공';
 
-  // ── PAGE 2: Beverages ──
-  const bevItems = renderItems('beverages', false);
-  const lunchItems = renderItems('lunch', false);
+  let foodHtml = foodCats.map(c => sectionHtml(c, c==='hotpot'?hotpotNote:null)).join('');
+
+  // 점심 섹션 (1단)
+  const lunchItems = Object.values(allData['lunch']||{}).filter(i=>i.active!==false).sort((a,b)=>(a.order||99)-(b.order||99));
+  const lunchHtml = lunchItems.length ? `
+    <div class="print-section">
+      <div class="print-section-title">${catLabels[lang]['lunch']}</div>
+      <div class="print-cols">
+        <div class="print-col">${lunchItems.map(itemHtml).join('')}</div>
+        <div class="print-col"></div>
+      </div>
+    </div>` : '';
+
+  const allergenFooter = (title, note) => `
+    <div class="print-allergen-legend">
+      <strong>${title}</strong>&ensp;${allergenLegend}<br>
+      <span style="font-style:italic;">${note}</span>
+    </div>`;
+
+  // ── PAGE 2: 음료 메뉴 ──
+  const bevItems = Object.values(allData['beverages']||{}).filter(i=>i.active!==false).sort((a,b)=>(a.order||99)-(b.order||99));
+  const bevHalf = Math.ceil(bevItems.length / 2);
+  const bevCol1 = bevItems.slice(0, bevHalf).map(itemHtml).join('');
+  const bevCol2 = bevItems.slice(bevHalf).map(itemHtml).join('');
+  const bevLabel = catLabels[lang]['beverages'];
 
   const pages = `
     <div class="print-page">
-      <div class="print-logo-row">
-        <div class="print-brand">MOKKO IZAKAYA <sub>Korean-Japanese Restaurant</sub></div>
-        <div class="print-date">Marktplatz 44, 65824 Schwalbach am Taunus &nbsp;·&nbsp; ${today}</div>
+      <div class="print-header">
+        <div class="print-brand-main">Mokko Izakaya</div>
+        <div class="print-brand-sub">${lang==='de'?'Koreanisch-Japanisches Restaurant':lang==='en'?'Korean-Japanese Restaurant':'한식·일식 레스토랑'}</div>
+        <div class="print-address">Marktplatz 44 &nbsp;·&nbsp; 65824 Schwalbach am Taunus &nbsp;·&nbsp; www.mokko.kr</div>
       </div>
       ${foodHtml}
-      ${lunchItems ? `<div class="print-section-title">${catLabels[lang]['lunch']}</div>${lunchItems}` : ''}
-      <div class="print-allergen-legend">
-        <strong>${lang==='de'?'Allergene:':lang==='en'?'Allergens:':'알러지 정보:'}</strong> &nbsp; ${allergenLegend}<br>
-        ${lang==='de'?'Allergene auf Anfrage beim Personal.':lang==='en'?'Please ask staff for allergen information.':'알러지 정보는 직원에게 문의하세요.'}
-      </div>
+      ${lunchHtml}
+      ${allergenFooter(
+        lang==='de'?'Allergene:':lang==='en'?'Allergens:':'알러지 정보:',
+        lang==='de'?'Allergene auf Anfrage beim Personal erhältlich.':lang==='en'?'Please ask our staff for allergen information.':'알러지 정보는 직원에게 문의해 주세요.'
+      )}
     </div>
-    <div class="print-page print-page-break">
-      <div class="print-logo-row">
-        <div class="print-brand">MOKKO IZAKAYA <sub>${lang==='de'?'Getränkekarte':lang==='en'?'Drinks Menu':'음료 메뉴'}</sub></div>
-        <div class="print-date">${today}</div>
+    <div class="print-page">
+      <div class="print-bev-header">
+        <div class="print-brand-main">Mokko Izakaya</div>
+        <div class="print-brand-sub">${lang==='de'?'Getränkekarte':lang==='en'?'Drinks Menu':'음료 메뉴'}</div>
+        <div class="print-address">Marktplatz 44 &nbsp;·&nbsp; 65824 Schwalbach am Taunus</div>
       </div>
-      ${bevItems ? `<div class="print-section-title">${catLabels[lang]['beverages']}</div>${bevItems}` : ''}
-      <div class="print-allergen-legend">
-        <strong>${lang==='de'?'Allergene:':lang==='en'?'Allergens:':'알러지 정보:'}</strong> &nbsp; ${allergenLegend}
-      </div>
+      ${bevItems.length ? `
+        <div class="print-section">
+          <div class="print-section-title">${bevLabel}</div>
+          <div class="print-cols">
+            <div class="print-col">${bevCol1}</div>
+            <div class="print-col">${bevCol2}</div>
+          </div>
+        </div>` : ''}
+      ${allergenFooter(
+        lang==='de'?'Allergene:':lang==='en'?'Allergens:':'알러지 정보:',
+        lang==='de'?'Allergene auf Anfrage beim Personal erhältlich.':lang==='en'?'Please ask our staff for allergen information.':'알러지 정보는 직원에게 문의해 주세요.'
+      )}
     </div>
   `;
   document.getElementById('print-pages').innerHTML = pages;
