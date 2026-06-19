@@ -449,6 +449,9 @@ const KAKAO_URL = 'https://open.kakao.com/o/pdENybxi';
 const TEL       = '06196 5240786';
 const TEL_HREF  = 'tel:+4961965240786';
 const DEFAULT_CAPACITY = 32;
+// ── 온라인 예약 정책 (여기 두 줄만 바꾸면 정책 변경 가능) ──
+const SAME_DAY_ONLINE = false;  // 당일 온라인 예약 받기: false=막음 / true=재개
+const ONLINE_RATIO    = 0.6;    // 온라인 예약 허용 비율 (전체 좌석의 60%)
 
 const TIME_SLOTS = {
   1: ['18:00','18:30','19:00','19:30','20:00','20:30','21:00','21:30'],
@@ -484,9 +487,9 @@ const T = {
     err_time:'시간을 선택해 주세요', err_people:'인원을 선택해 주세요',
     err_name:'이름을 입력해 주세요', err_phone:'연락처를 입력해 주세요',
     err_phone_invalid:'올바른 연락처를 입력해 주세요',
-    time_cutoff:'당일 예약 마감 (17:00 이후)',
-    today_cutoff_title:'당일 예약 마감',
-    today_cutoff_msg:'당일 예약은 17시에 마감됩니다. 전화로 문의해 주시면 자리를 안내해 드리겠습니다.',
+    time_cutoff:'당일 온라인 예약은 받지 않습니다',
+    today_cutoff_title:'당일 온라인 예약 마감',
+    today_cutoff_msg:'당일 예약은 온라인으로 받지 않습니다. 전화 또는 카카오톡으로 문의해 주시면 자리를 안내해 드리겠습니다.',
     group_title:'단체 예약 안내',
     group_kakao_msg:'9인 이상 단체 예약은 카카오톡으로만 가능합니다. 카카오톡으로 날짜, 시간, 인원을 알려주세요.',
     group_today_msg:'단체(9인 이상) 당일 예약은 전화로만 가능합니다. 카카오톡 당일 예약은 운영하지 않습니다.',
@@ -494,7 +497,7 @@ const T = {
     avail_desc_pre:'아래 정보를 확인하시고 예약을 확정해 주세요.',
     unavail_title:'예약이 어렵습니다',
     unavail_full:'현재는 온라인 예약이 어렵습니다. 카카오톡 또는 전화로 문의하시면, 예약 가능 여부를 말씀드리겠습니다.',
-    unavail_partial:'전화 예약만 가능한 좌석이 있으니, 전화로 문의 바랍니다.',
+    unavail_partial:'온라인 예약은 마감되었지만 좌석이 남아 있을 수 있습니다. 전화 또는 카카오톡으로 문의해 주세요.',
     unavail_contact:'',
     s_date:'날짜', s_time:'시간', s_people:'인원', s_name:'예약자', s_phone:'연락처',
     btn_confirm:'예약 확정하기', btn_back:'← 다시 입력하기', btn_other:'← 다른 날짜·시간 확인하기',
@@ -529,9 +532,9 @@ const T = {
     err_time:'Bitte wählen Sie eine Uhrzeit', err_people:'Bitte Personenzahl auswählen',
     err_name:'Bitte geben Sie Ihren Namen ein', err_phone:'Bitte geben Sie Ihre Telefonnummer ein',
     err_phone_invalid:'Bitte geben Sie eine gültige Telefonnummer ein',
-    time_cutoff:'Heute nicht mehr buchbar (nach 17:00)',
-    today_cutoff_title:'Buchungsschluss heute',
-    today_cutoff_msg:'Online-Reservierungen für heute sind ab 17:00 Uhr geschlossen. Bitte rufen Sie uns an, wir helfen gerne weiter.',
+    time_cutoff:'Heute keine Online-Reservierung',
+    today_cutoff_title:'Heute keine Online-Reservierung',
+    today_cutoff_msg:'Reservierungen für denselben Tag sind online nicht möglich. Bitte kontaktieren Sie uns per Telefon oder KakaoTalk – wir helfen Ihnen gerne weiter.',
     group_title:'Gruppenreservierung',
     group_kakao_msg:'Für Gruppen ab 9 Personen sind Reservierungen nur per KakaoTalk möglich. Bitte teilen Sie uns Datum, Uhrzeit und Personenzahl mit.',
     group_today_msg:'Für Gruppen (ab 9 Personen) sind Reservierungen für heute nur telefonisch möglich. KakaoTalk-Buchungen für denselben Tag sind nicht möglich.',
@@ -539,7 +542,7 @@ const T = {
     avail_desc_pre:'Bitte überprüfen Sie Ihre Angaben und bestätigen Sie die Reservierung.',
     unavail_title:'Nicht verfügbar',
     unavail_full:'Online-Reservierungen sind derzeit leider nicht möglich. Bitte kontaktieren Sie uns per KakaoTalk oder Telefon, um die Verfügbarkeit zu erfragen.',
-    unavail_partial:'Möglicherweise sind noch Plätze per Telefon reservierbar. Bitte rufen Sie uns an.',
+    unavail_partial:'Die Online-Reservierung ist ausgebucht, es sind aber möglicherweise noch Plätze frei. Bitte kontaktieren Sie uns per Telefon oder KakaoTalk.',
     unavail_contact:'',
     s_date:'Datum', s_time:'Uhrzeit', s_people:'Personen', s_name:'Name', s_phone:'Telefon',
     btn_confirm:'Reservierung bestätigen', btn_back:'← Zurück', btn_other:'← Anderen Termin',
@@ -574,9 +577,9 @@ const T = {
     err_time:'Please select a time', err_people:'Please select number of guests',
     err_name:'Please enter your name', err_phone:'Please enter your phone number',
     err_phone_invalid:'Please enter a valid phone number',
-    time_cutoff:'Same-day booking closed (after 17:00)',
-    today_cutoff_title:'Same-Day Booking Closed',
-    today_cutoff_msg:'Same-day reservations close at 17:00. Please call us and we\'ll be happy to help.',
+    time_cutoff:'Same-day online booking unavailable',
+    today_cutoff_title:'Same-Day Online Booking Closed',
+    today_cutoff_msg:'Same-day reservations are not available online. Please contact us by phone or KakaoTalk and we\'ll be happy to help.',
     group_title:'Group Reservation',
     group_kakao_msg:'Reservations for groups of 9 or more are only accepted via KakaoTalk. Please send us your preferred date, time, and group size.',
     group_today_msg:'For same-day group reservations (9+), please call us directly. KakaoTalk is not available for same-day bookings.',
@@ -584,7 +587,7 @@ const T = {
     avail_desc_pre:'Please confirm your reservation details below.',
     unavail_title:'Not Available',
     unavail_full:'Online reservations are currently unavailable. Please contact us via KakaoTalk or phone to check availability.',
-    unavail_partial:'Some seats may still be available by phone. Please give us a call.',
+    unavail_partial:'Online booking is full, but seats may still be available. Please contact us by phone or KakaoTalk.',
     unavail_contact:'',
     s_date:'Date', s_time:'Time', s_people:'Guests', s_name:'Name', s_phone:'Phone',
     btn_confirm:'Confirm Reservation', btn_back:'← Edit Details', btn_other:'← Try Another Time',
@@ -676,8 +679,8 @@ document.getElementById('fDate').addEventListener('change', function() {
   const slots = TIME_SLOTS[dow];
   if (!slots) { fTime.innerHTML = `<option value="">${T[lang].time_closed}</option>`; return; }
   const now = new Date(); const isToday = val === now.toISOString().slice(0,10);
-  // 당일 17시 이후 → 온라인 예약 마감
-  if (isToday && now.getHours() >= 17) {
+  // 당일 온라인 예약 마감 (SAME_DAY_ONLINE=false 면 항상 마감, true 면 17시 이후 마감)
+  if (isToday && (!SAME_DAY_ONLINE || now.getHours() >= 17)) {
     fTime.innerHTML = `<option value="">${T[lang].time_cutoff}</option>`;
     clearErrors();
     return;
@@ -778,7 +781,7 @@ function renderUnavailPanel(isDayFull) {
   const t = T[lang];
   const telBtn   = `<a href="${TEL_HREF}" class="btn-tel"><div class="tel-ico">📞</div><div class="tel-label"><strong>${TEL}</strong><span>${t.tel_sub}</span></div></a>`;
   const kakaoBtn = `<a href="${KAKAO_URL}" target="_blank" rel="noopener" class="btn-kakao"><div class="kakao-ico">💬</div><div class="kakao-label"><strong>${t.kakao_title}</strong></div></a>`;
-  const contactBtns = isDayFull ? telBtn + kakaoBtn : telBtn;
+  const contactBtns = telBtn + kakaoBtn;
   const msg = isDayFull ? t.unavail_full : t.unavail_partial;
   // 전석 마감: 아이콘+타이틀+메시지 / 전화만 가능: 메시지만 (타이틀 없음)
   const headerHtml = isDayFull
@@ -811,7 +814,7 @@ async function checkAvailability() {
     // ── 당일/단체 사전 차단 ──
     const nowChk = new Date();
     const isToday = date === nowChk.toISOString().slice(0,10);
-    const pastCutoff = isToday && nowChk.getHours() >= 17;
+    const pastCutoff = isToday && (!SAME_DAY_ONLINE || nowChk.getHours() >= 17);
 
     const showSpecialPanel = (icon, title, msg, btns) => {
       document.getElementById('result-panel').style.display = 'block';
@@ -830,9 +833,9 @@ async function checkAvailability() {
     const telBtn = `<a href="${TEL_HREF}" class="btn-tel"><div class="tel-ico">📞</div><div class="tel-label"><strong>${TEL}</strong><span>${t.tel_sub}</span></div></a>`;
     const kakaoBtn = `<a href="${KAKAO_URL}" target="_blank" rel="noopener" class="btn-kakao"><div class="kakao-ico">💬</div><div class="kakao-label"><strong>${t.kakao_title}</strong></div></a>`;
 
-    // 당일 17시 이후 → 전화만
+    // 당일 온라인 예약 마감 → 전화 또는 카카오톡 안내
     if (pastCutoff) {
-      showSpecialPanel('🕔', t.today_cutoff_title, t.today_cutoff_msg, telBtn);
+      showSpecialPanel('🕔', t.today_cutoff_title, t.today_cutoff_msg, telBtn + kakaoBtn);
       return;
     }
 
@@ -848,14 +851,17 @@ async function checkAvailability() {
       return;
     }
 
-    const [cap, booked, totalDay] = await Promise.all([
+    const [cap, booked] = await Promise.all([
       getCapacity(),
       getBookedCount(date, time),
-      getTotalDayCount(date),
     ]);
 
-    const remaining  = cap.available - booked;
-    const isDayFull  = totalDay >= (cap.total || cap.available);
+    // 온라인 예약은 전체 좌석의 ONLINE_RATIO(60%)까지만 허용
+    const totalSeats   = cap.total || cap.available;
+    const onlineCap    = Math.floor(totalSeats * ONLINE_RATIO);
+    const remaining    = onlineCap - booked;       // 온라인으로 받을 수 있는 잔여 좌석
+    const physRemaining= totalSeats - booked;      // 실제 물리 잔여 좌석
+    const isDayFull    = physRemaining < people;    // 물리적으로도 자리 없음 → 전석 마감
     const dateStr    = formatDateStr(date);
 
     document.getElementById('result-panel').style.display = 'block';
