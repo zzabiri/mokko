@@ -467,6 +467,14 @@ const DAY_NAMES = {
   en: ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],
 };
 
+// ── 휴무 기간 (날짜 범위를 여기에 추가/삭제) ──
+const CLOSED_DATES = [
+  { start: '2026-07-06', end: '2026-07-14' }, // 여름 휴가
+];
+function isClosedDate(dateStr) {
+  return CLOSED_DATES.some(r => dateStr >= r.start && dateStr <= r.end);
+}
+
 // ── 번역 ──
 const T = {
   ko: {
@@ -476,6 +484,7 @@ const T = {
     tab_book:'예약하기', tab_lookup:'내 예약 확인',
     form_title:'예약 정보', label_date:'날짜', label_time:'시간',
     time_placeholder:'날짜 선택 후', time_closed:'영업 없음 (일요일)', time_done:'오늘은 마감',
+    time_vacation:'휴가 기간 (휴무)', err_vacation:'휴가 기간입니다 (7.6~7.14). 예약이 불가합니다',
     label_people:'인원', people_placeholder:'선택',
     people_suffix_one:'명', people_suffix_many:'명',
     contact_title:'예약자 정보', label_name:'이름', name_placeholder:'홍길동',
@@ -521,6 +530,7 @@ const T = {
     tab_book:'Reservieren', tab_lookup:'Meine Reservierung',
     form_title:'Reservierungsdetails', label_date:'Datum', label_time:'Uhrzeit',
     time_placeholder:'Zuerst Datum wählen', time_closed:'Geschlossen (Sonntag)', time_done:'Heute geschlossen',
+    time_vacation:'Betriebsferien (geschlossen)', err_vacation:'Betriebsferien (06.07.–14.07.2026). Reservierung nicht möglich',
     label_people:'Personen', people_placeholder:'Auswählen',
     people_suffix_one:' Person', people_suffix_many:' Personen',
     contact_title:'Kontaktdaten', label_name:'Name', name_placeholder:'Max Mustermann',
@@ -566,6 +576,7 @@ const T = {
     tab_book:'Book a Table', tab_lookup:'My Reservation',
     form_title:'Reservation Details', label_date:'Date', label_time:'Time',
     time_placeholder:'Select date first', time_closed:'Closed (Sunday)', time_done:'No more slots today',
+    time_vacation:'Closed for summer break', err_vacation:'Closed for summer break (Jul 6–14, 2026). Booking unavailable',
     label_people:'Guests', people_placeholder:'Select',
     people_suffix_one:' guest', people_suffix_many:' guests',
     contact_title:'Contact Details', label_name:'Name', name_placeholder:'John Doe',
@@ -678,6 +689,7 @@ document.getElementById('fDate').addEventListener('change', function() {
   const fTime = document.getElementById('fTime');
   fTime.innerHTML = '';
   if (!val) { fTime.innerHTML = `<option value="">${T[lang].time_placeholder}</option>`; return; }
+  if (isClosedDate(val)) { fTime.innerHTML = `<option value="">${T[lang].time_vacation}</option>`; clearErrors(); return; }
   const dow = new Date(val + 'T00:00:00').getDay();
   const slots = TIME_SLOTS[dow];
   if (!slots) { fTime.innerHTML = `<option value="">${T[lang].time_closed}</option>`; return; }
@@ -749,6 +761,7 @@ function validate() {
   const name   = document.getElementById('fName').value.trim();
   const phone  = document.getElementById('fPhone').value.trim();
   if (!date) { showErr('err-date', t.err_date); ok=false; }
+  else if (isClosedDate(date)) { showErr('err-date', t.err_vacation); ok=false; }
   else if (!TIME_SLOTS[new Date(date+'T00:00:00').getDay()]) { showErr('err-date', t.err_sunday); ok=false; }
   if (!time)   { showErr('err-time',   t.err_time);   ok=false; }
   if (!people) { showErr('err-people', t.err_people); ok=false; }
