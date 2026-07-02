@@ -217,6 +217,53 @@
       max-width: 320px;
     }
 
+    /* ── NOTICE BANNER ── */
+    .notice-banner {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      width: 100%;
+      max-width: 380px;
+      margin-bottom: 32px;
+      padding: 16px 40px 16px 16px;
+      background: var(--surface);
+      border: 1px solid var(--accent);
+      border-radius: 6px;
+      text-align: left;
+      position: relative;
+    }
+    .notice-icon { font-size: 1.3rem; line-height: 1; }
+    .notice-text { flex: 1; }
+    .notice-title {
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--accent);
+      letter-spacing: 0.02em;
+      margin-bottom: 4px;
+    }
+    .notice-dates {
+      font-size: 0.78rem;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    .notice-desc {
+      font-size: 0.75rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    .notice-close {
+      position: absolute;
+      top: 10px; right: 10px;
+      width: 24px; height: 24px;
+      display: flex; align-items: center; justify-content: center;
+      background: none; border: none;
+      color: var(--muted);
+      font-size: 1.1rem;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .notice-close:hover { color: var(--text); }
+
     /* ── BUTTONS ── */
     .btn {
       display: flex;
@@ -731,6 +778,15 @@
 
 <!-- ── HERO ── -->
 <section id="hero">
+  <div class="notice-banner" id="noticeBanner">
+    <button class="notice-close" id="noticeClose" aria-label="닫기">&times;</button>
+    <div class="notice-icon">🏖️</div>
+    <div class="notice-text">
+      <div class="notice-title" data-ko="여름 휴가 안내" data-de="Sommerurlaub" data-en="Summer Break"></div>
+      <div class="notice-dates">06.07 – 14.07.2026</div>
+      <div class="notice-desc" data-ko="7월 15일부터 정상 영업합니다" data-de="Wir sind ab 15.07.2026 wieder für Sie da" data-en="We're open again from July 15, 2026"></div>
+    </div>
+  </div>
   <p class="hero-eyebrow">居酒屋 · Izakaya · Schwalbach am Taunus</p>
   <img src="logo.png" alt="Mokko Izakaya" class="hero-logo" />
   <div class="hero-cta">
@@ -1026,6 +1082,23 @@ document.querySelectorAll('.lang-btn').forEach(b => b.addEventListener('click', 
   hamburger.classList.remove('open');
 }));
 applyLang('ko');
+
+// ── 여름 휴가 공지 배너 ──
+(function () {
+  const banner = document.getElementById('noticeBanner');
+  if (!banner) return;
+  const hideAfter = new Date('2026-07-15T23:59:59+02:00');
+  const dismissed = localStorage.getItem('noticeDismissed_summer2026');
+  if (new Date() > hideAfter || dismissed) {
+    banner.style.display = 'none';
+    return;
+  }
+  document.getElementById('noticeClose').addEventListener('click', () => {
+    banner.style.display = 'none';
+    localStorage.setItem('noticeDismissed_summer2026', '1');
+  });
+})();
+
 // ── FIREBASE 메뉴 로딩 ──
 (function loadMenuFromFirebase() {
   let menuApp;
