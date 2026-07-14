@@ -4,6 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>메뉴 관리 · Mokko Izakaya</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Noto+Serif+KR:wght@500;700&display=swap" rel="stylesheet" />
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
   <style>
@@ -324,6 +327,22 @@
     }
 
     .print-page-break { page-break-after: always; }
+
+    /* ── 한글 인쇄 최적화 (라틴 서체는 한글을 지원하지 않아 브라우저마다 다르게 보임 → Noto 폰트로 고정) ── */
+    .print-page.lang-ko { font-family: 'Noto Serif KR', serif; }
+    .print-page.lang-ko .print-brand-main { font-family: 'Noto Serif KR', serif; letter-spacing: 0.08em; }
+    .print-page.lang-ko .print-brand-sub,
+    .print-page.lang-ko .print-address,
+    .print-page.lang-ko .print-section-title,
+    .print-page.lang-ko .print-note,
+    .print-page.lang-ko .print-item-name,
+    .print-page.lang-ko .print-item-desc,
+    .print-page.lang-ko .print-item-allergens,
+    .print-page.lang-ko .print-item-price,
+    .print-page.lang-ko .print-allergen-legend { font-family: 'Noto Sans KR', sans-serif; }
+    .print-page.lang-ko .print-section-title { letter-spacing: 0.04em; }
+    .print-page.lang-ko .print-brand-sub { letter-spacing: 0.12em; }
+    .print-page.lang-ko .print-item-desc { font-style: normal; }
 
     /* ── TOAST ── */
     #toast {
@@ -962,7 +981,7 @@ function renderPrint() {
   const bevLabel = catLabels[lang]['beverages'];
 
   const pages = `
-    <div class="print-page">
+    <div class="print-page ${lang==='ko'?'lang-ko':''}">
       <div class="print-header">
         <div class="print-brand-main">Mokko Izakaya</div>
         <div class="print-brand-sub">${lang==='de'?'Koreanisch-Japanisches Restaurant':lang==='en'?'Korean-Japanese Restaurant':'한식·일식 레스토랑'}</div>
@@ -975,7 +994,7 @@ function renderPrint() {
         lang==='de'?'Allergene auf Anfrage beim Personal erhältlich.':lang==='en'?'Please ask our staff for allergen information.':'알러지 정보는 직원에게 문의해 주세요.'
       )}
     </div>
-    <div class="print-page">
+    <div class="print-page ${lang==='ko'?'lang-ko':''}">
       <div class="print-bev-header">
         <div class="print-brand-main">Mokko Izakaya</div>
         <div class="print-brand-sub">${lang==='de'?'Getränkekarte':lang==='en'?'Drinks Menu':'음료 메뉴'}</div>
