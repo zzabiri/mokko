@@ -174,7 +174,8 @@
     @media print {
       * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
       body { background: #fff !important; color: #1a1a1a !important; font-size: 9pt; margin: 0; padding: 0; }
-      #pin-screen, #app > header, .cat-tabs, main { display: none !important; }
+      /* #app 자체를 안 숨기면 min-height:100vh짜리 빈 상자가 그대로 남아 첫 장이 백지로 나옴 */
+      #pin-screen, #app, .cat-tabs, main { display: none !important; }
       #print-view { display: block !important; position: static !important; overflow: visible !important; }
       .print-toolbar { display: none !important; }
       .print-pages { padding: 0 !important; background: #fff !important; }
@@ -993,10 +994,12 @@ function renderPrint() {
         <div class="print-brand-sub">${lang==='de'?'Koreanisch-Japanisches Restaurant':lang==='en'?'Korean-Japanese Restaurant':'한식·일식 레스토랑'}</div>
         <div class="print-address">Marktplatz 44 &nbsp;·&nbsp; 65824 Schwalbach am Taunus &nbsp;·&nbsp; www.mokko.kr</div>
       </div>`;
-  const foodFooter = allergenFooter(
-    lang==='de'?'Allergene:':lang==='en'?'Allergens:':'알러지 정보:',
-    lang==='de'?'Allergene auf Anfrage beim Personal erhältlich.':lang==='en'?'Please ask our staff for allergen information.':'알러지 정보는 직원에게 문의해 주세요.'
-  );
+  // 알러지 전체 범례는 음료 페이지(마지막 장)에 한 번만 넣음 — 매 장마다 넣으면
+  // 세로 공간이 부족해 내용이 다음 장으로 밀리는 문제가 있었음. 항목별 알러지 코드(A,F,K...)는
+  // 각 메뉴 항목에 그대로 표시되므로 정보 손실은 없음.
+  const foodFooter = `<div class="print-note" style="margin-top:4mm;text-align:center;">${
+    lang==='de'?'Allergenschlüssel siehe letzte Seite (Getränkekarte).':lang==='en'?'See last page (drinks menu) for the allergen key.':'※ 알레르기 기호(A~N) 설명은 마지막 장(음료 메뉴)에 있습니다.'
+  }</div>`;
 
   const pages = `
     <div class="print-page ${lang==='ko'?'lang-ko':''}">
