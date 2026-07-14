@@ -197,6 +197,9 @@
     .print-toolbar span { flex: 1; font-size: 0.8rem; color: #888; }
     .print-pages { padding: 30px 20px; background: #f0ede8; }
 
+    /* 브라우저 기본 인쇄 여백을 제거해 A4 페이지 크기와 어긋나지 않게 함 (안 하면 첫 장이 빈 페이지로 밀려나옴) */
+    @page { size: A4; margin: 0; }
+
     /* ── A4 PAGE ── */
     .print-page {
       width: 210mm; min-height: 297mm; margin: 0 auto 30px;
@@ -900,7 +903,10 @@ function renderPrint() {
   const allData = window._printData || {};
   const today = new Date().toLocaleDateString('de-DE', {year:'numeric',month:'long',day:'numeric'});
 
-  const foodCats = ['starters','fried','chefs','sashimi','grill','tofu','hotpot','extras'];
+  // 한 페이지에 다 안 들어가서 두 장으로 나눔 (안 나누면 브라우저가 강제로 다음 장에
+  // 헤더·테두리 없이 이어붙여 인쇄가 지저분해짐)
+  const foodCatsPage1 = ['starters','fried','chefs','sashimi'];
+  const foodCatsPage2 = ['grill','tofu','hotpot','extras'];
   const catLabels = {
     de: {starters:'Vorspeisen',fried:'Frittiertes',chefs:"Chef's Spezialitäten",sashimi:'Sashimi',grill:'Vom Grill',tofu:'Tofu Suppe',hotpot:'Eintopf',extras:'Beilagen',beverages:'Getränke',lunch:'Mittagsmenü'},
     en: {starters:'Starters',fried:'Fried',chefs:"Chef's Specials",sashimi:'Sashimi',grill:'From the Grill',tofu:'Tofu Stew',hotpot:'Hotpot',extras:'Sides',beverages:'Beverages',lunch:'Lunch'},
@@ -954,7 +960,8 @@ function renderPrint() {
     : lang==='en' ? 'For 2–3 persons. Cooked at your table with a gas burner.'
     : '2~3인 이상, 테이블 가스버너 제공';
 
-  let foodHtml = foodCats.map(c => sectionHtml(c, c==='hotpot'?hotpotNote:null)).join('');
+  let foodHtml1 = foodCatsPage1.map(c => sectionHtml(c, null)).join('');
+  let foodHtml2 = foodCatsPage2.map(c => sectionHtml(c, c==='hotpot'?hotpotNote:null)).join('');
 
   // 점심 섹션 (1단)
   const lunchItems = Object.values(allData['lunch']||{}).filter(i=>i.active!==false).sort((a,b)=>(a.order||99)-(b.order||99));
@@ -980,19 +987,28 @@ function renderPrint() {
   const bevCol2 = bevItems.slice(bevHalf).map(itemHtml).join('');
   const bevLabel = catLabels[lang]['beverages'];
 
-  const pages = `
-    <div class="print-page ${lang==='ko'?'lang-ko':''}">
+  const foodHeader = `
       <div class="print-header">
         <div class="print-brand-main">Mokko Izakaya</div>
         <div class="print-brand-sub">${lang==='de'?'Koreanisch-Japanisches Restaurant':lang==='en'?'Korean-Japanese Restaurant':'한식·일식 레스토랑'}</div>
         <div class="print-address">Marktplatz 44 &nbsp;·&nbsp; 65824 Schwalbach am Taunus &nbsp;·&nbsp; www.mokko.kr</div>
-      </div>
-      ${foodHtml}
+      </div>`;
+  const foodFooter = allergenFooter(
+    lang==='de'?'Allergene:':lang==='en'?'Allergens:':'알러지 정보:',
+    lang==='de'?'Allergene auf Anfrage beim Personal erhältlich.':lang==='en'?'Please ask our staff for allergen information.':'알러지 정보는 직원에게 문의해 주세요.'
+  );
+
+  const pages = `
+    <div class="print-page ${lang==='ko'?'lang-ko':''}">
+      ${foodHeader}
+      ${foodHtml1}
+      ${foodFooter}
+    </div>
+    <div class="print-page ${lang==='ko'?'lang-ko':''}">
+      ${foodHeader}
+      ${foodHtml2}
       ${lunchHtml}
-      ${allergenFooter(
-        lang==='de'?'Allergene:':lang==='en'?'Allergens:':'알러지 정보:',
-        lang==='de'?'Allergene auf Anfrage beim Personal erhältlich.':lang==='en'?'Please ask our staff for allergen information.':'알러지 정보는 직원에게 문의해 주세요.'
-      )}
+      ${foodFooter}
     </div>
     <div class="print-page ${lang==='ko'?'lang-ko':''}">
       <div class="print-bev-header">
