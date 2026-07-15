@@ -275,6 +275,10 @@
       margin-bottom: 2mm; margin-left: 1mm;
       font-family: 'Arial', sans-serif;
     }
+    /* 음료 소제목 그룹 - 여러 섹션이 한 페이지에 들어가므로 여백을 줄임 */
+    .print-section-sm { margin-top: 3mm; }
+    .print-section-sm .print-section-title { padding: 1mm 2.5mm; margin-bottom: 1.5mm; font-size: 7pt; }
+    .print-section-sm:first-child { margin-top: 0; }
 
     /* ── 2단 그리드 ── */
     .print-cols {
@@ -969,16 +973,7 @@ function renderPrint() {
   let foodHtml2 = foodCatsPage2.map(c => sectionHtml(c, null)).join('');
   let foodHtml3 = foodCatsPage3.map(c => sectionHtml(c, c==='hotpot'?hotpotNote:null)).join('');
 
-  // 점심 섹션 (1단)
-  const lunchItems = Object.values(allData['lunch']||{}).filter(i=>i.active!==false).sort((a,b)=>(a.order||99)-(b.order||99));
-  const lunchHtml = lunchItems.length ? `
-    <div class="print-section">
-      <div class="print-section-title">${catLabels[lang]['lunch']}</div>
-      <div class="print-cols">
-        <div class="print-col">${lunchItems.map(itemHtml).join('')}</div>
-        <div class="print-col"></div>
-      </div>
-    </div>` : '';
+  // 점심 메뉴는 인쇄 메뉴판에서 제외 (직원용 인쇄본에는 굳이 안 넣기로 함)
 
   const allergenFooter = (title, note) => `
     <div class="print-allergen-legend">
@@ -986,12 +981,41 @@ function renderPrint() {
       <span style="font-style:italic;">${note}</span>
     </div>`;
 
-  // ── PAGE 2: 음료 메뉴 ──
+  // ── PAGE 2: 음료 메뉴 (그룹별 소제목) ──
+  const bevGroupOrder = ['nonalcoholic','beer','soju','highball','sake'];
+  const bevGroupLabels = {
+    nonalcoholic: { de:'Alkoholfrei', en:'Non-Alcoholic', ko:'무알콜' },
+    beer:         { de:'Bier', en:'Beer', ko:'맥주' },
+    soju:         { de:'Soju & Reiswein', en:'Soju & Rice Wine', ko:'소주 · 전통주' },
+    highball:     { de:'Highball', en:'Highball', ko:'하이볼' },
+    sake:         { de:'Sake', en:'Sake', ko:'사케' }
+  };
   const bevItems = Object.values(allData['beverages']||{}).filter(i=>i.active!==false).sort((a,b)=>(a.order||99)-(b.order||99));
-  const bevHalf = Math.ceil(bevItems.length / 2);
-  const bevCol1 = bevItems.slice(0, bevHalf).map(itemHtml).join('');
-  const bevCol2 = bevItems.slice(bevHalf).map(itemHtml).join('');
-  const bevLabel = catLabels[lang]['beverages'];
+  const bevByGroup = {};
+  bevItems.forEach(item => {
+    const g = item.group || 'other';
+    (bevByGroup[g] = bevByGroup[g] || []).push(item);
+  });
+  const bevGroupKeys = bevGroupOrder.filter(g => bevByGroup[g] && bevByGroup[g].length)
+    .concat(Object.keys(bevByGroup).filter(g => !bevGroupOrder.includes(g)));
+
+  function bevGroupHtml(g) {
+    const items = bevByGroup[g] || [];
+    if (!items.length) return '';
+    const half = Math.ceil(items.length / 2);
+    const col1 = items.slice(0, half).map(itemHtml).join('');
+    const col2 = items.slice(half).map(itemHtml).join('');
+    const label = (bevGroupLabels[g] && bevGroupLabels[g][lang]) || g;
+    return `
+      <div class="print-section print-section-sm">
+        <div class="print-section-title">${label}</div>
+        <div class="print-cols">
+          <div class="print-col">${col1}</div>
+          <div class="print-col">${col2}</div>
+        </div>
+      </div>`;
+  }
+  const bevHtml = bevGroupKeys.map(bevGroupHtml).join('');
 
   const foodHeader = `
       <div class="print-header">
@@ -1020,7 +1044,6 @@ function renderPrint() {
     <div class="print-page ${lang==='ko'?'lang-ko':''}">
       ${foodHeader}
       ${foodHtml3}
-      ${lunchHtml}
       ${foodFooter}
     </div>
     <div class="print-page ${lang==='ko'?'lang-ko':''}">
@@ -1029,14 +1052,7 @@ function renderPrint() {
         <div class="print-brand-sub">${lang==='de'?'Getränkekarte':lang==='en'?'Drinks Menu':'음료 메뉴'}</div>
         <div class="print-address">Marktplatz 44 &nbsp;·&nbsp; 65824 Schwalbach am Taunus</div>
       </div>
-      ${bevItems.length ? `
-        <div class="print-section">
-          <div class="print-section-title">${bevLabel}</div>
-          <div class="print-cols">
-            <div class="print-col">${bevCol1}</div>
-            <div class="print-col">${bevCol2}</div>
-          </div>
-        </div>` : ''}
+      ${bevHtml}
       ${allergenFooter(
         lang==='de'?'Allergene:':lang==='en'?'Allergens:':'알러지 정보:',
         lang==='de'?'Allergene auf Anfrage beim Personal erhältlich.':lang==='en'?'Please ask our staff for allergen information.':'알러지 정보는 직원에게 문의해 주세요.'
