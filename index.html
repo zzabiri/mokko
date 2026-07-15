@@ -822,6 +822,7 @@
       <button class="menu-tab active" data-tab="starters" data-i18n="cat_starters"></button>
       <button class="menu-tab" data-tab="fried"    data-i18n="cat_fried"></button>
       <button class="menu-tab" data-tab="specials" data-i18n="cat_specials"></button>
+      <button class="menu-tab" data-tab="sets"     data-i18n="cat_sets"></button>
       <button class="menu-tab" data-tab="sashimi"  data-i18n="cat_sashimi"></button>
       <button class="menu-tab" data-tab="grill"    data-i18n="cat_grill"></button>
       <button class="menu-tab" data-tab="tofu"     data-i18n="cat_tofu"></button>
@@ -867,6 +868,15 @@
         <div class="menu-item"><div class="menu-item-info"><div class="menu-item-name" data-ko="골뱅이 소면" data-de="Scharfer Meeresschneckensalat" data-en="Spicy Whelk Salad with Noodle"></div><div class="menu-item-desc" data-ko="매콤한 골뱅이 무침과 소면" data-de="Meeresschnecken mit Chilisoße und Nudeln" data-en="Cold spicy whelk with vegetables and noodles"></div></div><div class="menu-item-price">€28.90</div></div>
         <div class="menu-item"><div class="menu-item-info"><div class="menu-item-name" data-ko="차돌수육" data-de="Gekochtes Rindfleisch (Korea Art)" data-en="Korean-style Beef Brisket"></div><div class="menu-item-desc" data-ko="한국식으로 얇게 썬 삶은 차돌박이" data-de="Dünn geschnittenes, gekochtes Rindfleisch" data-en="Thinly sliced boiled beef brisket"></div></div><div class="menu-item-price">€39.90</div></div>
         <div class="menu-item"><div class="menu-item-info"><div class="menu-item-name" data-ko="매운 등갈비찜 + 주먹밥" data-de="Scharfe Rippchen + Reisbällchen" data-en="Spicy Pork Ribs + Rice Balls"></div><div class="menu-item-desc" data-ko="매콤하게 양념한 등갈비찜과 주먹밥" data-de="Koreanische scharfe Schweinerippchen + Reisbällchen" data-en="Spicy marinated pork ribs with Korean rice balls"></div></div><div class="menu-item-price">€32.90</div></div>
+        <div class="menu-item"><div class="menu-item-info"><div class="menu-item-name" data-ko="떡볶이 (라면사리·계란·만두튀김 포함)" data-de="Tteokbokki (mit Ramen-Nudeln, Ei &amp; frittierten Teigtaschen)" data-en="Tteokbokki (with Ramen Noodles, Egg &amp; Fried Dumplings)"></div><div class="menu-item-desc" data-ko="매콤달콤한 떡볶이, 라면사리·계란·만두튀김 포함" data-de="Würzig-süßer Reiskuchen mit Ramen-Nudeln, Ei und frittierten Teigtaschen" data-en="Sweet and spicy rice cakes with ramen noodles, egg and fried dumplings"></div></div><div class="menu-item-price">€29.90</div></div>
+        <div class="menu-item"><div class="menu-item-info"><div class="menu-item-name" data-ko="야들 오향 족발" data-de="Ohyang-Schweinshaxe (zart)" data-en="Tender Five-Spice Pig's Trotters"></div><div class="menu-item-desc" data-ko="야들야들하게 삶은 한국식 오향 족발" data-de="Zart gekochte koreanische Schweinshaxe mit fünf Gewürzen" data-en="Tender Korean-style trotters braised in five-spice broth"></div></div><div class="menu-item-price">€29.90</div></div>
+      </div>
+    </div>
+
+    <!-- 세트메뉴 -->
+    <div class="menu-panel" id="panel-sets">
+      <div class="menu-category fade">
+        <div class="menu-item"><div class="menu-item-info"><div class="menu-item-name" data-ko="야들족발 + 비빔면 + 순두부 세트" data-de="Set: Schweinshaxe + Bibimmyeon + Tofu-Suppe" data-en="Set: Trotters + Spicy Mixed Noodles + Tofu Stew"></div><div class="menu-item-desc" data-ko="야들 오향 족발, 매콤한 비빔면, 순두부찌개로 구성된 세트" data-de="Set mit Schweinshaxe, scharf-kalten Bibimmyeon-Nudeln und Tofu-Suppe" data-en="Set with five-spice trotters, spicy cold Bibimmyeon noodles and soft tofu stew"></div></div><div class="menu-item-price">€39.90</div></div>
       </div>
     </div>
 
@@ -1091,9 +1101,9 @@
 <script>
 // ── TRANSLATIONS ──
 const T = {
-  ko: { nav_insta:'인스타그램', nav_menu:'메뉴', nav_reservation:'예약', nav_location:'오시는 길', insta_label:'Instagram', insta_title:'최근 소식', btn_reserve:'예약하기', btn_menu:'메뉴 보기', menu_label:'Menu', menu_title:'메뉴', cat_starters:'전채', cat_fried:'튀김', cat_specials:'셰프 추천', cat_sashimi:'사시미', cat_grill:'그릴', cat_tofu:'순두부', cat_hotpot:'전골', cat_extras:'추가', cat_beverages:'음료', cat_lunch:'🌞 점심', res_label:'Contact & Location', res_title:'연락 & 오시는 길', res_subtitle:'연락 안내', res_hours_label:'영업시간', res_price_label:'가격대', res_seating_label:'좌석', res_book_btn:'예약 페이지로 →', loc_subtitle:'오시는 길', loc_addr_label:'주소', loc_tel_label:'전화', loc_rating_label:'평점' },
-  de: { nav_insta:'Instagram', nav_menu:'Speisekarte', nav_reservation:'Reservierung', nav_location:'Anfahrt', insta_label:'Instagram', insta_title:'Neuigkeiten', btn_reserve:'Reservieren', btn_menu:'Speisekarte', menu_label:'Speisekarte', menu_title:'Speisekarte', cat_starters:'Vorspeisen', cat_fried:'Frittiertes', cat_specials:'Spezialitäten', cat_sashimi:'Sashimi', cat_grill:'Grill', cat_tofu:'Tofu-Suppe', cat_hotpot:'Eintopf', cat_extras:'Extras', cat_beverages:'Getränke', cat_lunch:'🌞 Mittagsmenü', res_label:'Kontakt & Standort', res_title:'Kontakt & Anfahrt', res_subtitle:'Kontaktinfo', res_hours_label:'Öffnungszeiten', res_price_label:'Preisklasse', res_seating_label:'Sitzplätze', res_book_btn:'Zur Reservierung →', loc_subtitle:'Anfahrt', loc_addr_label:'Adresse', loc_tel_label:'Telefon', loc_rating_label:'Bewertung' },
-  en: { nav_insta:'Instagram', nav_menu:'Menu', nav_reservation:'Reservation', nav_location:'Location', insta_label:'Instagram', insta_title:'Latest Updates', btn_reserve:'Reserve a Table', btn_menu:'View Menu', menu_label:'Menu', menu_title:'Menu', cat_starters:'Starters', cat_fried:'Fried', cat_specials:"Chef's Specials", cat_sashimi:'Sashimi', cat_grill:'Grill', cat_tofu:'Tofu Stew', cat_hotpot:'Hotpot', cat_extras:'Extras', cat_beverages:'Beverages', cat_lunch:'🌞 Lunch', res_label:'Contact & Location', res_title:'Contact & Location', res_subtitle:'Contact Info', res_hours_label:'Hours', res_price_label:'Price range', res_seating_label:'Seating', res_book_btn:'Make a Reservation →', loc_subtitle:'Location', loc_addr_label:'Address', loc_tel_label:'Phone', loc_rating_label:'Rating' }
+  ko: { nav_insta:'인스타그램', nav_menu:'메뉴', nav_reservation:'예약', nav_location:'오시는 길', insta_label:'Instagram', insta_title:'최근 소식', btn_reserve:'예약하기', btn_menu:'메뉴 보기', menu_label:'Menu', menu_title:'메뉴', cat_starters:'전채', cat_fried:'튀김', cat_specials:'셰프 추천', cat_sets:'세트메뉴', cat_sashimi:'사시미', cat_grill:'그릴', cat_tofu:'순두부', cat_hotpot:'전골', cat_extras:'추가', cat_beverages:'음료', cat_lunch:'🌞 점심', res_label:'Contact & Location', res_title:'연락 & 오시는 길', res_subtitle:'연락 안내', res_hours_label:'영업시간', res_price_label:'가격대', res_seating_label:'좌석', res_book_btn:'예약 페이지로 →', loc_subtitle:'오시는 길', loc_addr_label:'주소', loc_tel_label:'전화', loc_rating_label:'평점' },
+  de: { nav_insta:'Instagram', nav_menu:'Speisekarte', nav_reservation:'Reservierung', nav_location:'Anfahrt', insta_label:'Instagram', insta_title:'Neuigkeiten', btn_reserve:'Reservieren', btn_menu:'Speisekarte', menu_label:'Speisekarte', menu_title:'Speisekarte', cat_starters:'Vorspeisen', cat_fried:'Frittiertes', cat_specials:'Spezialitäten', cat_sets:'Set-Menüs', cat_sashimi:'Sashimi', cat_grill:'Grill', cat_tofu:'Tofu-Suppe', cat_hotpot:'Eintopf', cat_extras:'Extras', cat_beverages:'Getränke', cat_lunch:'🌞 Mittagsmenü', res_label:'Kontakt & Standort', res_title:'Kontakt & Anfahrt', res_subtitle:'Kontaktinfo', res_hours_label:'Öffnungszeiten', res_price_label:'Preisklasse', res_seating_label:'Sitzplätze', res_book_btn:'Zur Reservierung →', loc_subtitle:'Anfahrt', loc_addr_label:'Adresse', loc_tel_label:'Telefon', loc_rating_label:'Bewertung' },
+  en: { nav_insta:'Instagram', nav_menu:'Menu', nav_reservation:'Reservation', nav_location:'Location', insta_label:'Instagram', insta_title:'Latest Updates', btn_reserve:'Reserve a Table', btn_menu:'View Menu', menu_label:'Menu', menu_title:'Menu', cat_starters:'Starters', cat_fried:'Fried', cat_specials:"Chef's Specials", cat_sets:'Set Menus', cat_sashimi:'Sashimi', cat_grill:'Grill', cat_tofu:'Tofu Stew', cat_hotpot:'Hotpot', cat_extras:'Extras', cat_beverages:'Beverages', cat_lunch:'🌞 Lunch', res_label:'Contact & Location', res_title:'Contact & Location', res_subtitle:'Contact Info', res_hours_label:'Hours', res_price_label:'Price range', res_seating_label:'Seating', res_book_btn:'Make a Reservation →', loc_subtitle:'Location', loc_addr_label:'Address', loc_tel_label:'Phone', loc_rating_label:'Rating' }
 };
 
 // ── LANGUAGE ──
@@ -1181,7 +1191,7 @@ applyLang('ko');
     if (!data) return; // Firebase 비어 있으면 기존 하드코딩 유지
 
     // 단순 패널들 (모두 menu-admin.html에서 관리하는 Firebase 카테고리와 1:1 매칭)
-    const simple = { starters:'starters', fried:'fried', chefs:'specials', sashimi:'sashimi', grill:'grill', tofu:'tofu', hotpot:'hotpot', extras:'extras', beverages:'beverages' };
+    const simple = { starters:'starters', fried:'fried', chefs:'specials', sets:'sets', sashimi:'sashimi', grill:'grill', tofu:'tofu', hotpot:'hotpot', extras:'extras', beverages:'beverages' };
     Object.entries(simple).forEach(([fbCat, panelId]) => {
       const items = Object.values(data[fbCat] || {});
       if (!items.length) return;
