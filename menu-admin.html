@@ -965,9 +965,9 @@ function renderPrint() {
 
   // ── PAGE 1: 푸드 메뉴 ──
   const hotpotNote = lang==='de'
-    ? 'Für 2–3 Personen. Am Tisch mit Gasbrenner zubereitet.'
-    : lang==='en' ? 'For 2–3 persons. Cooked at your table with a gas burner.'
-    : '2~3인 이상, 테이블 가스버너 제공';
+    ? 'Für 2–3 Personen. Am Tisch mit Gasbrenner zubereitet. Serviert mit 2–3 Beilagen.'
+    : lang==='en' ? 'For 2–3 persons. Cooked at your table with a gas burner. Served with 2–3 side dishes.'
+    : '2~3인 이상, 테이블 가스버너 제공 · 반찬 2~3가지 함께 제공';
 
   let foodHtml1 = foodCatsPage1.map(c => sectionHtml(c, null)).join('');
   let foodHtml2 = foodCatsPage2.map(c => sectionHtml(c, null)).join('');
