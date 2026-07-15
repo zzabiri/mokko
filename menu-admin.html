@@ -205,7 +205,8 @@
     .print-page {
       width: 210mm; min-height: 297mm; margin: 0 auto 30px;
       background: #fff; color: #1a1a1a;
-      padding: 14mm 16mm 14mm 16mm;
+      /* 아래쪽 여백을 넉넉히 둬서 고정 푸터(알러지 정보)와 본문 내용이 겹치지 않게 함 */
+      padding: 14mm 16mm 24mm 16mm;
       box-shadow: 0 4px 30px rgba(0,0,0,0.2);
       font-family: 'Georgia', 'Times New Roman', serif;
       position: relative;
@@ -308,11 +309,12 @@
       padding-top: 0.5mm;
     }
 
-    /* ── 알러지 범례 ── */
+    /* ── 알러지 범례 (모든 페이지 맨 아래에 고정되는 푸터) ── */
     .print-allergen-legend {
-      margin-top: 5mm; padding: 2.5mm 3mm;
+      position: absolute; left: 16mm; right: 16mm; bottom: 8mm;
+      padding: 2.5mm 3mm;
       border: 0.3pt solid #ddd; background: #fafafa;
-      font-size: 5.5pt; color: #888; line-height: 2;
+      font-size: 5.5pt; color: #888; line-height: 1.8;
       font-family: 'Arial', sans-serif;
     }
     .print-allergen-legend strong { color: #c9a96e; margin-right: 1mm; }
@@ -517,6 +519,7 @@ const CATEGORIES = [
   { id: 'starters', ko: '전채', de: 'Vorspeisen', en: 'Starters' },
   { id: 'fried',    ko: '튀김', de: 'Frittierte Gerichte', en: 'Fried Dishes' },
   { id: 'chefs',    ko: '셰프 특선', de: "Chef's Spezialitäten", en: "Chef's Specials" },
+  { id: 'sets',     ko: '세트메뉴', de: 'Set-Menüs', en: 'Set Menus' },
   { id: 'sashimi',  ko: '사시미', de: 'Sashimi', en: 'Sashimi' },
   { id: 'grill',    ko: '그릴', de: 'Grill', en: 'Grill' },
   { id: 'tofu',     ko: '순두부', de: 'Tofu Suppe', en: 'Tofu Stew' },
@@ -907,12 +910,12 @@ function renderPrint() {
   // 음식 메뉴를 세 장으로 나눔 (특히 독일어는 글자 수가 길어서 카테고리 4개를 한 장에
   // 넣으면 A4 한 장 분량을 넘겨버림 → 페이지당 카테고리를 줄여 여유 있게 배치)
   const foodCatsPage1 = ['starters','fried'];
-  const foodCatsPage2 = ['chefs','sashimi'];
+  const foodCatsPage2 = ['chefs','sets','sashimi'];
   const foodCatsPage3 = ['grill','tofu','hotpot','extras'];
   const catLabels = {
-    de: {starters:'Vorspeisen',fried:'Frittiertes',chefs:"Chef's Spezialitäten",sashimi:'Sashimi',grill:'Vom Grill',tofu:'Tofu Suppe',hotpot:'Eintopf',extras:'Beilagen',beverages:'Getränke',lunch:'Mittagsmenü'},
-    en: {starters:'Starters',fried:'Fried',chefs:"Chef's Specials",sashimi:'Sashimi',grill:'From the Grill',tofu:'Tofu Stew',hotpot:'Hotpot',extras:'Sides',beverages:'Beverages',lunch:'Lunch'},
-    ko: {starters:'전채',fried:'튀김',chefs:'셰프 특선',sashimi:'사시미',grill:'그릴',tofu:'순두부',hotpot:'전골',extras:'사이드',beverages:'음료',lunch:'점심'}
+    de: {starters:'Vorspeisen',fried:'Frittiertes',chefs:"Chef's Spezialitäten",sets:'Set-Menüs',sashimi:'Sashimi',grill:'Vom Grill',tofu:'Tofu Suppe',hotpot:'Eintopf',extras:'Beilagen',beverages:'Getränke',lunch:'Mittagsmenü'},
+    en: {starters:'Starters',fried:'Fried',chefs:"Chef's Specials",sets:'Set Menus',sashimi:'Sashimi',grill:'From the Grill',tofu:'Tofu Stew',hotpot:'Hotpot',extras:'Sides',beverages:'Beverages',lunch:'Lunch'},
+    ko: {starters:'전채',fried:'튀김',chefs:'셰프 특선',sets:'세트메뉴',sashimi:'사시미',grill:'그릴',tofu:'순두부',hotpot:'전골',extras:'사이드',beverages:'음료',lunch:'점심'}
   };
 
   // 알러지 범례 HTML
@@ -996,12 +999,12 @@ function renderPrint() {
         <div class="print-brand-sub">${lang==='de'?'Koreanisch-Japanisches Restaurant':lang==='en'?'Korean-Japanese Restaurant':'한식·일식 레스토랑'}</div>
         <div class="print-address">Marktplatz 44 &nbsp;·&nbsp; 65824 Schwalbach am Taunus &nbsp;·&nbsp; www.mokko.kr</div>
       </div>`;
-  // 알러지 전체 범례는 음료 페이지(마지막 장)에 한 번만 넣음 — 매 장마다 넣으면
-  // 세로 공간이 부족해 내용이 다음 장으로 밀리는 문제가 있었음. 항목별 알러지 코드(A,F,K...)는
-  // 각 메뉴 항목에 그대로 표시되므로 정보 손실은 없음.
-  const foodFooter = `<div class="print-note" style="margin-top:4mm;text-align:center;">${
-    lang==='de'?'Allergenschlüssel siehe letzte Seite (Getränkekarte).':lang==='en'?'See last page (drinks menu) for the allergen key.':'※ 알레르기 기호(A~N) 설명은 마지막 장(음료 메뉴)에 있습니다.'
-  }</div>`;
+  // 알러지 전체 범례를 모든 페이지 맨 아래에 고정 배치 (position:absolute).
+  // 절대 위치라 본문 흐름에 높이를 더하지 않으므로 페이지마다 넣어도 넘침 문제가 없음.
+  const foodFooter = allergenFooter(
+    lang==='de'?'Allergene:':lang==='en'?'Allergens:':'알러지 정보:',
+    lang==='de'?'Allergene auf Anfrage beim Personal erhältlich.':lang==='en'?'Please ask our staff for allergen information.':'알러지 정보는 직원에게 문의해 주세요.'
+  );
 
   const pages = `
     <div class="print-page ${lang==='ko'?'lang-ko':''}">
