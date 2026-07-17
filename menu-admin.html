@@ -526,7 +526,6 @@ const CATEGORIES = [
   { id: 'sets',     ko: '세트메뉴', de: 'Set-Menüs', en: 'Set Menus' },
   { id: 'sashimi',  ko: '사시미', de: 'Sashimi', en: 'Sashimi' },
   { id: 'grill',    ko: '그릴', de: 'Grill', en: 'Grill' },
-  { id: 'tofu',     ko: '순두부', de: 'Tofu Suppe', en: 'Tofu Stew' },
   { id: 'hotpot',   ko: '냄비 요리', de: 'Eintopf', en: 'Hotpot' },
   { id: 'beverages',ko: '음료', de: 'Getränke', en: 'Beverages' },
   { id: 'lunch',    ko: '🌞 점심', de: '🌞 Mittagsmenü', en: '🌞 Lunch' },
@@ -912,14 +911,14 @@ function renderPrint() {
 
   // 음식 메뉴를 세 장으로 나눔 (특히 독일어는 글자 수가 길어서 카테고리 4개를 한 장에
   // 넣으면 A4 한 장 분량을 넘겨버림 → 페이지당 카테고리를 줄여 여유 있게 배치)
-  // starters가 항목 13개로 늘어나서 fried와 묶으면 한 장을 넘길 수 있어 sets와 재배치함
-  const foodCatsPage1 = ['starters','sets'];
+  // starters가 항목 15개(순두부 2개 포함)로 늘어나서 단독 페이지로 배치, sets는 grill/hotpot과 재배치함
+  const foodCatsPage1 = ['starters'];
   const foodCatsPage2 = ['fried','chefs','sashimi'];
-  const foodCatsPage3 = ['grill','tofu','hotpot'];
+  const foodCatsPage3 = ['grill','hotpot','sets'];
   const catLabels = {
-    de: {starters:'Vorspeisen',fried:'Frittiertes',chefs:"Chef's Spezialitäten",sets:'Set-Menüs',sashimi:'Sashimi',grill:'Vom Grill',tofu:'Tofu Suppe',hotpot:'Eintopf',beverages:'Getränke',lunch:'Mittagsmenü'},
-    en: {starters:'Starters',fried:'Fried',chefs:"Chef's Specials",sets:'Set Menus',sashimi:'Sashimi',grill:'From the Grill',tofu:'Tofu Stew',hotpot:'Hotpot',beverages:'Beverages',lunch:'Lunch'},
-    ko: {starters:'가벼운 요리/곁들임 메뉴',fried:'튀김',chefs:'셰프 특선',sets:'세트메뉴',sashimi:'사시미',grill:'그릴',tofu:'순두부',hotpot:'냄비 요리',beverages:'음료',lunch:'점심'}
+    de: {starters:'Vorspeisen',fried:'Frittiertes',chefs:"Chef's Spezialitäten",sets:'Set-Menüs',sashimi:'Sashimi',grill:'Vom Grill',hotpot:'Eintopf',beverages:'Getränke',lunch:'Mittagsmenü'},
+    en: {starters:'Starters',fried:'Fried',chefs:"Chef's Specials",sets:'Set Menus',sashimi:'Sashimi',grill:'From the Grill',hotpot:'Hotpot',beverages:'Beverages',lunch:'Lunch'},
+    ko: {starters:'가벼운 요리/곁들임 메뉴',fried:'튀김',chefs:'셰프 특선',sets:'세트메뉴',sashimi:'사시미',grill:'그릴',hotpot:'냄비 요리',beverages:'음료',lunch:'점심'}
   };
 
   // 알러지 범례 HTML
