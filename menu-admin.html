@@ -222,9 +222,9 @@
       pointer-events: none;
     }
 
-    /* ── 헤더 ── */
+    /* ── 헤더 (왼쪽: 브랜드 텍스트 / 오른쪽: 카카오톡 QR) ── */
     .print-header {
-      text-align: center;
+      display: flex; flex-direction: column;
       padding-bottom: 5mm;
       margin-bottom: 5mm;
       border-bottom: 1pt solid #1a1a1a;
@@ -233,11 +233,19 @@
     .print-header::after {
       content: '— ✦ —';
       display: block;
+      text-align: center;
       font-size: 7pt;
       color: #c9a96e;
       letter-spacing: 0.3em;
       margin-top: 2.5mm;
     }
+    .print-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6mm;
+    }
+    .print-header-text { text-align: left; }
     .print-brand-main {
       font-size: 20pt; font-weight: 700; letter-spacing: 0.18em;
       text-transform: uppercase; color: #1a1a1a;
@@ -252,6 +260,18 @@
       font-size: 6.5pt; color: #aaa; margin-top: 1.5mm;
       font-family: 'Arial', sans-serif; letter-spacing: 0.05em;
     }
+    .print-kakao {
+      display: flex; align-items: center; gap: 3mm; flex-shrink: 0;
+    }
+    .print-kakao-qr {
+      width: 18mm; height: 18mm; object-fit: contain;
+      border: 0.3pt solid #ddd; flex-shrink: 0;
+    }
+    .print-kakao-text {
+      font-size: 5.8pt; color: #666; line-height: 1.45; text-align: left;
+      font-family: 'Arial', sans-serif; max-width: 36mm;
+    }
+    .print-kakao-text strong { color: #1a1a1a; }
 
     /* ── SECTION ── */
     .print-section {
@@ -324,15 +344,15 @@
     .print-allergen-legend strong { color: #c9a96e; margin-right: 1mm; }
     .print-allergen-label { color: #555; }
 
-    /* ── 음료 페이지 헤더 ── */
+    /* ── 음료 페이지 헤더 (왼쪽: 브랜드 텍스트 / 오른쪽: 카카오톡 QR) ── */
     .print-bev-header {
-      text-align: center;
+      display: flex; flex-direction: column;
       padding-bottom: 4mm; margin-bottom: 4mm;
       border-bottom: 1pt solid #1a1a1a;
     }
     .print-bev-header::after {
       content: '— ✦ —';
-      display: block; font-size: 7pt; color: #c9a96e;
+      display: block; text-align: center; font-size: 7pt; color: #c9a96e;
       letter-spacing: 0.3em; margin-top: 2mm;
     }
 
@@ -1016,11 +1036,28 @@ function renderPrint() {
   }
   const bevHtml = bevGroupKeys.map(bevGroupHtml).join('');
 
+  // 카카오톡 오픈채팅 QR + 안내 문구 (모든 인쇄 페이지 헤더 오른쪽에 공통으로 사용)
+  const kakaoCaption = lang==='de'
+    ? 'Unserem KakaoTalk-Chat beitreten<br>für <strong>Rabattgutscheine, Aktionen &amp; Neuheiten</strong>.<br>Zeig es dem Personal und<br>erhalte 1 Cola/Fanta gratis.'
+    : lang==='en'
+    ? 'Join our KakaoTalk chat<br>for <strong>coupons, events &amp; new dishes</strong>.<br>Show it to our staff for<br>1 free Cola or Fanta.'
+    : '오픈채팅방 추가하시고<br><strong>할인쿠폰·이벤트·신메뉴 소식</strong>을 받아보세요.<br>추가 후 직원에게 보여주시면<br>콜라/환타 중 하나를 무료로 드립니다.';
+  const kakaoBlock = `
+      <div class="print-kakao">
+        <img class="print-kakao-qr" src="KAKAO_QR.jpg" alt="KakaoTalk QR">
+        <div class="print-kakao-text">${kakaoCaption}</div>
+      </div>`;
+
   const foodHeader = `
       <div class="print-header">
-        <div class="print-brand-main">Mokko Izakaya</div>
-        <div class="print-brand-sub">${lang==='de'?'Koreanisch-Japanisches Restaurant':lang==='en'?'Korean-Japanese Restaurant':'한식·일식 레스토랑'}</div>
-        <div class="print-address">Marktplatz 44 &nbsp;·&nbsp; 65824 Schwalbach am Taunus &nbsp;·&nbsp; www.mokko.kr</div>
+        <div class="print-header-row">
+          <div class="print-header-text">
+            <div class="print-brand-main">Mokko Izakaya</div>
+            <div class="print-brand-sub">${lang==='de'?'Koreanisch-Japanisches Restaurant':lang==='en'?'Korean-Japanese Restaurant':'한식·일식 레스토랑'}</div>
+            <div class="print-address">Marktplatz 44 &nbsp;·&nbsp; 65824 Schwalbach am Taunus &nbsp;·&nbsp; www.mokko.kr</div>
+          </div>
+          ${kakaoBlock}
+        </div>
       </div>`;
   // 알러지 전체 범례를 모든 페이지 맨 아래에 고정 배치 (position:absolute).
   // 절대 위치라 본문 흐름에 높이를 더하지 않으므로 페이지마다 넣어도 넘침 문제가 없음.
@@ -1047,9 +1084,14 @@ function renderPrint() {
     </div>
     <div class="print-page ${lang==='ko'?'lang-ko':''}">
       <div class="print-bev-header">
-        <div class="print-brand-main">Mokko Izakaya</div>
-        <div class="print-brand-sub">${lang==='de'?'Getränkekarte':lang==='en'?'Drinks Menu':'음료 메뉴'}</div>
-        <div class="print-address">Marktplatz 44 &nbsp;·&nbsp; 65824 Schwalbach am Taunus</div>
+        <div class="print-header-row">
+          <div class="print-header-text">
+            <div class="print-brand-main">Mokko Izakaya</div>
+            <div class="print-brand-sub">${lang==='de'?'Getränkekarte':lang==='en'?'Drinks Menu':'음료 메뉴'}</div>
+            <div class="print-address">Marktplatz 44 &nbsp;·&nbsp; 65824 Schwalbach am Taunus</div>
+          </div>
+          ${kakaoBlock}
+        </div>
       </div>
       ${bevHtml}
       ${allergenFooter(
