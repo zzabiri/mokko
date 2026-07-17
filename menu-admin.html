@@ -1036,7 +1036,7 @@ function renderPrint() {
   }
   const bevHtml = bevGroupKeys.map(bevGroupHtml).join('');
 
-  // 카카오톡 오픈채팅 QR + 안내 문구 (모든 인쇄 페이지 헤더 오른쪽에 공통으로 사용)
+  // 카카오톡 오픈채팅 QR + 안내 문구 (2페이지 셰프특선, 4페이지 음료에 사용)
   const kakaoCaption = lang==='de'
     ? 'Unserem KakaoTalk-Chat beitreten<br>für <strong>Rabattgutscheine, Aktionen &amp; Neuheiten</strong>.<br>Zeig es dem Personal und<br>erhalte 1 Cola/Fanta gratis.'
     : lang==='en'
@@ -1048,7 +1048,19 @@ function renderPrint() {
         <div class="print-kakao-text">${kakaoCaption}</div>
       </div>`;
 
-  const foodHeader = `
+  // 구글 리뷰 QR + 안내 문구 (1페이지 가벼운 요리, 3페이지 그릴/냄비요리에 사용)
+  const googleCaption = lang==='de'
+    ? 'Hinterlasse eine Google-Bewertung<br>und <strong>zeig sie unserem Personal</strong><br>für 1 Bier oder<br>Highball gratis.'
+    : lang==='en'
+    ? 'Leave a Google review<br>and <strong>show it to our staff</strong><br>for 1 free beer<br>or highball.'
+    : '구글 리뷰를 남기고<br><strong>직원에게 보여주시면</strong><br>맥주 또는 하이볼<br>1잔을 무료로 드립니다.';
+  const googleReviewBlock = `
+      <div class="print-kakao">
+        <img class="print-kakao-qr" src="GOOGLE_REVIEW_QR.jpg" alt="Google Review QR">
+        <div class="print-kakao-text">${googleCaption}</div>
+      </div>`;
+
+  const foodHeader = (promoBlock) => `
       <div class="print-header">
         <div class="print-header-row">
           <div class="print-header-text">
@@ -1056,7 +1068,7 @@ function renderPrint() {
             <div class="print-brand-sub">${lang==='de'?'Koreanisch-Japanisches Restaurant':lang==='en'?'Korean-Japanese Restaurant':'한식·일식 레스토랑'}</div>
             <div class="print-address">Marktplatz 44 &nbsp;·&nbsp; 65824 Schwalbach am Taunus &nbsp;·&nbsp; www.mokko.kr</div>
           </div>
-          ${kakaoBlock}
+          ${promoBlock}
         </div>
       </div>`;
   // 알러지 전체 범례를 모든 페이지 맨 아래에 고정 배치 (position:absolute).
@@ -1068,17 +1080,17 @@ function renderPrint() {
 
   const pages = `
     <div class="print-page ${lang==='ko'?'lang-ko':''}">
-      ${foodHeader}
+      ${foodHeader(googleReviewBlock)}
       ${foodHtml1}
       ${foodFooter}
     </div>
     <div class="print-page ${lang==='ko'?'lang-ko':''}">
-      ${foodHeader}
+      ${foodHeader(kakaoBlock)}
       ${foodHtml2}
       ${foodFooter}
     </div>
     <div class="print-page ${lang==='ko'?'lang-ko':''}">
-      ${foodHeader}
+      ${foodHeader(googleReviewBlock)}
       ${foodHtml3}
       ${foodFooter}
     </div>
