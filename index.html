@@ -233,6 +233,13 @@
       position: relative;
     }
     .notice-icon { font-size: 1.3rem; line-height: 1; }
+    .notice-photos { display: flex; gap: 4px; flex-shrink: 0; }
+    .notice-photos img {
+      width: 44px; height: 44px;
+      object-fit: cover;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+    }
     .notice-text { flex: 1; }
     a.notice-text { display: block; text-decoration: none; color: inherit; }
     .notice-title {
@@ -795,7 +802,10 @@
 <section id="hero">
   <div class="notice-banner" id="noticeBanner">
     <button class="notice-close" id="noticeClose" aria-label="닫기">&times;</button>
-    <div class="notice-icon">🆕</div>
+    <div class="notice-photos">
+      <img src="떡볶이.jpg" alt="즉석떡볶이" loading="lazy" />
+      <img src="족발.jpg" alt="야들 족발" loading="lazy" />
+    </div>
     <a class="notice-text" href="#menu">
       <div class="notice-title" data-ko="신메뉴 출시" data-de="Neu auf der Karte" data-en="New on the Menu"></div>
       <div class="notice-desc" data-ko="즉석떡볶이 &amp; 야들 족발이 새로 추가되었습니다. 지금 만나보세요!" data-de="Tteokbokki &amp; Schweinshaxe sind jetzt neu bei uns!" data-en="Tteokbokki &amp; Pork Trotters are now on our menu!"></div>
