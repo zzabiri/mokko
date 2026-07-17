@@ -234,6 +234,7 @@
     }
     .notice-icon { font-size: 1.3rem; line-height: 1; }
     .notice-text { flex: 1; }
+    a.notice-text { display: block; text-decoration: none; color: inherit; }
     .notice-title {
       font-size: 0.85rem;
       font-weight: 500;
@@ -388,7 +389,20 @@
     .menu-item:last-child { border-bottom: none; }
     .menu-item.gap-top { margin-top: 18px; padding-top: 22px; border-top: 1px dashed var(--border); }
     .menu-item-info { flex: 1; }
+    .menu-item-name-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
     .menu-item-name { font-size: 0.9rem; font-weight: 400; line-height: 1.35; }
+    .new-badge {
+      display: inline-block;
+      flex-shrink: 0;
+      font-size: 0.58rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      color: #0e0e0e;
+      background: var(--accent);
+      padding: 2px 6px;
+      border-radius: 3px;
+      line-height: 1.3;
+    }
     .menu-item-desc { font-size: 0.73rem; color: var(--muted); margin-top: 3px; line-height: 1.4; }
     .menu-item-price {
       font-size: 0.85rem;
@@ -781,12 +795,11 @@
 <section id="hero">
   <div class="notice-banner" id="noticeBanner">
     <button class="notice-close" id="noticeClose" aria-label="닫기">&times;</button>
-    <div class="notice-icon">🏖️</div>
-    <div class="notice-text">
-      <div class="notice-title" data-ko="여름 휴가 안내" data-de="Sommerurlaub" data-en="Summer Break"></div>
-      <div class="notice-dates">06.07 – 14.07.2026</div>
-      <div class="notice-desc" data-ko="7월 15일부터 정상 영업합니다" data-de="Wir sind ab 15.07.2026 wieder für Sie da" data-en="We're open again from July 15, 2026"></div>
-    </div>
+    <div class="notice-icon">🆕</div>
+    <a class="notice-text" href="#menu">
+      <div class="notice-title" data-ko="신메뉴 출시" data-de="Neu auf der Karte" data-en="New on the Menu"></div>
+      <div class="notice-desc" data-ko="즉석떡볶이 &amp; 야들 족발이 새로 추가되었습니다. 지금 만나보세요!" data-de="Tteokbokki &amp; Schweinshaxe sind jetzt neu bei uns!" data-en="Tteokbokki &amp; Pork Trotters are now on our menu!"></div>
+    </a>
   </div>
   <p class="hero-eyebrow">居酒屋 · Izakaya · Schwalbach am Taunus</p>
   <img src="logo.png" alt="Mokko Izakaya" class="hero-logo" />
@@ -826,7 +839,6 @@
       <button class="menu-tab" data-tab="sets"     data-i18n="cat_sets"></button>
       <button class="menu-tab" data-tab="sashimi"  data-i18n="cat_sashimi"></button>
       <button class="menu-tab" data-tab="grill"    data-i18n="cat_grill"></button>
-      <button class="menu-tab" data-tab="tofu"     data-i18n="cat_tofu"></button>
       <button class="menu-tab" data-tab="hotpot"   data-i18n="cat_hotpot"></button>
       <button class="menu-tab" data-tab="beverages" data-i18n="cat_beverages"></button>
       <button class="menu-tab menu-tab-lunch" data-tab="lunch" data-i18n="cat_lunch"></button>
@@ -837,15 +849,17 @@
       <div class="menu-category fade">
         <div class="menu-item"><div class="menu-item-info"><div class="menu-item-name" data-ko="삶은 콩 (에다마메)" data-de="Edamame" data-en="Edamame"></div><div class="menu-item-desc" data-ko="소금 간을 한 풋콩" data-de="Gedämpfte Sojabohnen" data-en="Salted steamed soybeans"></div></div><div class="menu-item-price">€3.90</div></div>
         <div class="menu-item"><div class="menu-item-info"><div class="menu-item-name" data-ko="마라 오이샐러드" data-de="Mala-Gurkensalat" data-en="Mala Cucumber Salad"></div><div class="menu-item-desc" data-ko="마라 드레싱의 매콤한 오이 샐러드" data-de="Gurkensalat mit scharfem Maladressing" data-en="Cucumber salad with spicy mala dressing"></div></div><div class="menu-item-price">€4.90</div></div>
+        <div class="menu-item"><div class="menu-item-info"><div class="menu-item-name" data-ko="매콤 비빔면" data-de="Scharfe Bibimmyeon-Nudeln" data-en="Spicy Bibimmyeon Noodles"></div><div class="menu-item-desc" data-ko="매콤달콤한 특제 양념의 쫄깃한 비빔면" data-de="Würzig-süße Bibimmyeon-Nudeln mit hausgemachter Sauce" data-en="Sweet and spicy bibimmyeon noodles with house-made sauce"></div></div><div class="menu-item-price">€9.90</div></div>
         <div class="menu-item"><div class="menu-item-info"><div class="menu-item-name" data-ko="계란찜" data-de="Gedämpftes Ei" data-en="Steamed Egg"></div><div class="menu-item-desc" data-ko="토비코를 곁들인 부드러운 한국식 계란찜" data-de="Gedämpftes Ei mit Tobiko, koreanische Art" data-en="Soft steamed egg with tobiko, Korean style"></div></div><div class="menu-item-price">€12.90</div></div>
         <div class="menu-item"><div class="menu-item-info"><div class="menu-item-name" data-ko="감자전" data-de="Kartoffelpfannkuchen" data-en="Potato Pancake"></div><div class="menu-item-desc" data-ko="치즈와 양파를 넣은 한국식 감자전" data-de="Koreanischer Kartoffelpfannkuchen mit Käse und Zwiebeln" data-en="Korean potato pancake with cheese and onions"></div></div><div class="menu-item-price">€12.90</div></div>
         <div class="menu-item"><div class="menu-item-info"><div class="menu-item-name" data-ko="해물부추전" data-de="Meeresfrüchte-Pfannkuchen" data-en="Seafood Pancake"></div><div class="menu-item-desc" data-ko="해산물과 부추를 넣은 바삭한 전" data-de="Koreanischer Meeresfrüchtepfannkuchen mit Frühlingszwiebeln" data-en="Crispy Korean pancake with seafood and chives"></div></div><div class="menu-item-price">€16.90</div></div>
-        <div class="menu-item"><div class="menu-item-info"><div class="menu-item-name" data-ko="오코노미야키" data-de="Okonomiyaki" data-en="Okonomiyaki"></div><div class="menu-item-desc" data-ko="양배추·베이컨·해산물, 마요·데리야키 소스" data-de="Japanischer Pfannkuchen mit Weißkohl, Bacon & Meeresfrüchten" data-en="Japanese pancake with cabbage, bacon & seafood"></div></div><div class="menu-item-price">€15.90</div></div>
+        <div class="menu-item"><div class="menu-item-info"><div class="menu-item-name" data-ko="공기밥" data-de="Extra Reis" data-en="Steamed Rice"></div><div class="menu-item-desc" data-ko="공깃밥 한 그릇" data-de="Eine Portion Reis" data-en="A bowl of steamed rice"></div></div><div class="menu-item-price">€2.00</div></div>
         <div class="menu-item"><div class="menu-item-info"><div class="menu-item-name" data-ko="돼지 껍데기" data-de="Gebratene Schweinehaut" data-en="Pan-Fried Pork Skin"></div><div class="menu-item-desc" data-ko="후라이팬에 바삭하게 구운 돼지 껍데기" data-de="In der Pfanne knusprig gebraten" data-en="Crispy pan-fried pork skin"></div></div><div class="menu-item-price">€12.90</div></div>
         <div class="menu-item"><div class="menu-item-info"><div class="menu-item-name" data-ko="마늘 닭똥집 볶음" data-de="Hühnermägen mit Knoblauch" data-en="Chicken Gizzard with Garlic"></div><div class="menu-item-desc" data-ko="마늘과 함께 볶은 닭똥집" data-de="Gebratene Hühnermägen mit Knoblauch" data-en="Stir-fried chicken gizzard with garlic"></div></div><div class="menu-item-price">€12.90</div></div>
         <div class="menu-item"><div class="menu-item-info"><div class="menu-item-name" data-ko="마라 닭똥집 볶음" data-de="Hühnermägen Mala (scharf)" data-en="Chicken Gizzard with Mala Sauce"></div><div class="menu-item-desc" data-ko="마라 마리네이드의 매콤한 닭똥집과 떡" data-de="Hühnermägen und Reiskuchen mit Mala-Marinade (scharf)" data-en="Gizzard and rice cake in spicy mala marinade"></div></div><div class="menu-item-price">€13.90</div></div>
-        <div class="menu-item"><div class="menu-item-info"><div class="menu-item-name" data-ko="매콤 비빔면" data-de="Scharfe Bibimmyeon-Nudeln" data-en="Spicy Bibimmyeon Noodles"></div><div class="menu-item-desc" data-ko="매콤달콤한 특제 양념의 쫄깃한 비빔면" data-de="Würzig-süße Bibimmyeon-Nudeln mit hausgemachter Sauce" data-en="Sweet and spicy bibimmyeon noodles with house-made sauce"></div></div><div class="menu-item-price">€9.90</div></div>
-        <div class="menu-item"><div class="menu-item-info"><div class="menu-item-name" data-ko="공기밥" data-de="Extra Reis" data-en="Steamed Rice"></div><div class="menu-item-desc" data-ko="공깃밥 한 그릇" data-de="Eine Portion Reis" data-en="A bowl of steamed rice"></div></div><div class="menu-item-price">€2.00</div></div>
+        <div class="menu-item"><div class="menu-item-info"><div class="menu-item-name" data-ko="고기 순두부 찌개" data-de="Tofu-Suppe mit Schweinefleisch" data-en="Tofu Stew with Pork"></div><div class="menu-item-desc" data-ko="돼지고기와 함께하는 순한 맛 순두부 찌개" data-de="Weiches Tofugericht mit Schweinefleisch (mild)" data-en="Soft tofu stew with pork (mild)"></div></div><div class="menu-item-price">€14.90</div></div>
+        <div class="menu-item"><div class="menu-item-info"><div class="menu-item-name" data-ko="해물 순두부 찌개" data-de="Tofu-Suppe mit Schweinefleisch &amp; Meeresfrüchten" data-en="Tofu Stew with Pork &amp; Seafood"></div><div class="menu-item-desc" data-ko="돼지고기와 해산물을 넣은 순두부 찌개" data-de="Tofu-Suppe mit Schweinefleisch und Meeresfrüchten (mild)" data-en="Soft tofu stew with pork and seafood (mild)"></div></div><div class="menu-item-price">€15.90</div></div>
+        <div class="menu-item"><div class="menu-item-info"><div class="menu-item-name" data-ko="오코노미야키" data-de="Okonomiyaki" data-en="Okonomiyaki"></div><div class="menu-item-desc" data-ko="양배추·베이컨·해산물, 마요·데리야키 소스" data-de="Japanischer Pfannkuchen mit Weißkohl, Bacon & Meeresfrüchten" data-en="Japanese pancake with cabbage, bacon & seafood"></div></div><div class="menu-item-price">€15.90</div></div>
         <div class="menu-item"><div class="menu-item-info"><div class="menu-item-name" data-ko="겉절이 김치" data-de="Hausgemachter Kimchi" data-en="Homemade Kimchi"></div><div class="menu-item-desc" data-ko="신선하게 만든 하우스 김치" data-de="Frisch zubereiteter Kimchi" data-en="Freshly made house kimchi"></div></div><div class="menu-item-price">€3.00</div></div>
       </div>
     </div>
@@ -870,7 +884,8 @@
         <div class="menu-item"><div class="menu-item-info"><div class="menu-item-name" data-ko="오삼 불고기 + 쌈" data-de="Schweinefleisch & Tintenfisch Bulgogi" data-en="Pork Belly & Squid Bulgogi + Wraps"></div><div class="menu-item-desc" data-ko="매콤한 양념의 삼겹살·오징어 볶음 + 쌈채소" data-de="Gebratenes Schweinefleisch mit Tintenfisch (scharf) + Blattgemüse" data-en="Spicy pork belly & squid with lettuce wraps"></div></div><div class="menu-item-price">€23.90</div></div>
         <div class="menu-item"><div class="menu-item-info"><div class="menu-item-name" data-ko="골뱅이 소면" data-de="Scharfer Meeresschneckensalat" data-en="Spicy Whelk Salad with Noodle"></div><div class="menu-item-desc" data-ko="매콤한 골뱅이 무침과 소면" data-de="Meeresschnecken mit Chilisoße und Nudeln" data-en="Cold spicy whelk with vegetables and noodles"></div></div><div class="menu-item-price">€28.90</div></div>
         <div class="menu-item"><div class="menu-item-info"><div class="menu-item-name" data-ko="매운 등갈비찜 + 주먹밥" data-de="Scharfe Rippchen + Reisbällchen" data-en="Spicy Pork Ribs + Rice Balls"></div><div class="menu-item-desc" data-ko="매콤하게 양념한 등갈비찜과 주먹밥" data-de="Koreanische scharfe Schweinerippchen + Reisbällchen" data-en="Spicy marinated pork ribs with Korean rice balls"></div></div><div class="menu-item-price">€32.90</div></div>
-        <div class="menu-item"><div class="menu-item-info"><div class="menu-item-name" data-ko="야들 족발" data-de="Zarte Schweinshaxe in Sojamarinade" data-en="Tender Pork Trotters in Soy Marinade"></div><div class="menu-item-desc" data-ko="한국식 간장 양념으로 삶은 부드러운 족발" data-de="In koreanischer Sojasoße gekocht, butterzart" data-en="Boiled in Korean soy sauce, meltingly tender"></div></div><div class="menu-item-price">€29.90</div></div>
+        <div class="menu-item"><div class="menu-item-info"><div class="menu-item-name-row"><div class="menu-item-name" data-ko="야들 족발" data-de="Zarte Schweinshaxe in Sojamarinade" data-en="Tender Pork Trotters in Soy Marinade"></div><span class="new-badge">NEW</span></div><div class="menu-item-desc" data-ko="한국식 간장 양념으로 삶은 부드러운 족발" data-de="In koreanischer Sojasoße gekocht, butterzart" data-en="Boiled in Korean soy sauce, meltingly tender"></div></div><div class="menu-item-price">€29.90</div></div>
+        <div class="menu-item"><div class="menu-item-info"><div class="menu-item-name-row"><div class="menu-item-name" data-ko="떡볶이 (라면사리·계란·치즈 토핑 포함)" data-de="Tteokbokki (mit Ramen-Nudeln, Ei &amp; Käse-Topping)" data-en="Tteokbokki (with Ramen Noodles, Egg &amp; Cheese Topping)"></div><span class="new-badge">NEW</span></div><div class="menu-item-desc" data-ko="매콤달콤한 떡볶이, 라면사리·계란·치즈 토핑 포함" data-de="Würzig-süßer Reiskuchen mit Ramen-Nudeln, Ei und Käse-Topping" data-en="Sweet and spicy rice cakes with ramen noodles, egg and cheese topping"></div></div><div class="menu-item-price">€29.90</div></div>
       </div>
     </div>
 
@@ -903,13 +918,6 @@
       </div>
     </div>
 
-    <!-- 순두부 -->
-    <div class="menu-panel" id="panel-tofu">
-      <div class="menu-category fade">
-        <div class="menu-item"><div class="menu-item-info"><div class="menu-item-name" data-ko="고기 순두부 찌개" data-de="Tofu-Suppe mit Schweinefleisch" data-en="Tofu Stew with Pork"></div><div class="menu-item-desc" data-ko="돼지고기와 함께하는 순한 맛 순두부 찌개" data-de="Weiches Tofugericht mit Schweinefleisch (mild)" data-en="Soft tofu stew with pork (mild)"></div></div><div class="menu-item-price">€14.90</div></div>
-        <div class="menu-item"><div class="menu-item-info"><div class="menu-item-name" data-ko="해물 순두부 찌개" data-de="Tofu-Suppe mit Schweinefleisch & Meeresfrüchten" data-en="Tofu Stew with Pork & Seafood"></div><div class="menu-item-desc" data-ko="돼지고기와 해산물을 넣은 순두부 찌개" data-de="Tofu-Suppe mit Schweinefleisch und Meeresfrüchten (mild)" data-en="Soft tofu stew with pork and seafood (mild)"></div></div><div class="menu-item-price">€15.90</div></div>
-      </div>
-    </div>
 
     <!-- 냄비 요리 -->
     <div class="menu-panel" id="panel-hotpot">
@@ -919,8 +927,8 @@
         <div class="menu-item"><div class="menu-item-info"><div class="menu-item-name" data-ko="어묵전골" data-de="Fischkuchen-Eintopf" data-en="Fish Cake Hotpot"></div><div class="menu-item-desc" data-ko="어묵, 떡, 우동면, 채소 전골" data-de="Fischkuchen, Reiskuchen, Udon-Nudeln und Gemüse" data-en="Fish cake, rice cake, udon noodles and vegetables"></div></div><div class="menu-item-price">€29.90</div></div>
         <div class="menu-item"><div class="menu-item-info"><div class="menu-item-name" data-ko="김치 스지 전골" data-de="Kimchi-Rindfleischsehnen-Eintopf" data-en="Kimchi Beef Tendon Hotpot"></div><div class="menu-item-desc" data-ko="김치와 소 힘줄이 들어간 깊은 맛 전골" data-de="Kimchi-Rindfleischsehneneintopf" data-en="Rich hotpot with kimchi and beef tendon"></div></div><div class="menu-item-price">€35.90</div></div>
         <div class="menu-item"><div class="menu-item-info"><div class="menu-item-name" data-ko="차돌수육" data-de="Dünn geschnittene Rinderbrust (koreanische Art)" data-en="Korean-style Beef Brisket"></div><div class="menu-item-desc" data-ko="전골 냄비에 육수와 함께 따뜻하게 서빙되는 얇게 썬 차돌박이 수육" data-de="Dünn geschnittene Rinderbrust, warm serviert im Eintopf mit Brühe" data-en="Thinly sliced beef brisket, served warm in broth in a hotpot"></div></div><div class="menu-item-price">€39.90</div></div>
-        <div class="menu-item"><div class="menu-item-info"><div class="menu-item-name" data-ko="대도리탕" data-de="Scharfer Hähnchen-Rinderdarm-Eintopf" data-en="Spicy Chicken &amp; Beef Intestine Hotpot"></div><div class="menu-item-desc" data-ko="매콤한 닭볶음탕에 소 대창을 더한 전골 요리" data-de="Würziger koreanischer Eintopf mit zartem Hühnerfleisch und aromatischem Rinderdarm" data-en="Spicy Korean stew with tender chicken and aromatic beef intestine"></div></div><div class="menu-item-price">€42.90</div></div>
-        <div class="menu-item"><div class="menu-item-info"><div class="menu-item-name" data-ko="떡볶이 (라면사리·계란·치즈 토핑 포함)" data-de="Tteokbokki (mit Ramen-Nudeln, Ei &amp; Käse-Topping)" data-en="Tteokbokki (with Ramen Noodles, Egg &amp; Cheese Topping)"></div><div class="menu-item-desc" data-ko="매콤달콤한 떡볶이, 라면사리·계란·치즈 토핑 포함" data-de="Würzig-süßer Reiskuchen mit Ramen-Nudeln, Ei und Käse-Topping" data-en="Sweet and spicy rice cakes with ramen noodles, egg and cheese topping"></div></div><div class="menu-item-price">€29.90</div></div>
+        <div class="menu-item"><div class="menu-item-info"><div class="menu-item-name" data-ko="대도리탕 (2~3인)" data-de="Scharfer Hähnchen-Rinderdarm-Eintopf (2–3 Pers.)" data-en="Spicy Chicken &amp; Beef Intestine Hotpot (2–3 pax)"></div><div class="menu-item-desc" data-ko="매콤한 닭볶음탕에 소 대창을 더한 전골 요리" data-de="Würziger koreanischer Eintopf mit zartem Hühnerfleisch und aromatischem Rinderdarm" data-en="Spicy Korean stew with tender chicken and aromatic beef intestine"></div></div><div class="menu-item-price">€42.90</div></div>
+        <div class="menu-item"><div class="menu-item-info"><div class="menu-item-name-row"><div class="menu-item-name" data-ko="떡볶이 (라면사리·계란·치즈 토핑 포함)" data-de="Tteokbokki (mit Ramen-Nudeln, Ei &amp; Käse-Topping)" data-en="Tteokbokki (with Ramen Noodles, Egg &amp; Cheese Topping)"></div><span class="new-badge">NEW</span></div><div class="menu-item-desc" data-ko="매콤달콤한 떡볶이, 라면사리·계란·치즈 토핑 포함" data-de="Würzig-süßer Reiskuchen mit Ramen-Nudeln, Ei und Käse-Topping" data-en="Sweet and spicy rice cakes with ramen noodles, egg and cheese topping"></div></div><div class="menu-item-price">€29.90</div></div>
         <div class="menu-item gap-top"><div class="menu-item-info"><div class="menu-item-name" data-ko="추가 사리" data-de="Extra-Einlage" data-en="Extra Add-ins"></div><div class="menu-item-desc" data-ko="소세지 / 우동 / 라면 / 소면 / 떡 / 치즈" data-de="Wurst / Udon / Ramyeon / Weizennudeln / Reiskuchen / Käse" data-en="Sausage / Udon / Ramyeon / Vermicelli / Rice cake / Cheese"></div></div><div class="menu-item-price">€3.00</div></div>
         <div class="menu-item"><div class="menu-item-info"><div class="menu-item-name" data-ko="추가 토핑" data-de="Extra Toppings" data-en="Extra Toppings"></div><div class="menu-item-desc" data-ko="어묵 / 스지 / 만두 / 대창" data-de="Fischkuchen / Rindersehne / Teigtaschen / Rinderdarm" data-en="Fish cake / Tendon / Dumplings / Beef Intestine"></div></div><div class="menu-item-price">€7.90</div></div>
       </div>
@@ -1111,9 +1119,9 @@
 <script>
 // ── TRANSLATIONS ──
 const T = {
-  ko: { nav_insta:'인스타그램', nav_menu:'메뉴', nav_reservation:'예약', nav_location:'오시는 길', insta_label:'Instagram', insta_title:'최근 소식', btn_reserve:'예약하기', btn_menu:'메뉴 보기', menu_label:'Menu', menu_title:'메뉴', cat_starters:'가벼운 요리/곁들임 메뉴', cat_fried:'튀김', cat_specials:'셰프 추천', cat_sets:'세트메뉴', cat_sashimi:'사시미', cat_grill:'그릴', cat_tofu:'순두부', cat_hotpot:'냄비 요리', cat_beverages:'음료', cat_lunch:'🌞 점심', res_label:'Contact & Location', res_title:'연락 & 오시는 길', res_subtitle:'연락 안내', res_hours_label:'영업시간', res_price_label:'가격대', res_seating_label:'좌석', res_book_btn:'예약 페이지로 →', loc_subtitle:'오시는 길', loc_addr_label:'주소', loc_tel_label:'전화', loc_rating_label:'평점' },
-  de: { nav_insta:'Instagram', nav_menu:'Speisekarte', nav_reservation:'Reservierung', nav_location:'Anfahrt', insta_label:'Instagram', insta_title:'Neuigkeiten', btn_reserve:'Reservieren', btn_menu:'Speisekarte', menu_label:'Speisekarte', menu_title:'Speisekarte', cat_starters:'Vorspeisen', cat_fried:'Frittiertes', cat_specials:'Spezialitäten', cat_sets:'Set-Menüs', cat_sashimi:'Sashimi', cat_grill:'Grill', cat_tofu:'Tofu-Suppe', cat_hotpot:'Eintopf', cat_beverages:'Getränke', cat_lunch:'🌞 Mittagsmenü', res_label:'Kontakt & Standort', res_title:'Kontakt & Anfahrt', res_subtitle:'Kontaktinfo', res_hours_label:'Öffnungszeiten', res_price_label:'Preisklasse', res_seating_label:'Sitzplätze', res_book_btn:'Zur Reservierung →', loc_subtitle:'Anfahrt', loc_addr_label:'Adresse', loc_tel_label:'Telefon', loc_rating_label:'Bewertung' },
-  en: { nav_insta:'Instagram', nav_menu:'Menu', nav_reservation:'Reservation', nav_location:'Location', insta_label:'Instagram', insta_title:'Latest Updates', btn_reserve:'Reserve a Table', btn_menu:'View Menu', menu_label:'Menu', menu_title:'Menu', cat_starters:'Starters', cat_fried:'Fried', cat_specials:"Chef's Specials", cat_sets:'Set Menus', cat_sashimi:'Sashimi', cat_grill:'Grill', cat_tofu:'Tofu Stew', cat_hotpot:'Hotpot', cat_beverages:'Beverages', cat_lunch:'🌞 Lunch', res_label:'Contact & Location', res_title:'Contact & Location', res_subtitle:'Contact Info', res_hours_label:'Hours', res_price_label:'Price range', res_seating_label:'Seating', res_book_btn:'Make a Reservation →', loc_subtitle:'Location', loc_addr_label:'Address', loc_tel_label:'Phone', loc_rating_label:'Rating' }
+  ko: { nav_insta:'인스타그램', nav_menu:'메뉴', nav_reservation:'예약', nav_location:'오시는 길', insta_label:'Instagram', insta_title:'최근 소식', btn_reserve:'예약하기', btn_menu:'메뉴 보기', menu_label:'Menu', menu_title:'메뉴', cat_starters:'가벼운 요리/곁들임 메뉴', cat_fried:'튀김', cat_specials:'셰프 추천', cat_sets:'세트메뉴', cat_sashimi:'사시미', cat_grill:'그릴', cat_hotpot:'냄비 요리', cat_beverages:'음료', cat_lunch:'🌞 점심', res_label:'Contact & Location', res_title:'연락 & 오시는 길', res_subtitle:'연락 안내', res_hours_label:'영업시간', res_price_label:'가격대', res_seating_label:'좌석', res_book_btn:'예약 페이지로 →', loc_subtitle:'오시는 길', loc_addr_label:'주소', loc_tel_label:'전화', loc_rating_label:'평점' },
+  de: { nav_insta:'Instagram', nav_menu:'Speisekarte', nav_reservation:'Reservierung', nav_location:'Anfahrt', insta_label:'Instagram', insta_title:'Neuigkeiten', btn_reserve:'Reservieren', btn_menu:'Speisekarte', menu_label:'Speisekarte', menu_title:'Speisekarte', cat_starters:'Vorspeisen', cat_fried:'Frittiertes', cat_specials:'Spezialitäten', cat_sets:'Set-Menüs', cat_sashimi:'Sashimi', cat_grill:'Grill', cat_hotpot:'Eintopf', cat_beverages:'Getränke', cat_lunch:'🌞 Mittagsmenü', res_label:'Kontakt & Standort', res_title:'Kontakt & Anfahrt', res_subtitle:'Kontaktinfo', res_hours_label:'Öffnungszeiten', res_price_label:'Preisklasse', res_seating_label:'Sitzplätze', res_book_btn:'Zur Reservierung →', loc_subtitle:'Anfahrt', loc_addr_label:'Adresse', loc_tel_label:'Telefon', loc_rating_label:'Bewertung' },
+  en: { nav_insta:'Instagram', nav_menu:'Menu', nav_reservation:'Reservation', nav_location:'Location', insta_label:'Instagram', insta_title:'Latest Updates', btn_reserve:'Reserve a Table', btn_menu:'View Menu', menu_label:'Menu', menu_title:'Menu', cat_starters:'Starters', cat_fried:'Fried', cat_specials:"Chef's Specials", cat_sets:'Set Menus', cat_sashimi:'Sashimi', cat_grill:'Grill', cat_hotpot:'Hotpot', cat_beverages:'Beverages', cat_lunch:'🌞 Lunch', res_label:'Contact & Location', res_title:'Contact & Location', res_subtitle:'Contact Info', res_hours_label:'Hours', res_price_label:'Price range', res_seating_label:'Seating', res_book_btn:'Make a Reservation →', loc_subtitle:'Location', loc_addr_label:'Address', loc_tel_label:'Phone', loc_rating_label:'Rating' }
 };
 
 // ── LANGUAGE ──
@@ -1140,19 +1148,20 @@ document.querySelectorAll('.lang-btn').forEach(b => b.addEventListener('click', 
 }));
 applyLang('ko');
 
-// ── 여름 휴가 공지 배너 ──
+// ── 신메뉴 안내 배너 ── (다음 공지로 재사용 시 hideAfter 날짜와 localStorage 키를 새로 바꿔주세요)
 (function () {
   const banner = document.getElementById('noticeBanner');
   if (!banner) return;
-  const hideAfter = new Date('2026-07-15T23:59:59+02:00');
-  const dismissed = localStorage.getItem('noticeDismissed_summer2026');
+  const hideAfter = new Date('2026-08-14T23:59:59+02:00');
+  const dismissed = localStorage.getItem('noticeDismissed_newmenu_202607');
   if (new Date() > hideAfter || dismissed) {
     banner.style.display = 'none';
     return;
   }
-  document.getElementById('noticeClose').addEventListener('click', () => {
+  document.getElementById('noticeClose').addEventListener('click', (e) => {
+    e.preventDefault();
     banner.style.display = 'none';
-    localStorage.setItem('noticeDismissed_summer2026', '1');
+    localStorage.setItem('noticeDismissed_newmenu_202607', '1');
   });
 })();
 
@@ -1184,7 +1193,10 @@ applyLang('ko');
         prevGroup = item.group || null;
         return '<div class="menu-item' + gapClass + '">' +
           '<div class="menu-item-info">' +
-            '<div class="menu-item-name" data-ko="' + esc(item.name_ko) + '" data-de="' + esc(item.name_de) + '" data-en="' + esc(item.name_en) + '"></div>' +
+            '<div class="menu-item-name-row">' +
+              '<div class="menu-item-name" data-ko="' + esc(item.name_ko) + '" data-de="' + esc(item.name_de) + '" data-en="' + esc(item.name_en) + '"></div>' +
+              (item.isNew ? '<span class="new-badge">NEW</span>' : '') +
+            '</div>' +
             ((item.desc_ko||item.desc_de||item.desc_en) ?
               '<div class="menu-item-desc" data-ko="' + esc(item.desc_ko) + '" data-de="' + esc(item.desc_de) + '" data-en="' + esc(item.desc_en) + '"></div>' : '') +
           '</div>' +
@@ -1236,7 +1248,7 @@ applyLang('ko');
     if (!data) return; // Firebase 비어 있으면 기존 하드코딩 유지
 
     // 단순 패널들 (모두 menu-admin.html에서 관리하는 Firebase 카테고리와 1:1 매칭)
-    const simple = { starters:'starters', fried:'fried', chefs:'specials', sets:'sets', sashimi:'sashimi', grill:'grill', tofu:'tofu', hotpot:'hotpot', beverages:'beverages' };
+    const simple = { starters:'starters', fried:'fried', chefs:'specials', sets:'sets', sashimi:'sashimi', grill:'grill', hotpot:'hotpot', beverages:'beverages' };
     Object.entries(simple).forEach(([fbCat, panelId]) => {
       const items = Object.values(data[fbCat] || {});
       if (!items.length) return;
