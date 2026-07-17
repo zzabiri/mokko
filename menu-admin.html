@@ -242,14 +242,15 @@
     .print-header-row {
       display: flex;
       align-items: center;
-      justify-content: flex-start;
-      gap: 15mm;
+      justify-content: space-between;
+      gap: 10mm;
     }
-    .print-header-text { text-align: left; }
+    .print-header-text { text-align: left; flex-shrink: 0; }
     .print-brand-main {
       font-size: 20pt; font-weight: 700; letter-spacing: 0.18em;
       text-transform: uppercase; color: #1a1a1a;
       font-family: 'Georgia', serif;
+      white-space: nowrap;
     }
     .print-brand-sub {
       font-size: 7.5pt; letter-spacing: 0.25em; color: #888;
@@ -269,7 +270,7 @@
     }
     .print-kakao-text {
       font-size: 9pt; color: #555; line-height: 1.5; text-align: left;
-      font-family: 'Arial', sans-serif; max-width: 70mm;
+      font-family: 'Arial', sans-serif; max-width: 58mm;
     }
     .print-kakao-text strong { color: #1a1a1a; }
 
